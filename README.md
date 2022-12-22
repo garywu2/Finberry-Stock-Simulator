@@ -1,5 +1,5 @@
-# PURPLE-FLUFF-ENGINEERING
-PFE - UCALGARY CAPSTONE 2022-2023
+# Finberry-Stock-Simulator
+Finberry Stock Simulator - UCALGARY CAPSTONE 2022-2023
 
 ## Available Scripts
 
