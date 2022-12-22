@@ -27,4 +27,6 @@ Your app is ready to be deployed!
 
 ### `npm run eject`
 
-test
+### firebase config
+
+- Add .env file for the firebase config

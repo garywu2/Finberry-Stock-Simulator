@@ -1,17 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from './components/HomePage';
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import FirebaseContext from "./context/firebase";
+import { auth } from "./lib/firebase";
+import { CssBaseline } from "@mui/material";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <div>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
-  </React.StrictMode>,
-  document.getElementById("root")
+
+//Have to add redux here for state 
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
 );
+root.render(
+  <FirebaseContext.Provider value={{ auth }}>
+    <CssBaseline />
+    <App />
+  </FirebaseContext.Provider>
+);
+
