@@ -1,8 +1,8 @@
-const HomePage = () => {
+const LoginPage = () => {
     return (
         <div>
             <h1>
-                Finberry Home Page
+                Finberry Login Page
             </h1>
             <p>
                 YEET
@@ -11,4 +11,4 @@ const HomePage = () => {
     )
 }
 
-export default HomePage;
+export default LoginPage;
