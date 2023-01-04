@@ -10,8 +10,10 @@ const cors = require("cors");
 const app = express();
 app.use(cors());
 
-mongoose.connect("mongodb://localhost/finberry", () => {
-  console.log("connected");
+const DB = process.env.DB || "mongodb://localhost/finberry";
+
+mongoose.connect(DB, () => {
+  console.log("Database Connected");
 });
 
 //Body parser middleware

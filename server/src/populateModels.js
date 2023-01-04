@@ -18,13 +18,13 @@ const Article = require("./models/Article");
 // const TradeHistory = require("./models/TradeHistory");
 // const User = require("./models/User");
 // const UserBadges = require("./models/UserBadges");
-
 // const { USER_TYPE, COACH_APPROVAL_STATUS } = require("./interfaces");
-
 // const path = require("path");
 
-mongoose.connect("mongodb://localhost/finberry", () => {
-  console.log("connected");
+const DB = process.env.DB || "mongodb://localhost/finberry";
+
+mongoose.connect(DB, () => {
+  console.log("Database Connected");
 });
 
 const addArticle = async (
@@ -60,6 +60,3 @@ const insertData = async () => {
 }
 
 insertData();
-
-
-
