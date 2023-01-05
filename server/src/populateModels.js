@@ -52,8 +52,16 @@ const insertData = async () => {
     await addArticle(
         "article 1",
         "First article description",
-        "content first aticle",
+        "content of first article",
         "link to first article",
+        new Date(),
+        new Date(),
+    )
+    await addArticle(
+        "article 2",
+        "Second article description",
+        "content of second article",
+        "https://www.google.ca/",
         new Date(),
         new Date(),
     )
