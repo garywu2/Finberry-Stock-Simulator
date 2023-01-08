@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from './components/HomePage';
 import LoginPage from './components/LoginPage';
-import RegisterPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
+import ArticlesPage from './components/ArticlesPage';
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
 
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/LoginPage" element={<LoginPage />} />
             <Route path="/RegisterPage" element={<RegisterPage />} />
+            <Route path="/ArticlesPage" element={<ArticlesPage />} />
             </Routes>
         </div>
         </BrowserRouter>
