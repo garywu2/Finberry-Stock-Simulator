@@ -96,6 +96,9 @@ const RegisterPage = () => {
           noValidate
           autoComplete='off'
         >
+          <Typography variant="h3" align="center" fontWeight={400}>
+            User Registration
+          </Typography>
           <div>
             <TextField
               required
@@ -170,7 +173,7 @@ const RegisterPage = () => {
           </Button>
         </Box>
       ) : (
-        <Navigate to='/dashboard'></Navigate>
+        <Navigate to='/'></Navigate>
       )}
     </div>
   );
