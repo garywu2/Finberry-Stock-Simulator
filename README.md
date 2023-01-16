@@ -1,31 +1,39 @@
 # Finberry-Stock-Simulator
 Finberry Stock Simulator - UCALGARY CAPSTONE 2022-2023
 
-## Available Scripts
+## Quickstart
 
-In the project directory, you can run:
+### Development
 
-### `npm start`
+First run 
+``` 
+npm i
+```
+in both the root and server folders.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Then to run both the server and client, you can run the following command:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```
+npm start
+```
 
-### `npm test`
+This will run the the client on losthost:3000
 
-Launches the test runner in the interactive watch mode.\
+Optionally you can also do the following to run the application
 
-### `npm run build`
+- cd to the server directory
+- Run "npm install" to install all dependencies
+- Run "npm run dev-server" to start the live dev server
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Then on a seperate terminal while keeping the terminal running the server
+- In the root directory
+- Run "npm install" to install all dependencies
+- Run "npm run startClient" to start the front end
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### populating the database
 
-### `npm run eject`
+- cd to the server directory
+- Run "npm run populate" to populate all database models
 
 ### firebase config
 
