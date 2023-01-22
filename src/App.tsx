@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from './components/HomePage';
-import LoginPage from './components/LoginPage';
-import RegisterPage from './components/RegisterPage';
-import ArticlesPage from './components/ArticlesPage';
+import HomePage from './containers/HomePage';
+import LoginPage from './containers/LoginPage';
+import RegisterPage from './containers/RegisterPage';
+import ArticlesPage from './containers/ArticlesPage';
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
 
