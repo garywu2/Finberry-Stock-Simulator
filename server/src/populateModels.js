@@ -25,6 +25,8 @@ const DB = process.env.DB || "mongodb://localhost/finberry";
 
 mongoose.connect(DB, () => {
   console.log("Database Connected");
+  mongoose.connection.db.dropDatabase();
+  console.log("Dropping current database");
 });
 
 const addArticle = async (
