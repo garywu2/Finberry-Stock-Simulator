@@ -1,5 +1,4 @@
 import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
-import { lightGreen } from "@mui/material/colors";
 import axios from "axios";
 import { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -39,7 +38,7 @@ const LoginPage = () => {
           sx={{
             "& .MuiTextField-root": { m: 1 },
             "& label.Mui-focused": {
-              color: "darkblue",
+              color: "primary.main",
             },
 
             "& .MuiOutlinedInput-root": {
@@ -47,8 +46,9 @@ const LoginPage = () => {
                 borderColor: "lightgreen",
               },
             },
-            maxWidth: "600px",
+            maxWidth: "60%",
             margin: "auto",
+            backgroundColor: 'primary.main',
           }}
           noValidate
           autoComplete='off'
@@ -81,8 +81,8 @@ const LoginPage = () => {
           <Button
             size='large'
             sx={{
-              backgroundColor: "darkblue",
-              color: "lightgreen",
+              backgroundColor: "secondary.main",
+              color: "white",
               marginY: "1rem",
             }}
             onClick={handleSumbit}

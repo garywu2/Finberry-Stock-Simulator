@@ -8,21 +8,36 @@ import ArticlesPage from './containers/ArticlesPage';
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
 
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#7e57c2',
+    },
+    secondary: {
+      main: '#00897b',
+    },
+  },
+});
+
 function App() {
     const { user } = useAuthListener();
   return (
-    <UserContext.Provider value={{ user }}>
-        <BrowserRouter>
-        <div>
-            <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/LoginPage" element={<LoginPage />} />
-            <Route path="/RegisterPage" element={<RegisterPage />} />
-            <Route path="/ArticlesPage" element={<ArticlesPage />} />
-            </Routes>
-        </div>
-        </BrowserRouter>
-    </UserContext.Provider>
+    <ThemeProvider theme={theme}>
+      <UserContext.Provider value={{ user }}>
+          <BrowserRouter>
+          <div>
+              <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/LoginPage" element={<LoginPage />} />
+              <Route path="/RegisterPage" element={<RegisterPage />} />
+              <Route path="/ArticlesPage" element={<ArticlesPage />} />
+              </Routes>
+          </div>
+          </BrowserRouter>
+      </UserContext.Provider>
+    </ThemeProvider>
   );
 }
 
