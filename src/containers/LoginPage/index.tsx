@@ -29,26 +29,18 @@ const LoginPage = () => {
   };
 
   return (
-    <div>
+    <div style={ { backgroundColor: "#7e57c2"}}>
       {!user ? (
         <Box
           component='form'
           display={"flex"}
           flexDirection='column'
+          alignItems={'center'}
+          justifyContent="center"
+          maxWidth="70%"
+          margin="0 auto"
           sx={{
-            "& .MuiTextField-root": { m: 1 },
-            "& label.Mui-focused": {
-              color: "primary.main",
-            },
-
-            "& .MuiOutlinedInput-root": {
-              "&.Mui-focused fieldset": {
-                borderColor: "lightgreen",
-              },
-            },
-            maxWidth: "60%",
-            margin: "auto",
-            backgroundColor: 'primary.main',
+            backgroundColor: 'white',
           }}
           noValidate
           autoComplete='off'
@@ -62,7 +54,11 @@ const LoginPage = () => {
               id='login-username'
               label='Username'
               name='username'
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
               value={loginState.username}
               onChange={handleChange}
             />
@@ -72,23 +68,28 @@ const LoginPage = () => {
               label='Password'
               type='password'
               name='password'
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
               value={loginState.password}
               onChange={handleChange}
             />
           </div>
           {error && <Typography color='red'>{error}</Typography>}
-          <Button
-            size='large'
-            sx={{
-              backgroundColor: "secondary.main",
-              color: "white",
-              marginY: "1rem",
-            }}
-            onClick={handleSumbit}
-          >
-            Log In
-          </Button>
+            <Button
+              size='medium'
+              sx={{
+                backgroundColor: "secondary.main",
+                color: "white",
+                marginY: "1rem",
+                width: "10%",
+              }}
+              onClick={handleSumbit}
+            >
+              Log In
+            </Button>
         </Box>
       ) : (
         <Navigate to='/'></Navigate>

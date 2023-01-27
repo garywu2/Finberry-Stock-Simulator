@@ -18,6 +18,10 @@ const theme = createTheme({
     secondary: {
       main: '#00897b',
     },
+    info: {
+      main: '#F8F9FA',
+      contrastText: '#212529'
+    }
   },
 });
 
