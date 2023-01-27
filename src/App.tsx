@@ -34,9 +34,9 @@ function App() {
           <div>
               <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/LoginPage" element={<LoginPage />} />
-              <Route path="/RegisterPage" element={<RegisterPage />} />
-              <Route path="/ArticlesPage" element={<ArticlesPage />} />
+              <Route path="/Login" element={<LoginPage />} />
+              <Route path="/Register" element={<RegisterPage />} />
+              <Route path="/Articles" element={<ArticlesPage />} />
               </Routes>
           </div>
           </BrowserRouter>
