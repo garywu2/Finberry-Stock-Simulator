@@ -26,19 +26,19 @@ const theme = createTheme({
 });
 
 function App() {
-    const { user } = useAuthListener();
+  const { user } = useAuthListener();
   return (
     <ThemeProvider theme={theme}>
       <UserContext.Provider value={{ user }}>
           <BrowserRouter>
-          <div>
-              <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/Login" element={<LoginPage />} />
-              <Route path="/Register" element={<RegisterPage />} />
-              <Route path="/Articles" element={<ArticlesPage />} />
-              </Routes>
-          </div>
+            <div>
+                <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/Login" element={<LoginPage />} />
+                <Route path="/Register" element={<RegisterPage />} />
+                <Route path="/Articles" element={<ArticlesPage />} />
+                </Routes>
+            </div>
           </BrowserRouter>
       </UserContext.Provider>
     </ThemeProvider>

@@ -1,4 +1,4 @@
-import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, Link, MenuItem, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -29,7 +29,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={ { backgroundColor: "#7e57c2"}}>
+    <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box
           component='form'
@@ -37,8 +37,11 @@ const LoginPage = () => {
           flexDirection='column'
           alignItems={'center'}
           justifyContent="center"
+          textAlign={'center'}
+          minWidth="50%"
           maxWidth="70%"
           margin="0 auto"
+          padding="2rem"
           sx={{
             backgroundColor: 'white',
           }}
@@ -84,17 +87,18 @@ const LoginPage = () => {
                 backgroundColor: "secondary.main",
                 color: "white",
                 marginY: "1rem",
-                width: "10%",
+                width: "20%",
               }}
               onClick={handleSumbit}
             >
               Log In
             </Button>
+            <Link href="#" variant="body2">Create an account</Link>
         </Box>
       ) : (
         <Navigate to='/'></Navigate>
       )}
-    </div>
+    </Container>
   );
 };
 export default LoginPage;
