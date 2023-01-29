@@ -29,7 +29,8 @@ const LoginPage = () => {
   };
 
   return (
-    <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center"}}>
+    <Container 
+      sx={ { backgroundColor: "#7e57c2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box
           component='form'
