@@ -1,4 +1,5 @@
-import { Box, Button, Container, Link, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import { Link } from 'react-router-dom';
 import axios from "axios";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useContext, useState } from "react";
@@ -191,7 +192,7 @@ const RegisterPage = () => {
             >
             Register
           </Button>
-          <Link to="/login" variant="body2">Already have an account?</Link>
+          <Link to="/login">Already have an account?</Link>
         </Box>
       ) : (
         <Navigate to='/'></Navigate>
