@@ -73,7 +73,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center"}}>
+    <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100vw", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box
           component='form'
@@ -99,7 +99,7 @@ const RegisterPage = () => {
             <TextField
               required
               id='signup-first-name'
-              label='FirstName'
+              label='First Name'
               name='firstName'
               onChange={handleChange}
               margin="normal"
@@ -112,7 +112,7 @@ const RegisterPage = () => {
             <TextField
               required
               id='signup-last-name'
-              label='LastName'
+              label='Last Name'
               name='lastName'
               onChange={handleChange}
               margin="normal"
@@ -163,7 +163,6 @@ const RegisterPage = () => {
               value={signupState.password}
               onChange={handleChange}
             />
-
             <TextField
               required
               id='signup-phone-number'
