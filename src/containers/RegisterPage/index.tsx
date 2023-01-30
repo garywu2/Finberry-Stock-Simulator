@@ -191,7 +191,7 @@ const RegisterPage = () => {
             >
             Register
           </Button>
-          <Link href="#" variant="body2">Already have an account?</Link>
+          <Link href="/login" variant="body2">Already have an account?</Link>
         </Box>
       ) : (
         <Navigate to='/'></Navigate>

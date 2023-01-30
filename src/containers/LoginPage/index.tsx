@@ -93,7 +93,7 @@ const LoginPage = () => {
             >
               Log In
             </Button>
-            <Link href="#" variant="body2">Create an account</Link>
+            <Link href="/register" variant="body2">Create an account</Link>
         </Box>
       ) : (
         <Navigate to='/'></Navigate>
