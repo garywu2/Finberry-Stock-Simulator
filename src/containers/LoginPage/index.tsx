@@ -1,4 +1,5 @@
-import { Box, Button, Container, Link, MenuItem, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, MenuItem, TextField, Typography } from "@mui/material";
+import { Link } from 'react-router-dom';
 import axios from "axios";
 import { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -94,7 +95,7 @@ const LoginPage = () => {
             >
               Log In
             </Button>
-            <Link href="#" variant="body2">Create an account</Link>
+            <Link to="/register">Create an account</Link>
         </Box>
       ) : (
         <Navigate to='/'></Navigate>
