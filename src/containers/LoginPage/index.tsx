@@ -5,6 +5,7 @@ import { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import FirebaseContext from "../../context/firebase";
 import UserContext from "../../context/user";
+import Header from '../../components/Header';
 
 const LoginPage = () => {
   const { auth } = useContext(FirebaseContext);
@@ -14,6 +15,10 @@ const LoginPage = () => {
     username: "",
     password: ""
   };
+
+  const links = [
+    { label: 'Register', path: '/register' },
+  ];
 
   const [loginState, setLoginState] = useState(defaultValues);
   const [error, setError] = useState("");
@@ -30,8 +35,10 @@ const LoginPage = () => {
   };
 
   return (
-    <Container 
-      sx={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100vw", display: "flex", alignItems: "center", justifyContent: "center"}}>
+    <div>
+      <Header title="Finberry" links={links} />
+      <Container 
+      sx={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box
           component='form'
@@ -103,7 +110,8 @@ const LoginPage = () => {
       ) : (
         <Navigate to='/'></Navigate>
       )}
-    </Container>
+      </Container>
+    </div>
   );
 };
 export default LoginPage;
