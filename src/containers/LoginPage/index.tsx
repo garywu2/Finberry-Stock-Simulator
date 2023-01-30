@@ -90,6 +90,9 @@ const LoginPage = () => {
                 color: "white",
                 marginY: "1rem",
                 width: "20%",
+                '&:hover': {
+                  backgroundColor: 'secondary.dark',
+                }
               }}
               onClick={handleSumbit}
             >
