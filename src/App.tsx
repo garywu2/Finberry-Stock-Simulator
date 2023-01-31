@@ -12,6 +12,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
       main: '#7e57c2',
     },
@@ -23,6 +24,19 @@ const theme = createTheme({
       contrastText: '#212529'
     }
   },
+  typography: {
+    // fontFamily: 'Source Sans Pro', commented for now
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          color: "secondary",
+          textTransform: 'none',
+        }
+      }
+    },
+  }
 });
 
 function App() {
@@ -30,16 +44,16 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <UserContext.Provider value={{ user }}>
-          <BrowserRouter>
-            <div>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/Login" element={<LoginPage />} />
-                  <Route path="/Register" element={<RegisterPage />} />
-                  <Route path="/Articles" element={<ArticlesPage />} />
-                </Routes>
-            </div>
-          </BrowserRouter>
+        <BrowserRouter>
+          <div>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/Login" element={<LoginPage />} />
+              <Route path="/Register" element={<RegisterPage />} />
+              <Route path="/Articles" element={<ArticlesPage />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
       </UserContext.Provider>
     </ThemeProvider>
   );
