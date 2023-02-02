@@ -30,10 +30,6 @@ const Header: React.FC<Props> = ({ title, links }) => {
                         component={RouterLink} to={link.path}>
                         {link.label}
                     </Button>
-
-                    //   <Link key={link.path} component={RouterLink} to={link.path} style={{ color: 'primary.main', marginLeft: 16, textDecoration: 'none' }}>
-                    //     {link.label}
-                    //   </Link>
                 ))}
             </Toolbar>
         </AppBar>
