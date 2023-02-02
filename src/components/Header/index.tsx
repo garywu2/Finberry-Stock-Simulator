@@ -1,6 +1,6 @@
 import React from 'react';
-import { AppBar, Button, Toolbar, Typography, Link } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { AppBar, Button, Toolbar, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 interface Props {
     title: string;
@@ -12,9 +12,7 @@ const Header: React.FC<Props> = ({ title, links }) => {
         <AppBar position="static" color="inherit">
             <Toolbar>
                 <Typography variant="h6" style={{ flexGrow: 1 }}>
-                    <Link key="/" component={RouterLink} to="/" style={{ color: 'primary.main', textDecoration: 'none' }}>
-                        {title}
-                    </Link>
+                    <Link to="/" style={{ color: 'primary.main', textDecoration: 'none' }}>{title}</Link>
                 </Typography>
                 {links.map((link) => (
                     <Button
@@ -27,7 +25,7 @@ const Header: React.FC<Props> = ({ title, links }) => {
                                 backgroundColor: 'secondary.dark',
                             }
                         }}
-                        component={RouterLink} to={link.path}>
+                        component={Link} to={link.path}>
                         {link.label}
                     </Button>
                 ))}
