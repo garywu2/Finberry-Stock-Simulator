@@ -21,10 +21,6 @@ const RegisterPage = () => {
     phoneNumber: "",
   };
 
-  const links = [
-    { label: 'Login', path: '/login' },
-  ];
-
   const [signupState, setSignupState] = useState(defaultValues);
   const [error, setError] = useState("");
   const handleChange = (e: any) => {
@@ -80,7 +76,6 @@ const RegisterPage = () => {
 
   return (
     <div>
-      <Header title="Finberry" links={links} />
       <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box

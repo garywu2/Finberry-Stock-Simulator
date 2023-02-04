@@ -16,10 +16,6 @@ const LoginPage = () => {
     password: ""
   };
 
-  const links = [
-    { label: 'Register', path: '/register' },
-  ];
-
   const [loginState, setLoginState] = useState(defaultValues);
   const [error, setError] = useState("");
   const handleChange = (e: any) => {
@@ -36,7 +32,6 @@ const LoginPage = () => {
 
   return (
     <div>
-      <Header title="Finberry" links={links} />
       <Container 
       sx={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
