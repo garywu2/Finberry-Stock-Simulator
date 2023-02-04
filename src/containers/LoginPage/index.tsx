@@ -5,7 +5,6 @@ import { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import FirebaseContext from "../../context/firebase";
 import UserContext from "../../context/user";
-import Header from '../../components/Header';
 
 const LoginPage = () => {
   const { auth } = useContext(FirebaseContext);
