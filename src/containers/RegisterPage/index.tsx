@@ -1,5 +1,5 @@
-import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
-import { lightGreen } from "@mui/material/colors";
+import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import { Link } from 'react-router-dom';
 import axios from "axios";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useContext, useState } from "react";
@@ -19,6 +19,7 @@ const RegisterPage = () => {
     username: "",
     phoneNumber: "",
   };
+
   const [signupState, setSignupState] = useState(defaultValues);
   const [error, setError] = useState("");
   const handleChange = (e: any) => {
@@ -74,48 +75,53 @@ const RegisterPage = () => {
 
   return (
     <div>
+      <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box
           component='form'
           display={"flex"}
           flexDirection='column'
+          alignItems={'center'}
+          justifyContent="center"
+          textAlign={'center'}
+          minWidth="50%"
+          maxWidth="70%"
+          margin="0 auto"
+          padding="2rem"
           sx={{
-            "& .MuiTextField-root": { m: 1 },
-            "& label.Mui-focused": {
-              color: "darkblue",
-            },
-
-            "& .MuiOutlinedInput-root": {
-              "&.Mui-focused fieldset": {
-                borderColor: "lightgreen",
-              },
-            },
-            maxWidth: "600px",
-            margin: "auto",
+            backgroundColor: 'white',
           }}
           noValidate
           autoComplete='off'
         >
           <Typography variant="h3" align="center" fontWeight={400}>
-            User Registration
+            REGISTER
           </Typography>
           <div>
             <TextField
               required
               id='signup-first-name'
-              label='FirstName'
+              label='First Name'
               name='firstName'
               onChange={handleChange}
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
               value={signupState.firstName}
             />
             <TextField
               required
               id='signup-last-name'
-              label='LastName'
+              label='Last Name'
               name='lastName'
               onChange={handleChange}
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
               value={signupState.lastName}
             />
             <TextField
@@ -124,7 +130,11 @@ const RegisterPage = () => {
               id='signup-email'
               label='Email'
               name='email'
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
               value={signupState.email}
               onChange={handleChange}
             />
@@ -133,7 +143,11 @@ const RegisterPage = () => {
               id='signup-username'
               label='Username'
               name='username'
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
               value={signupState.username}
               onChange={handleChange}
             />
@@ -143,11 +157,14 @@ const RegisterPage = () => {
               label='Password'
               type='password'
               name='password'
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
               value={signupState.password}
               onChange={handleChange}
             />
-
             <TextField
               required
               id='signup-phone-number'
@@ -156,26 +173,37 @@ const RegisterPage = () => {
               value={signupState.phoneNumber}
               onChange={handleChange}
               name='phoneNumber'
-              fullWidth
+              margin="normal"
+              sx={{
+                width: '100%'
+              }}
+              color="primary"
             />
           </div>
           {error && <Typography color='red'>{error}</Typography>}
           <Button
-            size='large'
-            sx={{
-              backgroundColor: "darkblue",
-              color: "lightgreen",
-              marginY: "1rem",
-            }}
-            onClick={handleSumbit}
-          >
-            Create User
+              size='medium'
+              sx={{
+                backgroundColor: "secondary.main",
+                color: "white",
+                marginY: "1rem",
+                width: "20%",
+                '&:hover': {
+                  backgroundColor: 'secondary.dark',
+                }
+              }}
+              onClick={handleSumbit}
+            >
+            Register
           </Button>
+          <Link to="/login">Already have an account?</Link>
         </Box>
       ) : (
         <Navigate to='/'></Navigate>
       )}
+      </Container>
     </div>
+    
   );
 };
 export default RegisterPage;
