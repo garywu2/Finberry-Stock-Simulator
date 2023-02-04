@@ -1,5 +1,3 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from './containers/HomePage';
 import LoginPage from './containers/LoginPage';
@@ -7,8 +5,9 @@ import RegisterPage from './containers/RegisterPage';
 import ArticlesPage from './containers/ArticlesPage';
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
-
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+import Header from './components/Header'
 
 const theme = createTheme({
   palette: {
@@ -46,6 +45,7 @@ function App() {
       <UserContext.Provider value={{ user }}>
         <BrowserRouter>
           <div>
+            <Header isAuthenticated={false} />
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/Login" element={<LoginPage />} />
