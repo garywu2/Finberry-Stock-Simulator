@@ -30,8 +30,9 @@ const LoginPage = () => {
   };
 
   return (
-    <Container 
-      sx={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100vw", display: "flex", alignItems: "center", justifyContent: "center"}}>
+    <div>
+      <Container 
+      sx={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box
           component='form'
@@ -103,7 +104,8 @@ const LoginPage = () => {
       ) : (
         <Navigate to='/'></Navigate>
       )}
-    </Container>
+      </Container>
+    </div>
   );
 };
 export default LoginPage;

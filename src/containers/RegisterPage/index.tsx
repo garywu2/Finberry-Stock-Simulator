@@ -19,6 +19,7 @@ const RegisterPage = () => {
     username: "",
     phoneNumber: "",
   };
+
   const [signupState, setSignupState] = useState(defaultValues);
   const [error, setError] = useState("");
   const handleChange = (e: any) => {
@@ -73,7 +74,8 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100vw", display: "flex", alignItems: "center", justifyContent: "center"}}>
+    <div>
+      <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
       {!user ? (
         <Box
           component='form'
@@ -199,7 +201,9 @@ const RegisterPage = () => {
       ) : (
         <Navigate to='/'></Navigate>
       )}
-    </Container>
+      </Container>
+    </div>
+    
   );
 };
 export default RegisterPage;
