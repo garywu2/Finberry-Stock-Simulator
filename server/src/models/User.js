@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
+    coachingProfile: {
+        type: { type: mongoose.SchemaTypes.ObjectID, ref: "CoachingProfile" },
+        required: false,
+    },
     avatar: {
         data: String,
         required: false,
@@ -87,36 +91,6 @@ const userSchema = new mongoose.Schema({
     },
     premiumPaymentHistory: {
         type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PremiumPaymentHistory" }],
-        required: true,
-        default: []
-    },
-    price: {
-        type: Number,
-        required: true,
-    },
-    description: {
-        type: String,
-        required: false,
-    },
-    image: {
-        data: String,
-        required: false,
-    },
-    createdAt: {
-        type: Date,
-        required: true,
-    },
-    status: {
-        type: Number,
-        required: true,
-    },
-    reviews: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "Review" }],
-        required: true,
-        default: []
-    },
-    clients: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "Client" }],
         required: true,
         default: []
     },
