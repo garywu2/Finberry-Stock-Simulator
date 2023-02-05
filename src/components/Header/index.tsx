@@ -1,6 +1,7 @@
 import React from 'react';
-import { AppBar, Button, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
+import Logo from "../../images/logos/logo.png"
 
 // interface Props {
 //     logout: () => void;
@@ -13,7 +14,7 @@ interface Props {
 };
 
 const authLinks = (
-    <div>
+    <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
         <Button
             size='small'
             sx={{
@@ -54,48 +55,48 @@ const authLinks = (
             component={Link} to='/logout'>
             Logout
         </Button>
-    </div>
+    </Box>
 );
 
 const guestLinks = (
-    <div>
-            <Button
-                size='small'
-                sx={{
-                    backgroundColor: "secondary.main",
-                    color: "white",
-                    marginLeft: "1rem",
-                    '&:hover': {
-                        backgroundColor: 'secondary.dark',
-                    }
-                }}
-                component={Link} to='/login'>
-                Login
-            </Button>
-            <Button
-                size='small'
-                sx={{
-                    backgroundColor: "secondary.main",
-                    color: "white",
-                    marginLeft: "1rem",
-                    '&:hover': {
-                        backgroundColor: 'secondary.dark',
-                    }
-                }}
-                component={Link} to='/register'>
-                Register
-            </Button>
-    </div>
+    <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
+        <Button
+            size='small'
+            sx={{
+                backgroundColor: "secondary.main",
+                color: "white",
+                marginLeft: "1rem",
+                '&:hover': {
+                    backgroundColor: 'secondary.dark',
+                }
+            }}
+            component={Link} to='/login'>
+            Login
+        </Button>
+        <Button
+            size='small'
+            sx={{
+                backgroundColor: "secondary.main",
+                color: "white",
+                marginLeft: "1rem",
+                '&:hover': {
+                    backgroundColor: 'secondary.dark',
+                }
+            }}
+            component={Link} to='/register'>
+            Register
+        </Button>
+    </Box>
 );
 
 const Header: React.FC<Props> = ({ isAuthenticated }) => {
     return (
         <AppBar position="static" color="inherit">
             <Toolbar>
-                <Typography variant="h6" style={{ flexGrow: 1 }}>
-                    <Link to="/" style={{ color: 'primary.main', textDecoration: 'none' }}>Logo Placeholder</Link>
-                </Typography>
-                {isAuthenticated ? authLinks : guestLinks }
+                <Link to="/" style={{ display: 'flex', alignContent: 'center' }}>
+                    <img src={Logo} style={{ flexGrow: 1 }} />
+                </Link>
+                {isAuthenticated ? authLinks : guestLinks}
             </Toolbar>
         </AppBar>
     );
