@@ -94,7 +94,7 @@ const Header: React.FC<Props> = ({ isAuthenticated }) => {
         <AppBar position="static" color="inherit">
             <Toolbar>
                 <Link to="/" style={{ display: 'flex', alignContent: 'center' }}>
-                    <img src={Logo} style={{ flexGrow: 1 }} />
+                    <img src={Logo} alt="Finberry Logo" style={{ flexGrow: 1 }} />
                 </Link>
                 {isAuthenticated ? authLinks : guestLinks}
             </Toolbar>
