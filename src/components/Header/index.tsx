@@ -91,7 +91,7 @@ const guestLinks = (
 
 const Header: React.FC<Props> = ({ isAuthenticated }) => {
     return (
-        <AppBar position="static" color="inherit">
+        <AppBar position="fixed" color="inherit">
             <Toolbar>
                 <Link to="/" style={{ display: 'flex', alignContent: 'center' }}>
                     <img src={Logo} alt="Finberry Logo" style={{ flexGrow: 1 }} />
