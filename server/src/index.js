@@ -1,11 +1,15 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const Accounts = require("./routes/Account");
-const Educational = require("./routes/Educational");
-const Game = require("./routes/Game");
-const Payment = require("./routes/Payment");
-const Stock = require("./routes/Stock");
-const cors = require("cors");
+const express         =   require("express"),
+      mongoose        =   require("mongoose"),
+      Accounts        =   require("./routes/Account"),
+      // User            =   require("./routes/Account/user"),
+      // CoachingProfile =   require("./routes/Account/coachingProfile"),
+      Educational     =   require("./routes/Educational"),
+      Game            =   require("./routes/Game"),
+      Payment         =   require("./routes/Payment"),
+      Stock           =   require("./routes/Stock"),
+      cors            =   require("cors");
+
+// import dailyRefresh from "./stock"
 
 const app = express();
 app.use(cors());
@@ -20,8 +24,12 @@ mongoose.connect(DB, () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Daily update functions
+// TODO: Call this daily
+// dailyRefresh();
+
 //Routes
-app.use("/accounts", Accounts);
+app.use("/account", Accounts);
 
 app.use("/educational", Educational);
 
