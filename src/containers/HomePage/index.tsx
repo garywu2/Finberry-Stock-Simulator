@@ -8,7 +8,7 @@ const HomePage = () => {
     return (
         <div>
             <Container
-                sx={{ backgroundColor: "primary.main", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "0 0 3rem", boxShadow: "3px 3px 15px black", marginBottom: "1rem" }}>
+                sx={{ backgroundColor: "primary.main", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "0 0 3rem 3rem", boxShadow: "0 4px 15px -6px black", marginBottom: "1rem" }}>
                 <Typography variant="h3" align="center" fontWeight={400}>
                     Some content
                 </Typography>
