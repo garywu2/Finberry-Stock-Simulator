@@ -103,14 +103,15 @@ const HomePage = () => {
       </Container>
       <Container
         sx={{
-          backgroundColor: 'white',
+          borderRadius: '3rem 3rem 0 0',
+          boxShadow: '0 4px 15px -1px black',
+          backgroundColor: 'secondary.main',
           minHeight: '100vh',
           minWidth: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginTop: '1rem',
-          marginBottom: '1rem',
         }}
       >
         <Typography variant='h3' align='center' fontWeight={400}>
