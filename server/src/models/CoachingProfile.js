@@ -1,9 +1,13 @@
 const mongoose = require("mongoose");
 
 const coachingProfileSchema = new mongoose.Schema({
-    userEmail: { // The user owning this coaching profile.
-        type: String,
-        required: false, // Cant be set to required - mongoDB wont allow string to be required
+    // userEmail: {
+    //     type: String,
+    //     required: true, 
+    // },
+    user: {
+        type: mongoose.SchemaTypes.ObjectID,
+        required: true, 
     },
     price: {
         type: Number,
@@ -11,11 +15,11 @@ const coachingProfileSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: false, // Cant be set to required - mongoDB wont allow string to be required
+        required: false,
     },
     image: {
         data: String,
-        required: false, // Cant be set to required - mongoDB wont allow string to be required
+        required: false,
     },
     createdAt: {
         type: Date,
@@ -23,8 +27,8 @@ const coachingProfileSchema = new mongoose.Schema({
         default: Date.now,
     },
     requestJustification: {
-        data: String,
-        required: false, // Cant be set to required - mongoDB wont allow string to be required
+        type: String,
+        required: false,
     },
     requestResponse: {
         id: {

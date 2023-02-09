@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     },
     // Below are user profile changes
     avatar: {
-        data: String,
+        type: String,
         required: false,
         default: "", // Image link: OUR DB like league avatar
     },

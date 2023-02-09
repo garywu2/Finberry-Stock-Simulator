@@ -11,7 +11,7 @@ const   multer  =   require("multer"),
 
 // // Relevant schemas
 const   User                =   require("../models/user"),
-        CoachingProfile     =   require("../models/CoachingProfile");
+        CoachingProfile     =   require("../models/coachingProfile");
 
 
 
@@ -108,7 +108,10 @@ router.get("/user", async (req, res) => {
             } else {
                 tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile,hasPendingCoachingProfile:hasPendingCoachingProfile}
             }
+            
+            // tailoredUser['wtfGary'] = 123
 
+            // tailoredUser.wtfGary = 1233
 
             tailoredUsers.push(tailoredUser);
         });
@@ -266,11 +269,12 @@ router.post("/coaching", async (req, res) => {
 
         // Start creation coaching profile
         let newCoachingProfile = {
-            userEmail: user.email,
+            user: user._id,
+            // userEmail: user.email,
             price: req.body.price,
             description: req.body.description,
             requestJustification: req.body.requestJustification,
-            // image: req.body.image,
+            image: req.body.image,
             createdAt: Date.now()
         };
 
@@ -285,11 +289,11 @@ router.post("/coaching", async (req, res) => {
         }
         
         try {
-            console.log(newCoachingProfile)
+            // console.log(newCoachingProfile)
 
             const coachingProfile = new CoachingProfile(newCoachingProfile);
 
-            console.log(coachingProfile)
+            // console.log(coachingProfile)
 
             await coachingProfile.save();
 
