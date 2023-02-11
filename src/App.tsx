@@ -3,6 +3,12 @@ import HomePage from './containers/HomePage';
 import LoginPage from './containers/LoginPage';
 import RegisterPage from './containers/RegisterPage';
 import ArticlesPage from './containers/ArticlesPage';
+import UserProfilePage from './containers/UserProfilePage';
+import SimulatorPortfolioPage from './containers/SimulatorPortfolioPage';
+import GamePortfolioPage from './containers/GamePortfolioPage';
+import LeaderboardsPage from './containers/LeaderboardsPage';
+import CoachPortalPage from './containers/CoachPortalPage';
+import CoachCataloguePage from './containers/CoachCataloguePage';
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -51,6 +57,12 @@ function App() {
               <Route path="/Login" element={<LoginPage />} />
               <Route path="/Register" element={<RegisterPage />} />
               <Route path="/Articles" element={<ArticlesPage />} />
+              <Route path="/UserProfile" element={<UserProfilePage />} />
+              <Route path="/SimulatorPortfolio" element={<SimulatorPortfolioPage />} />
+              <Route path="/GamePortfolio" element={<GamePortfolioPage />} />
+              <Route path="/Leaderboards" element={<LeaderboardsPage />} />
+              <Route path="/CoachPortal" element={<CoachPortalPage />} />
+              <Route path="/CoachCatalogue" element={<CoachCataloguePage />} />
             </Routes>
           </div>
         </BrowserRouter>
