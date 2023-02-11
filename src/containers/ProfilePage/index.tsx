@@ -1,8 +1,8 @@
-const UserPortfolioPage = () => {
+const ProfilePage = () => {
     return (
         <div>
             <h1>
-                User Profile placeholder
+                Profile placeholder
             </h1>
             <p>
                 sus
@@ -11,4 +11,4 @@ const UserPortfolioPage = () => {
     )
 }
 
-export default UserPortfolioPage;
+export default ProfilePage;

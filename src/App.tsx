@@ -3,7 +3,7 @@ import HomePage from './containers/HomePage';
 import LoginPage from './containers/LoginPage';
 import RegisterPage from './containers/RegisterPage';
 import ArticlesPage from './containers/ArticlesPage';
-import UserProfilePage from './containers/UserProfilePage';
+import ProfilePage from './containers/ProfilePage';
 import SimulatorPortfolioPage from './containers/SimulatorPortfolioPage';
 import GamePortfolioPage from './containers/GamePortfolioPage';
 import LeaderboardsPage from './containers/LeaderboardsPage';
@@ -57,7 +57,7 @@ function App() {
               <Route path="/Login" element={<LoginPage />} />
               <Route path="/Register" element={<RegisterPage />} />
               <Route path="/Articles" element={<ArticlesPage />} />
-              <Route path="/UserProfile" element={<UserProfilePage />} />
+              <Route path="/Profile" element={<ProfilePage />} />
               <Route path="/SimulatorPortfolio" element={<SimulatorPortfolioPage />} />
               <Route path="/GamePortfolio" element={<GamePortfolioPage />} />
               <Route path="/Leaderboards" element={<LeaderboardsPage />} />
