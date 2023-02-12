@@ -108,7 +108,7 @@ const userSchema = new mongoose.Schema({
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "CoachingProfile"
                 },
-                status: { // 0 - Pending (Requested), 1 - Active, 2 - Coach decided to hide or cancel coaching profile, 3 - Moderator/admin suspended
+                status: { // 0 - Pending (Requested), 1 - Active, 2 - Coach decided to hide coaching profile, 3 - Coach decided to deactivate coaching profile (Cannot be undone), 4 - Coaching decided to DELETE profile (But we keep a copy), 5 - Moderator/admin suspended
                     type: Number,
                     required: true,
                 },

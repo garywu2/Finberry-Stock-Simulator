@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const simulatorSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
+        required: true
     },
     description: {
         type: String,
@@ -30,6 +30,13 @@ const simulatorSchema = new mongoose.Schema({
         type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
         required: true,
         default: []
+    },
+
+    // Last updated date
+    dateLastUpdated: {
+        type: Date,
+        required: true,
+        default: Date.now,
     },
 });
 

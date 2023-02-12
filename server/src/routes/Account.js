@@ -14,13 +14,11 @@ const   User                =   require("../models/user"),
         CoachingProfile     =   require("../models/coachingProfile");
 
 
-
+        
 //// USER and PROFILE (Not coaching)
 
 // POST - User sign up - create a new generic user (No coaching profile)
 router.post("/user", async (req, res) => {
-    // return res.json({ msg: "User is missing one or more required field(s)" });
-
     let newUser = {
         username: req.body.username,
         email: req.body.email,
@@ -32,7 +30,8 @@ router.post("/user", async (req, res) => {
         permissionLevel: req.body.permissionLevel,
         // createdAt: req.body.createdAt,
         createdAt: Date.now(),
-        profile: -1
+        dateLastUpdated: Date.now(),
+        profile: -1,
     };
 
     if (
@@ -47,12 +46,12 @@ router.post("/user", async (req, res) => {
     }
 
     // Permission level - Must be integer between 0 and 3
-    newUser.permissionLevel = Math.floor(newUser.permissionLevel)
+    newUser.permissionLevel = Math.floor(newUser.permissionLevel);
     if (newUser.permissionLevel > 3) {
-        newUser.permissionLevel = 3
+        newUser.permissionLevel = 3;
     }
     else if (newUser.permissionLevel < 0) {
-        newUser.permissionLevel = 0
+        newUser.permissionLevel = 0;
     }
 
     // const queryUser = await User.findOne({ email: newUser.email });
@@ -72,46 +71,42 @@ router.post("/user", async (req, res) => {
 // GET all Users (Only return basic information)
 router.get("/user", async (req, res) => {
     try {
-        // Show ALL information for ALL users
-        // const users = await User.find();
-        // return res.json(users);
-
         // Only show important information
         const users = await User.find({}, {email:1,username:1,premiumExpiryDate:1,permissionLevel:1,coachingProfiles:1,_id:0});
 
-        let tailoredUsers = []
+        let tailoredUsers = [];
         users.forEach((user) => {
             // Determine if user is premium
-            let isPremium = true
+            let isPremium = true;
             if (!user.premiumExpiryDate || user.premiumExpiryDate <= Date.now()) {
-                isPremium = false
+                isPremium = false;
             }
 
             // Determing if the user has a coaching profile
-            let hasActiveCoachingProfile = false 
-            let hasPendingCoachingProfile = false 
+            let hasActiveCoachingProfile = false;
+            let hasPendingCoachingProfile = false;
             user.coachingProfiles.forEach((profile) => {
                 if (profile.status == 1) {
-                    hasActiveCoachingProfile = true
-                    return
+                    hasActiveCoachingProfile = true;
+                    return;
                 }
                 else if (profile.status == 0) {
-                    hasPendingCoachingProfile = true
-                    return
+                    hasPendingCoachingProfile = true;
+                    return;
                 }
             });
 
             // For some reason just adding a new field doesnt seem to reflect in return message
-            let tailoredUser
+            let tailoredUser;
             if (hasActiveCoachingProfile) {
-                tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile}
+                tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile};
             } else {
-                tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile,hasPendingCoachingProfile:hasPendingCoachingProfile}
+                tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile,hasPendingCoachingProfile:hasPendingCoachingProfile};
             }
             
-            // tailoredUser['wtfGary'] = 123
+            // tailoredUser['test'] = 123
 
-            // tailoredUser.wtfGary = 1233
+            // tailoredUser.test = 1233
 
             tailoredUsers.push(tailoredUser);
         });
@@ -136,31 +131,31 @@ router.get("/user/:email", async (req, res) => {
         }
 
         // Determine if user is premium
-        let isPremium = true
+        let isPremium = true;
         if (!user.premiumExpiryDate || user.premiumExpiryDate <= Date.now()) {
-            isPremium = false
+            isPremium = false;
         }
 
         // Determing if the user has a coaching profile
-        let hasActiveCoachingProfile = false 
-        let hasPendingCoachingProfile = false 
+        let hasActiveCoachingProfile = false;
+        let hasPendingCoachingProfile = false;
         user.coachingProfiles.forEach((profile) => {
             if (profile.status == 1) {
-                hasActiveCoachingProfile = true
-                return
+                hasActiveCoachingProfile = true;
+                return;
             }
             else if (profile.status == 0) {
-                hasPendingCoachingProfile = true
-                return
+                hasPendingCoachingProfile = true;
+                return;
             }
         });
 
         // For some reason just adding a new field doesnt seem to reflect in return message
-        let tailoredUser
+        let tailoredUser;
         if (hasActiveCoachingProfile) {
-            tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile}
+            tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile};
         } else {
-            tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile,hasPendingCoachingProfile:hasPendingCoachingProfile}
+            tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile,hasPendingCoachingProfile:hasPendingCoachingProfile};
         }
         
         return res.json(tailoredUser);
@@ -175,21 +170,47 @@ router.put("/user/:email", async (req, res) => {
         return res.status(400).json({ msg: "Email is missing" });
     }
     try {
+        // My original method.
         const user = await User.findOne({ email: req.params.email });
         if (!user) {
           return res.status(400).json({ msg: "User with provided email not found" });
         }
         
         // Must ensure that some element are the same (Email must not change)
-        req.body.user.email = user.email
-        req.body.user.createdAt = user.createdAt
-        req.body.user._id = user._id
+        req.body.user.email = user.email;
+        req.body.user.createdAt = user.createdAt;
+        req.body.user._id = user._id;
 
-        req.body.dateLastUpdated = Date.now()
+        req.body.user.dateLastUpdated = Date.now();
 
-        let editedUser = await User.findByIdAndUpdate(user._id, req.body.user);
+        await User.findByIdAndUpdate(user._id, req.body.user);
 
-        return res.json({ msg: "User Edit successful", editedUser: editedUser });
+        return res.json({ msg: "User Edit successful" });
+
+        /*
+        // Gary's Proposed Method - Slightly modified 
+        const newAttrs = req.body.user;
+        const attrKeys = Object.keys(newAttrs);
+
+        if (!newAttrs._id) {
+            return res.status(400).json({ msg: "ID is missing" });
+        }
+
+        if (!newAttrs.email) {
+            return res.status(400).json({ msg: "Email is missing" });
+        }
+
+        try {
+        const user = await User.findOne({ email: newAttrs.email });
+        attrKeys.forEach((key) => {
+            if (key !== "email" && key !== "_id") {
+                user[key] = newAttrs[key];
+            }
+        });
+        await user.save();
+        res.json(user);
+        */
+
       } catch (e) {
         return res.status(400).json({ msg: "User edit failed: " + e.message });
     }
@@ -214,7 +235,7 @@ router.delete("/user/:email", async (req, res) => {
         }
         */
 
-        const user = await User.findOne({ email: req.params.email })
+        const user = await User.findOne({ email: req.params.email });
         if (!user) {
             return res.status(400).json({ msg: "The User with provided email not found" });
         }
@@ -223,7 +244,7 @@ router.delete("/user/:email", async (req, res) => {
 
         // Delete all associated coaching profiles
         userRemoved.coachingProfiles.forEach(async (coachingProfile) => {
-            let coachingProfileID = coachingProfile.coachingProfile
+            let coachingProfileID = coachingProfile.coachingProfile;
             
             await CoachingProfile.deleteOne( {_id: coachingProfileID});
         });
@@ -237,7 +258,28 @@ router.delete("/user/:email", async (req, res) => {
     }
 });
 
+// DELETE ALL USERS (IN REVERSIBLE - DEBUG ONLY!!!!)
+router.delete("/user", async (req, res) => {
+    try {
+        let allUsers = await User.find({});
 
+        allUsers.forEach(async (specificUser) => {
+            let userRemoved = await User.findByIdAndRemove(specificUser._id);
+
+            // Delete all associated coaching profiles
+            userRemoved.coachingProfiles.forEach(async (coachingProfile) => {
+                let coachingProfileID = coachingProfile.coachingProfile;
+                
+                await CoachingProfile.deleteOne( {_id: coachingProfileID});
+            });
+        });
+
+        return res.json({ msg: "ALL Users successfully deleted" });
+
+      } catch (e) {
+        return res.status(400).json({ msg: "Users deletions failed: " + e.message });
+    }
+});
 
 //// Coaches (User - COACHING PROFILE)
 
@@ -246,6 +288,15 @@ router.post("/coaching", async (req, res) => {
     if (!req.body.email) {
         return res.status(400).json({ msg: "Email is missing" });
     }
+
+    if (
+        !req.body.price ||
+        !req.body.description ||
+        !req.body.requestJustification
+    ) {
+        return res.status(400).json({ msg: "Coaching profile is missing one or more required field(s)" });
+    }
+
     try {
         const user = await User.findOne({ email: req.body.email });
         if (!user) {
@@ -253,19 +304,17 @@ router.post("/coaching", async (req, res) => {
         }
 
         // Now with the user, create a coaching profile for said user IF it does not already exist
-        let hasActiveOrPendingCoachingProfile = false 
+        let hasActiveOrPendingCoachingProfile = false;
         user.coachingProfiles.forEach((profile) => {
             if (profile.status == 1 || profile.status == 0) {
-                hasActiveOrPendingCoachingProfile = true
-                return
+                hasActiveOrPendingCoachingProfile = true;
+                return;
             }
         });
 
         if (hasActiveOrPendingCoachingProfile) {
-            return res.status(400).json({ msg: "This user already has an associated coaching profile", user: user });
+            return res.status(400).json({ msg: "This user already has an active, pending, or user hidden associated coaching profile", user: user });
         }
-
-        
 
         // Start creation coaching profile
         let newCoachingProfile = {
@@ -275,25 +324,12 @@ router.post("/coaching", async (req, res) => {
             description: req.body.description,
             requestJustification: req.body.requestJustification,
             image: req.body.image,
-            createdAt: Date.now()
+            createdAt: Date.now(),
         };
 
         
-
-        if (
-            !newCoachingProfile.price ||
-            !newCoachingProfile.description ||
-            !newCoachingProfile.requestJustification
-        ) {
-            return res.status(400).json({ msg: "Coaching profile is missing one or more required field(s)" });
-        }
-        
         try {
-            // console.log(newCoachingProfile)
-
             const coachingProfile = new CoachingProfile(newCoachingProfile);
-
-            // console.log(coachingProfile)
 
             await coachingProfile.save();
 
@@ -302,11 +338,11 @@ router.post("/coaching", async (req, res) => {
                 let combined = {
                     coachingProfile: coachingProfile,
                     status: 0,
-                    dateLastUpdated: Date.now()
+                    dateLastUpdated: Date.now(),
                 }
 
                 user.coachingProfiles.push(combined);
-                await user.save()
+                await user.save();
 
                 return res.json(coachingProfile);
             } catch (e) {
@@ -336,7 +372,7 @@ router.get("/coaching/:email", async (req, res) => {
         return res.status(400).json({ msg: "Email is missing" });
     }
     try {
-        const user = await User.findOne({}, {email:1,username:1,coachingProfiles:1,_id:0}).populate("coachingProfiles.coachingProfile");;
+        const user = await User.findOne({}, {email:1,username:1,coachingProfiles:1,_id:0}).populate("coachingProfiles.coachingProfile");
         if (!user) {
             return res.status(400).json({ msg: "User not provided email not found" });
         }
@@ -346,6 +382,9 @@ router.get("/coaching/:email", async (req, res) => {
         return res.status(400).json({ msg: e.message });
     }
 });
+
+// The following are simply some example codes that can be changed for easier implementation, please ignore for now.
+
 
 // // PUT - Edit user coaching profile - This can be for admin editing status, 
 // router.put("/coaching/:coachingProfileID", async (req, res) => {

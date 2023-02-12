@@ -1,9 +1,12 @@
-const express = require("express");
-const router = express.Router();
+// Express and the routers
+const   express =   require("express"),
+        router  =   express.Router();
+
+module.exports  =   router;
 
 //for parsing multipart form data (images)
-const multer = require("multer");
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const   multer  =   require("multer"),
+        storage =   multer.memoryStorage(),
+        upload  =   multer({ storage: storage });
 
-module.exports = router;
+

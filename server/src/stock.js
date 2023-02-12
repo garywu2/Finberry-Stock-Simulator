@@ -8,6 +8,8 @@ mongoose.connect(DB, () => {
   console.log("Database Connected");
 });
 
+// The following are simply some example codes that can be changed for easier implementation, please ignore.
+
 // const addArticle = async (currentDate) => {
 //     // Function should delete any Stock Data in the database that is not of the past 7 days.
 
