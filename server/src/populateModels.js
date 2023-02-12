@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
-const fs = require("fs");
-const Article = require("./models/Article");
+const   mongoose = require("mongoose"),
+        fs = require("fs"),
+        Article = require("./models/Article");
+        
 //const Badge = require("./models/Badge");
 // const ChatLog = require("./models/ChatLog");
 // const Client = require("./models/Client");

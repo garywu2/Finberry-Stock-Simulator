@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 
 const coachingProfileSchema = new mongoose.Schema({
+    // userEmail: {
+    //     type: String,
+    //     required: true, 
+    // },
+    user: {
+        type: mongoose.SchemaTypes.ObjectID,
+        required: true, 
+    },
     price: {
         type: Number,
         required: true,
@@ -16,10 +24,19 @@ const coachingProfileSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         required: true,
+        default: Date.now,
     },
-    status: {
-        type: Number,
-        required: true,
+    requestJustification: {
+        type: String,
+        required: false,
+    },
+    requestResponse: {
+        id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        auditorUsername: {type: String, default: "Not Yet Reviewed"},
+        required: false,
     },
     reviews: {
         type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "Review" }],

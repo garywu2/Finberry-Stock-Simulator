@@ -1,15 +1,22 @@
-const express = require("express");
-const router = express.Router();
-const Articles = require("../models/Article");
-//for parsing multipart form data (images)
-const multer = require("multer");
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// Express and the routers
+const   express =   require("express"),
+        router  =   express.Router();
 
-//get all articles
+module.exports  =   router;
+
+//for parsing multipart form data (images)
+const   multer  =   require("multer"),
+        storage =   multer.memoryStorage(),
+        upload  =   multer({ storage: storage });
+
+// Relevant schemas
+const   Article  =  require("../models/Article");
+
+
+//get all article
 router.get("/", async (req, res) => {
     try {
-      const articles = await Articles.find();
+      const articles = await Article.find();
       res.json(articles);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
@@ -22,7 +29,7 @@ router.get("/title/:title", async (req, res) => {
       return res.status(400).json({ msg: "Article title is missing" });
     }
     try {
-      const article = await Articles.findOne({ title: req.params.title });
+      const article = await Article.findOne({ title: req.params.title });
       if (!article) {
         return res.status(400).json({ msg: "Article not found" });
       }
@@ -51,11 +58,11 @@ router.post("/", async (req, res) => {
       !article.firstPosted ||
       !article.lastUpdate
     ) {
-      return res.status(400).json({ msg: "Article is missing a field" });
+      return res.status(400).json({ msg: "Article is missing one or more required field(s)" });
     }
     
     try {
-        const dbArticle = new Articles(article);
+        const dbArticle = new Article(article);
         await dbArticle.save();
         res.json(dbArticle);
     } catch (e) {

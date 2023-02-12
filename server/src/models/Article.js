@@ -20,7 +20,7 @@ const articleSchema = new mongoose.Schema({
     firstPosted: {
         type: Date,
         required: true,
-      },
+    },
     lastUpdate: {
         type: Date,
         required: true,
