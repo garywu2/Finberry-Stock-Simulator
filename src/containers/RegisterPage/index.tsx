@@ -30,45 +30,48 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const handleSumbit = (e: any) => {
-    // if (
-    //   signupState.firstName &&
-    //   signupState.lastName &&
-    //   signupState.email &&
-    //   signupState.phoneNumber &&
-    //   signupState.password &&
-    //   signupState.username
-    // ) {
-    //   console.log(signupState);
-    //   createUserWithEmailAndPassword(
-    //     auth,
-    //     signupState.email,
-    //     signupState.password
-    //   )
-    //     .then((result: any) => {
-    //       axios
-    //         .post("http://localhost:5000/accounts", {
-    //           firstName: signupState.firstName,
-    //           lastName: signupState.lastName,
-    //           email: signupState.email,
-    //           phoneNum: signupState.phoneNumber,
-    //           username: signupState.username,
-    //         })
-    //         .then((servResult: any) => {
-    //           console.log(servResult);
-    //           setError("");
-    //           setSignupState(defaultValues);
-    //           navigate("/");
-    //         })
-    //         .catch((e: any) => {
-    //           setError(e.response.data.msg);
-    //         });
-    //     })
-    //     .catch((e: any) => {
-    //       setError(e.message);
-    //     });
-    // } else {
-    //   setError("One of the required fields is missing!");
-    // }
+    if (
+      signupState.firstName &&
+      signupState.lastName &&
+      signupState.email &&
+      signupState.phoneNumber &&
+      signupState.password &&
+      signupState.username
+    ) {
+      console.log(signupState);
+      createUserWithEmailAndPassword(
+        auth,
+        signupState.email,
+        signupState.password
+      )
+        .then((result: any) => {
+          axios
+            .post("http://localhost:5000/account/user", {
+              firstName: signupState.firstName,
+              lastName: signupState.lastName,
+              email: signupState.email,
+              phoneNum: signupState.phoneNumber,
+              username: signupState.username,
+              dateOfBirth: Date.now(),
+              preferredName: 'test',
+              permissionLevel: '0'
+            })
+            .then((servResult: any) => {
+              console.log(servResult);
+              setError("");
+              setSignupState(defaultValues);
+              navigate("/");
+            })
+            .catch((e: any) => {
+              setError(e.response.data.msg);
+            });
+        })
+        .catch((e: any) => {
+          setError(e.message);
+        });
+    } else {
+      setError("One of the required fields is missing!");
+    }
     // Commenting out this line until post route for account is finished 
     console.log("hi");
   };
