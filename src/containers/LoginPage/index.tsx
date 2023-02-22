@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from "axios";
 import { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import FirebaseContext from "../../context/firebase";
 import UserContext from "../../context/user";
 
@@ -25,6 +26,20 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const handleSumbit = (e: any) => {
+    if (
+      loginState.username &&
+      loginState.password
+    ) {
+      console.log(loginState);
+      signInWithEmailAndPassword(
+        auth,
+        loginState.username,
+        loginState.password
+      )
+    } else {
+      setError("One of the required fields is missing!");
+    }
+
     // Commenting out this line until post route for account is finished 
     console.log("hi");
   };
