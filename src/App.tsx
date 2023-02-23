@@ -14,6 +14,7 @@ import UserContext from "./context/user";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import Header from './components/Header'
+import Footer from './components/Footer'
 
 const theme = createTheme({
   palette: {
@@ -64,6 +65,7 @@ function App() {
               <Route path="/CoachPortal" element={<CoachPortalPage />} />
               <Route path="/CoachCatalogue" element={<CoachCataloguePage />} />
             </Routes>
+            <Footer />
           </div>
         </BrowserRouter>
       </UserContext.Provider>
