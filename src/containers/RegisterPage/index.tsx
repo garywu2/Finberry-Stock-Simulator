@@ -60,7 +60,7 @@ const RegisterPage = () => {
               console.log(servResult);
               setError("");
               setSignupState(defaultValues);
-              navigate("/");
+              navigate("/profile");
             })
             .catch((e: any) => {
               setError(e.response.data.msg);

@@ -36,6 +36,15 @@ const LoginPage = () => {
         loginState.username,
         loginState.password
       )
+      .then((servResult: any) => {
+        console.log(servResult);
+        setError("");
+        setLoginState(defaultValues);
+        navigate("/profile");
+      })
+      .catch((e: any) => {
+        setError(e.response.data.msg);
+      });
     } else {
       setError("One of the required fields is missing!");
     }
