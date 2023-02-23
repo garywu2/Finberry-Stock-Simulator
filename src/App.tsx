@@ -9,6 +9,8 @@ import GamePortfolioPage from './containers/GamePortfolioPage';
 import LeaderboardsPage from './containers/LeaderboardsPage';
 import CoachPortalPage from './containers/CoachPortalPage';
 import CoachCataloguePage from './containers/CoachCataloguePage';
+import FaqPage from './containers/FaqPage';
+
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -64,6 +66,7 @@ function App() {
               <Route path="/Leaderboards" element={<LeaderboardsPage />} />
               <Route path="/CoachPortal" element={<CoachPortalPage />} />
               <Route path="/CoachCatalogue" element={<CoachCataloguePage />} />
+              <Route path="/FAQ" element={<FaqPage />} />
             </Routes>
             <Footer />
           </div>
