@@ -72,8 +72,6 @@ const RegisterPage = () => {
     } else {
       setError("One of the required fields is missing!");
     }
-    // Commenting out this line until post route for account is finished 
-    console.log("hi");
   };
 
   return (
