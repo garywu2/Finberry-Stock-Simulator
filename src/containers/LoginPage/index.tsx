@@ -31,59 +31,60 @@ const LoginPage = () => {
 
   return (
     <div>
-      <Container 
-      sx={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
-      {!user ? (
-        <Box
-          component='form'
-          display={"flex"}
-          flexDirection='column'
-          alignItems={'center'}
-          justifyContent="center"
-          textAlign={'center'}
-          minWidth="50%"
-          maxWidth="70%"
-          margin="0 auto"
-          padding="2rem"
-          sx={{
-            backgroundColor: 'white',
-          }}
-          noValidate
-          autoComplete='off'
-        >
-          <Typography variant="h3" align="center" fontWeight={400}>
-            LOG IN
-          </Typography>
-          <div>
-            <TextField
-              required
-              id='login-username'
-              label='Username'
-              name='username'
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-              value={loginState.username}
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id='login-password'
-              label='Password'
-              type='password'
-              name='password'
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-              value={loginState.password}
-              onChange={handleChange}
-            />
-          </div>
-          {error && <Typography color='red'>{error}</Typography>}
+      <Container
+        sx={{ backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {!user ? (
+          <Box
+            component='form'
+            display={"flex"}
+            flexDirection='column'
+            alignItems={'center'}
+            justifyContent="center"
+            textAlign={'center'}
+            minWidth="50%"
+            maxWidth="70%"
+            margin="0 auto"
+            padding="2rem"
+            sx={{
+              backgroundColor: 'white',
+              borderRadius: "1rem"
+            }}
+            noValidate
+            autoComplete='off'
+          >
+            <Typography variant="h3" align="center" fontWeight={400}>
+              LOG IN
+            </Typography>
+            <div>
+              <TextField
+                required
+                id='login-username'
+                label='Username'
+                name='username'
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+                value={loginState.username}
+                onChange={handleChange}
+              />
+              <TextField
+                required
+                id='login-password'
+                label='Password'
+                type='password'
+                name='password'
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+                value={loginState.password}
+                onChange={handleChange}
+              />
+            </div>
+            {error && <Typography color='red'>{error}</Typography>}
             <Button
               size='medium'
               sx={{
@@ -100,10 +101,10 @@ const LoginPage = () => {
               Log In
             </Button>
             <Link to="/register">Create an account</Link>
-        </Box>
-      ) : (
-        <Navigate to='/'></Navigate>
-      )}
+          </Box>
+        ) : (
+          <Navigate to='/'></Navigate>
+        )}
       </Container>
     </div>
   );

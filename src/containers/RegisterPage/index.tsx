@@ -75,113 +75,114 @@ const RegisterPage = () => {
 
   return (
     <div>
-      <Container style={ { backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center"}}>
-      {!user ? (
-        <Box
-          component='form'
-          display={"flex"}
-          flexDirection='column'
-          alignItems={'center'}
-          justifyContent="center"
-          textAlign={'center'}
-          minWidth="50%"
-          maxWidth="70%"
-          margin="0 auto"
-          padding="2rem"
-          sx={{
-            backgroundColor: 'white',
-          }}
-          noValidate
-          autoComplete='off'
-        >
-          <Typography variant="h3" align="center" fontWeight={400}>
-            REGISTER
-          </Typography>
-          <div>
-            <TextField
-              required
-              id='signup-first-name'
-              label='First Name'
-              name='firstName'
-              onChange={handleChange}
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-              value={signupState.firstName}
-            />
-            <TextField
-              required
-              id='signup-last-name'
-              label='Last Name'
-              name='lastName'
-              onChange={handleChange}
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-              value={signupState.lastName}
-            />
-            <TextField
-              required
-              type='email'
-              id='signup-email'
-              label='Email'
-              name='email'
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-              value={signupState.email}
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id='signup-username'
-              label='Username'
-              name='username'
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-              value={signupState.username}
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id='signup-password'
-              label='Password'
-              type='password'
-              name='password'
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-              value={signupState.password}
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id='signup-phone-number'
-              label='Phone Number'
-              type='tel'
-              value={signupState.phoneNumber}
-              onChange={handleChange}
-              name='phoneNumber'
-              margin="normal"
-              sx={{
-                width: '100%'
-              }}
-              color="primary"
-            />
-          </div>
-          {error && <Typography color='red'>{error}</Typography>}
-          <Button
+      <Container style={{ backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {!user ? (
+          <Box
+            component='form'
+            display={"flex"}
+            flexDirection='column'
+            alignItems={'center'}
+            justifyContent="center"
+            textAlign={'center'}
+            minWidth="50%"
+            maxWidth="70%"
+            margin="0 auto"
+            padding="2rem"
+            sx={{
+              backgroundColor: 'white',
+              borderRadius: "1rem"
+            }}
+            noValidate
+            autoComplete='off'
+          >
+            <Typography variant="h3" align="center" fontWeight={400}>
+              REGISTER
+            </Typography>
+            <div>
+              <TextField
+                required
+                id='signup-first-name'
+                label='First Name'
+                name='firstName'
+                onChange={handleChange}
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+                value={signupState.firstName}
+              />
+              <TextField
+                required
+                id='signup-last-name'
+                label='Last Name'
+                name='lastName'
+                onChange={handleChange}
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+                value={signupState.lastName}
+              />
+              <TextField
+                required
+                type='email'
+                id='signup-email'
+                label='Email'
+                name='email'
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+                value={signupState.email}
+                onChange={handleChange}
+              />
+              <TextField
+                required
+                id='signup-username'
+                label='Username'
+                name='username'
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+                value={signupState.username}
+                onChange={handleChange}
+              />
+              <TextField
+                required
+                id='signup-password'
+                label='Password'
+                type='password'
+                name='password'
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+                value={signupState.password}
+                onChange={handleChange}
+              />
+              <TextField
+                required
+                id='signup-phone-number'
+                label='Phone Number'
+                type='tel'
+                value={signupState.phoneNumber}
+                onChange={handleChange}
+                name='phoneNumber'
+                margin="normal"
+                sx={{
+                  width: '100%'
+                }}
+                color="primary"
+              />
+            </div>
+            {error && <Typography color='red'>{error}</Typography>}
+            <Button
               size='medium'
               sx={{
                 backgroundColor: "secondary.main",
@@ -194,16 +195,16 @@ const RegisterPage = () => {
               }}
               onClick={handleSumbit}
             >
-            Register
-          </Button>
-          <Link to="/login">Already have an account?</Link>
-        </Box>
-      ) : (
-        <Navigate to='/'></Navigate>
-      )}
+              Register
+            </Button>
+            <Link to="/login">Already have an account?</Link>
+          </Box>
+        ) : (
+          <Navigate to='/'></Navigate>
+        )}
       </Container>
     </div>
-    
+
   );
 };
 export default RegisterPage;
