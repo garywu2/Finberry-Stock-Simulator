@@ -38,14 +38,14 @@ const rows = [
     ),
     createData(
         2,
-        '16 Feb, 2023',
+        'Feb 16, 2023',
         'Buy',
         'AAPL',
         142.66,
         8),
     createData(
         3,
-        '24 Feb, 2023',
+        'Feb 24, 2023',
         'Sell',
         'META',
         172.04,
