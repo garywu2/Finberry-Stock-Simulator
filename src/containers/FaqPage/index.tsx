@@ -48,7 +48,7 @@ const FaqPage = () => {
                     borderRadius: '0 0 3rem 3rem',
                     boxShadow: '0 4px 15px -6px black',
                     marginBottom: '1rem',
-                    padding: '5rem',
+                    paddingTop: '5rem',
                     paddingBottom: '2rem'
                 }}
             >
@@ -64,7 +64,7 @@ const FaqPage = () => {
                 ><Grid container>
                         <Grid xs={2}></Grid>
                         <Grid xs={8}>
-                            <Typography variant="h3" align="center" fontWeight={400} padding={"2rem"}>
+                            <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
                                 Frequently Asked Questions
                             </Typography>
                             {faqs.map((faq, index) => (
