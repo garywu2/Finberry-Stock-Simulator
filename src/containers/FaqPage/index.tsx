@@ -45,10 +45,10 @@ const FaqPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: '0 0 3rem 3rem',
+                    borderRadius: '3rem',
                     boxShadow: '0 4px 15px -6px black',
                     marginBottom: '1rem',
-                    padding: '5rem',
+                    paddingTop: '5rem',
                     paddingBottom: '2rem'
                 }}
             >
@@ -58,13 +58,13 @@ const FaqPage = () => {
                         backgroundColor: 'white',
                         borderRadius: "1rem",
                         width: "100%",
-                        margin: "3rem",
+                        margin: { sm: "0rem", lg: "3rem" },
                         paddingBottom: "3rem"
                     }}
                 ><Grid container>
                         <Grid xs={2}></Grid>
                         <Grid xs={8}>
-                            <Typography variant="h3" align="center" fontWeight={400} padding={"2rem"}>
+                            <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
                                 Frequently Asked Questions
                             </Typography>
                             {faqs.map((faq, index) => (
@@ -86,7 +86,6 @@ const FaqPage = () => {
                         </Grid>
                         <Grid xs={2}></Grid>
                     </Grid></Box>
-
             </Container>
         </div>
     )

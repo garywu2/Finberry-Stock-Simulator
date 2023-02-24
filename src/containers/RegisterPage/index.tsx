@@ -1,4 +1,4 @@
-import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, Grid, TextField, Typography } from "@mui/material";
 import { Link } from 'react-router-dom';
 import axios from "axios";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -76,129 +76,151 @@ const RegisterPage = () => {
 
   return (
     <div>
-      <Container style={{ backgroundColor: "#7e57c2", minHeight: "100vh", minWidth: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Container
+        sx={{
+          backgroundColor: "primary.main",
+          minHeight: "100vh",
+          minWidth: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: '0 0 3rem 3rem',
+          boxShadow: '0 4px 15px -6px black',
+          marginBottom: '1rem',
+          paddingTop: '5rem',
+          paddingBottom: '2rem'
+        }}>
         {!user ? (
           <Box
             component='form'
             display={"flex"}
-            flexDirection='column'
-            alignItems={'center'}
-            justifyContent="center"
-            textAlign={'center'}
-            minWidth="50%"
-            maxWidth="70%"
-            margin="0 auto"
-            padding="2rem"
             sx={{
               backgroundColor: 'white',
-              borderRadius: "1rem"
+              borderRadius: "1rem",
+              width: "100%",
+              paddingBottom: "3rem",
+              margin: { sm: "0rem", lg: "3rem" },
             }}
             noValidate
             autoComplete='off'
           >
-            <Typography variant="h3" align="center" fontWeight={400}>
-              REGISTER
-            </Typography>
-            <div>
-              <TextField
-                required
-                id='signup-first-name'
-                label='First Name'
-                name='firstName'
-                onChange={handleChange}
-                margin="normal"
-                sx={{
-                  width: '100%'
-                }}
-                color="primary"
-                value={signupState.firstName}
-              />
-              <TextField
-                required
-                id='signup-last-name'
-                label='Last Name'
-                name='lastName'
-                onChange={handleChange}
-                margin="normal"
-                sx={{
-                  width: '100%'
-                }}
-                color="primary"
-                value={signupState.lastName}
-              />
-              <TextField
-                required
-                type='email'
-                id='signup-email'
-                label='Email'
-                name='email'
-                margin="normal"
-                sx={{
-                  width: '100%'
-                }}
-                color="primary"
-                value={signupState.email}
-                onChange={handleChange}
-              />
-              <TextField
-                required
-                id='signup-username'
-                label='Username'
-                name='username'
-                margin="normal"
-                sx={{
-                  width: '100%'
-                }}
-                color="primary"
-                value={signupState.username}
-                onChange={handleChange}
-              />
-              <TextField
-                required
-                id='signup-password'
-                label='Password'
-                type='password'
-                name='password'
-                margin="normal"
-                sx={{
-                  width: '100%'
-                }}
-                color="primary"
-                value={signupState.password}
-                onChange={handleChange}
-              />
-              <TextField
-                required
-                id='signup-phone-number'
-                label='Phone Number'
-                type='tel'
-                value={signupState.phoneNumber}
-                onChange={handleChange}
-                name='phoneNumber'
-                margin="normal"
-                sx={{
-                  width: '100%'
-                }}
-                color="primary"
-              />
-            </div>
-            {error && <Typography color='red'>{error}</Typography>}
-            <Button
-              size='medium'
-              sx={{
-                backgroundColor: "secondary.main",
-                color: "white",
-                marginY: "1rem",
-                width: "20%",
-                '&:hover': {
-                  backgroundColor: 'secondary.dark',
-                }
-              }}
-              onClick={handleSumbit}
-            >
-              Register
-            </Button>
-            <Link to="/login">Already have an account?</Link>
+            <Grid container>
+              <Grid xs={2}></Grid>
+              <Grid xs={8} sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: 'center',
+                justifyContent: "center",
+                textAlign: "center"
+              }}>
+                <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
+                  Register
+                </Typography>
+                <TextField
+                  required
+                  id='signup-first-name'
+                  label='First Name'
+                  name='firstName'
+                  onChange={handleChange}
+                  margin="normal"
+                  sx={{
+                    width: '100%'
+                  }}
+                  color="primary"
+                  value={signupState.firstName}
+                />
+                <TextField
+                  required
+                  id='signup-last-name'
+                  label='Last Name'
+                  name='lastName'
+                  onChange={handleChange}
+                  margin="normal"
+                  sx={{
+                    width: '100%'
+                  }}
+                  color="primary"
+                  value={signupState.lastName}
+                />
+                <TextField
+                  required
+                  type='email'
+                  id='signup-email'
+                  label='Email'
+                  name='email'
+                  margin="normal"
+                  sx={{
+                    width: '100%'
+                  }}
+                  color="primary"
+                  value={signupState.email}
+                  onChange={handleChange}
+                />
+                <TextField
+                  required
+                  id='signup-username'
+                  label='Username'
+                  name='username'
+                  margin="normal"
+                  sx={{
+                    width: '100%'
+                  }}
+                  color="primary"
+                  value={signupState.username}
+                  onChange={handleChange}
+                />
+                <TextField
+                  required
+                  id='signup-password'
+                  label='Password'
+                  type='password'
+                  name='password'
+                  margin="normal"
+                  sx={{
+                    width: '100%'
+                  }}
+                  color="primary"
+                  value={signupState.password}
+                  onChange={handleChange}
+                />
+                <TextField
+                  required
+                  id='signup-phone-number'
+                  label='Phone Number'
+                  type='tel'
+                  value={signupState.phoneNumber}
+                  onChange={handleChange}
+                  name='phoneNumber'
+                  margin="normal"
+                  sx={{
+                    width: '100%'
+                  }}
+                  color="primary"
+                />
+                {error && <Typography color='red'>{error}</Typography>}
+                <Button
+                  size='medium'
+                  fullWidth
+                  sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginY: "1rem",
+                    '&:hover': {
+                      backgroundColor: 'secondary.dark',
+                    }
+                  }}
+                  onClick={handleSumbit}
+                >
+                  Register
+                </Button>
+                <Link to="/login">Already have an account?</Link>
+              </Grid>
+              <Grid xs={2}></Grid>
+
+
+            </Grid>
+
+
           </Box>
         ) : (
           <Navigate to='/'></Navigate>

@@ -12,14 +12,6 @@ import { Link } from 'react-router-dom'
 import { styled } from '@mui/material/styles'
 import Pricing from '../../components/Pricing'
 
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}))
-
 const HomePage = () => {
   return (
     <div>
@@ -37,55 +29,73 @@ const HomePage = () => {
           padding: '2rem'
         }}
       >
-        <Grid container>
-          <Grid xs={2}></Grid>
-          <Grid xs={4}>
-            <Typography
-              component='div'
-              variant='h3'
-              align='left'
-              fontWeight={400}
-              sx={{ color: 'white', marginBottom: '1rem' }}
-            >
-              <Box fontWeight='fontWeightBold' display='inline'>
-                Make investing sweet and simple.
-              </Box>
-            </Typography>
-            <Typography
-              variant='h6'
-              align='left'
-              fontWeight={400}
-              sx={{ color: 'white', marginBottom: '1rem' }}
-            >
-              <Box fontWeight='500' display='inline'>
-                Finberry empowers you with hands-on, simulated investing
-                experience without risking your money. Sign up today to start
-                learning!
-              </Box>
-            </Typography>
-            <Button
-              size='large'
-              sx={{
-                backgroundColor: 'secondary.main',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: 'secondary.dark',
-                },
-              }}
-              component={Link}
-              to='/register'
-            >
-              <b>Get Started</b>
-            </Button>
+        <Box
+          display={"flex"}
+          sx={{
+            width: "100%",
+            margin: { sm: "0rem", lg: "3rem" },
+            paddingBottom: "3rem"
+          }}
+        >
+          <Grid container>
+            <Grid xs={1} lg={1}></Grid>
+            <Grid xs={10} lg={4}>
+              <Typography
+                component='div'
+                variant='h3'
+                align='left'
+                fontWeight={400}
+                sx={{ color: 'white', marginBottom: '1rem' }}
+              >
+                <Box fontWeight='fontWeightBold' display='inline'>
+                  Make investing sweet and simple.
+                </Box>
+              </Typography>
+              <Typography
+                variant='h6'
+                align='left'
+                fontWeight={400}
+                sx={{ color: 'white', marginBottom: '1rem' }}
+              >
+                <Box fontWeight='500' display='inline'>
+                  Finberry empowers you with hands-on, simulated investing
+                  experience without risking your money. Sign up today to start
+                  learning!
+                </Box>
+              </Typography>
+              <Button
+                size='large'
+                sx={{
+                  backgroundColor: 'secondary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'secondary.dark',
+                  },
+                }}
+                component={Link}
+                to='/register'
+              >
+                <b>Get Started</b>
+              </Button>
+            </Grid>
+            <Grid xs={1} lg={0}></Grid>
+            <Grid xs={1} lg={0}></Grid>
+            <Grid xs={10} lg={4} sx={{ paddingTop: { xs: "2rem", lg: "0rem" } }}>
+              <Typography
+                component='div'
+                variant='h3'
+                align='left'
+                fontWeight={400}
+                sx={{ color: 'white', marginBottom: '1rem' }}
+              >
+                <Box fontWeight='fontWeightBold' display='inline'>
+                  We'll eventually show app previews here.
+                </Box>
+              </Typography>
+            </Grid>
+            <Grid xs={1} lg={1}></Grid>
           </Grid>
-          <Grid xs={4}>
-            <Item>
-              We eventually want to have a preview of our apps (web and mobile
-              view)
-            </Item>
-          </Grid>
-          <Grid xs={2}></Grid>
-        </Grid>
+        </Box>
       </Container>
       <Container
         sx={{
