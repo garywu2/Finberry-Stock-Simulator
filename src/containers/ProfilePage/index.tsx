@@ -12,6 +12,7 @@ const ProfilePage = () => {
     const { user } = useContext(UserContext);
     const [items, setItems] = React.useState<any>([]);
 
+
     const [items2, setItems2] = React.useState<any>();
 
     React.useEffect(() => {
@@ -64,7 +65,7 @@ const ProfilePage = () => {
                                 height: 240,
                             }}
                         >
-                            <Chart data={data}/>
+                            <Chart data={data} />
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={4} lg={3}>

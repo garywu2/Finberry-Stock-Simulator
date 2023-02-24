@@ -3,15 +3,16 @@ import { useTheme } from '@mui/material/styles';
 import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Title from '../Title';
 
-export default function Chart(data: any) {
+
+const Chart = (data: any | undefined) => {
     const theme = useTheme();
-    console.log(data)
+
     return (
         <React.Fragment>
             <Title>Today</Title>
-            <ResponsiveContainer>
+            <ResponsiveContainer height="100%" width="100%">
                 <LineChart
-                    data={data}
+                    data={data.data}
                     margin={{
                         top: 16,
                         right: 16,
@@ -22,11 +23,11 @@ export default function Chart(data: any) {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                         dataKey="date"
-                        stroke={theme.palette.text.secondary}
+                        stroke={'black'}
                         style={theme.typography.body2}
                     />
                     <YAxis
-                        stroke={theme.palette.text.secondary}
+                        stroke={'black'}
                         style={theme.typography.body2}
                     >
                         <Label
@@ -42,10 +43,10 @@ export default function Chart(data: any) {
                         </Label>
                     </YAxis>
                     <Line
-                        isAnimationActive={false}
+                        isAnimationActive={true}
                         type="monotone"
                         dataKey="price"
-                        stroke={theme.palette.primary.main}
+                        stroke={theme.palette.secondary.main}
                         dot={false}
                     />
                 </LineChart>
@@ -53,3 +54,4 @@ export default function Chart(data: any) {
         </React.Fragment>
     );
 }
+export default Chart;
