@@ -86,7 +86,6 @@ const FaqPage = () => {
                         </Grid>
                         <Grid xs={2}></Grid>
                     </Grid></Box>
-
             </Container>
         </div>
     )
