@@ -18,8 +18,9 @@ interface Props {
     isAuthenticated: boolean;
 };
 
-const authLinks = (handleSubmit: any) => (
+const authLinks = (handleSubmit: any, error: any) => (
     <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
+        {error && <Typography color='red'>{error}</Typography>}
         <Button
             size='small'
             sx={{
@@ -33,6 +34,7 @@ const authLinks = (handleSubmit: any) => (
             component={Link} to='/profile'>
             Profile
         </Button>
+        {error && <Typography color='red'>{error}</Typography>}
         <Button
             size='small'
             sx={{
@@ -46,7 +48,7 @@ const authLinks = (handleSubmit: any) => (
             component={Link} to='/SimulatorPortfolio'>
             Simulator
         </Button>
-        {/* // this logout button will be a function that modifies the user state. logout will be passed in as a prop */}
+        {error && <Typography color='red'>{error}</Typography>}
         <Button
             size='small'
             sx={{
@@ -121,7 +123,7 @@ const Header: React.FC<Props> = ({ isAuthenticated }) => {
                 <Link to="/" style={{ display: 'flex', alignContent: 'center' }}>
                     <img src={Logo} alt="Finberry Logo" style={{ flexGrow: 1 }} />
                 </Link>
-                {isAuthenticated ? authLinks(handleSumbit) : guestLinks}
+                {isAuthenticated ? authLinks(handleSumbit, error) : guestLinks}
             </Toolbar>
         </AppBar>
     );
