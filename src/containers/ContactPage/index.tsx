@@ -15,7 +15,7 @@ const ContactPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: '0 0 3rem 3rem',
+                    borderRadius: '3rem',
                     boxShadow: '0 4px 15px -6px black',
                     marginBottom: '1rem',
                     paddingTop: '5rem',
