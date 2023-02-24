@@ -10,6 +10,7 @@ import LeaderboardsPage from './containers/LeaderboardsPage';
 import CoachPortalPage from './containers/CoachPortalPage';
 import CoachCataloguePage from './containers/CoachCataloguePage';
 import FaqPage from './containers/FaqPage';
+import ContactPage from './containers/ContactPage';
 
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
@@ -67,6 +68,8 @@ function App() {
               <Route path="/CoachPortal" element={<CoachPortalPage />} />
               <Route path="/CoachCatalogue" element={<CoachCataloguePage />} />
               <Route path="/FAQ" element={<FaqPage />} />
+              <Route path="/Contact" element={<ContactPage />} />
+              
             </Routes>
             <Footer />
           </div>
