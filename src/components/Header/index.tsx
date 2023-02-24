@@ -58,7 +58,6 @@ const authLinks = (handleSubmit: any) => (
                 }
             }}
             onClick={handleSubmit}
-            // component={Link} to='/logout'
             >
             Logout
         </Button>
