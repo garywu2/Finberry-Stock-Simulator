@@ -14,12 +14,12 @@ import ContactPage from './containers/ContactPage';
 
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider, responsiveFontSizes } from '@mui/material/styles';
 
 import Header from './components/Header'
 import Footer from './components/Footer'
 
-const theme = createTheme({
+const theme = responsiveFontSizes(createTheme({
   palette: {
     mode: 'light',
     primary: {
@@ -46,7 +46,7 @@ const theme = createTheme({
       }
     },
   }
-});
+}));
 
 function App() {
   const { user } = useAuthListener();
