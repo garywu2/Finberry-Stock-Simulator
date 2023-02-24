@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { styled } from '@mui/material/styles'
+import Pricing from '../../components/Pricing'
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -30,9 +31,10 @@ const HomePage = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: '0 0 3rem 3rem',
+          borderRadius: '3rem',
           boxShadow: '0 4px 15px -6px black',
           marginBottom: '1rem',
+          padding: '2rem'
         }}
       >
         <Grid container>
@@ -95,6 +97,7 @@ const HomePage = () => {
           justifyContent: 'center',
           marginTop: '1rem',
           marginBottom: '1rem',
+          padding: '2rem'
         }}
       >
         <Typography variant='h3' align='center' fontWeight={400}>
@@ -103,22 +106,21 @@ const HomePage = () => {
       </Container>
       <Container
         sx={{
-          borderRadius: '3rem 3rem 0 0',
+          borderRadius: '3rem',
           boxShadow: '0 4px 15px -1px black',
           backgroundColor: 'secondary.main',
           minHeight: '100vh',
           minWidth: '100%',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           marginTop: '1rem',
+          marginBottom: '1rem',
+          padding: '2rem'
         }}
       >
-        <Typography variant='h3' align='center' fontWeight={400}>
-          Some content about creating your simulated trading portfolio, ongoign
-          competitions, all time high scores, testimonials, highlight some high
-          ranked coaches
-        </Typography>
+        <Pricing />
       </Container>
     </div>
   )
