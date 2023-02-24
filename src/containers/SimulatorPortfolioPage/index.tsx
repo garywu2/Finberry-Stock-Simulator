@@ -20,7 +20,6 @@ const SimulatorPortfolioPage = () => {
     React.useEffect(() => {
         axios.get('https://api.twelvedata.com/time_series?&start_date=2005-02-01&symbol=aapl&interval=1month&apikey=bda95123e0344a5ba4e148064a3eabea').then((response) => {
         setItems(response.data)
-        console.log(items)
         });
     }, []);
 
