@@ -58,7 +58,7 @@ const FaqPage = () => {
                         backgroundColor: 'white',
                         borderRadius: "1rem",
                         width: "100%",
-                        margin: "3rem",
+                        margin: { sm: "0rem", lg: "3rem" },
                         paddingBottom: "3rem"
                     }}
                 ><Grid container>
