@@ -216,18 +216,13 @@ const RegisterPage = () => {
                 <Link to="/login">Already have an account?</Link>
               </Grid>
               <Grid xs={2}></Grid>
-
-
             </Grid>
-
-
           </Box>
         ) : (
-          <Navigate to='/'></Navigate>
+          <Navigate to='/profile'></Navigate>
         )}
       </Container>
     </div>
-
   );
 };
 export default RegisterPage;
