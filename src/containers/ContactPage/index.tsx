@@ -37,7 +37,13 @@ const ContactPage = () => {
                 >
                     <Grid container>
                         <Grid xs={2}></Grid>
-                        <Grid xs={8} sx={{}}>
+                        <Grid xs={8} sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: 'center',
+                            justifyContent: "center",
+                            textAlign: "center"
+                        }}>
                             <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
                                 Contact Us
                             </Typography>
@@ -82,7 +88,7 @@ const ContactPage = () => {
                                     backgroundColor: "secondary.main",
                                     color: "white",
                                     marginY: "1rem",
-                                    width: "20%",
+                                    width: "7rem",
                                     '&:hover': {
                                         backgroundColor: 'secondary.dark',
                                     }
