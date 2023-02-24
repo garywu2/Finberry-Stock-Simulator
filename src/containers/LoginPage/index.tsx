@@ -141,7 +141,7 @@ const LoginPage = () => {
             </Grid>
           </Box>
         ) : (
-          <Navigate to='/'></Navigate>
+          <Navigate to='/profile'></Navigate>
         )}
       </Container>
     </div>
