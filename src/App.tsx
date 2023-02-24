@@ -54,7 +54,7 @@ function App() {
       <UserContext.Provider value={{ user }}>
         <BrowserRouter>
           <div>
-            <Header isAuthenticated={false} />
+            <Header isAuthenticated={user} />
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/Login" element={<LoginPage />} />

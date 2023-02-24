@@ -2,6 +2,11 @@ import React from 'react';
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import Logo from "../../images/logos/logo.png"
+import FirebaseContext from "../../context/firebase";
+import UserContext from "../../context/user";
+import { useContext, useState } from "react";
+import { signOut } from "firebase/auth";
+import { Navigate, useNavigate } from "react-router-dom";
 
 // interface Props {
 //     logout: () => void;
@@ -13,7 +18,7 @@ interface Props {
     isAuthenticated: boolean;
 };
 
-const authLinks = (
+const authLinks = (handleSubmit: any) => (
     <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
         <Button
             size='small'
@@ -38,8 +43,8 @@ const authLinks = (
                     backgroundColor: 'secondary.dark',
                 }
             }}
-            component={Link} to='/dashboard'>
-            Dashboard
+            component={Link} to='/SimulatorPortfolio'>
+            Simulator
         </Button>
         {/* // this logout button will be a function that modifies the user state. logout will be passed in as a prop */}
         <Button
@@ -52,7 +57,9 @@ const authLinks = (
                     backgroundColor: 'secondary.dark',
                 }
             }}
-            component={Link} to='/logout'>
+            onClick={handleSubmit}
+            // component={Link} to='/logout'
+            >
             Logout
         </Button>
     </Box>
@@ -90,13 +97,32 @@ const guestLinks = (
 );
 
 const Header: React.FC<Props> = ({ isAuthenticated }) => {
+    const { auth } = useContext(FirebaseContext);
+    const { user } = useContext(UserContext);
+
+    const [error, setError] = useState("");
+
+    const navigate = useNavigate();
+
+    const handleSumbit = (e: any) => {
+        signOut(auth)
+        .then((servResult: any) => {
+            console.log(servResult);
+            setError("");
+            navigate("/");
+        })
+        .catch((e: any) => {
+            setError(e.response.data.msg);
+        });
+      };
+    
     return (
         <AppBar position="fixed" color="inherit">
             <Toolbar>
                 <Link to="/" style={{ display: 'flex', alignContent: 'center' }}>
                     <img src={Logo} alt="Finberry Logo" style={{ flexGrow: 1 }} />
                 </Link>
-                {isAuthenticated ? authLinks : guestLinks}
+                {isAuthenticated ? authLinks(handleSumbit) : guestLinks}
             </Toolbar>
         </AppBar>
     );
