@@ -122,11 +122,11 @@ const LoginPage = () => {
                 {error && <Typography color='red'>{error}</Typography>}
                 <Button
                   size='medium'
+                  fullWidth
                   sx={{
                     backgroundColor: "secondary.main",
                     color: "white",
                     marginY: "1rem",
-                    width: "7rem",
                     '&:hover': {
                       backgroundColor: 'secondary.dark',
                     }
