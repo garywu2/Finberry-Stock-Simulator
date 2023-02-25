@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const holdingSchema = new mongoose.Schema({
+    simulatorEnrollment: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "SimulatorEnrollment",
+        required: true,
+    },
     symbol: {
         type: String,
         required: true,

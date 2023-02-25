@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const simulatorSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     description: {
         type: String,
@@ -26,8 +27,8 @@ const simulatorSchema = new mongoose.Schema({
         required: true,
         default: false
     },
-    participatingUsers: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
+    simulatorEnrollments: {
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "SimulatorEnrollment" }],
         required: true,
         default: []
     },

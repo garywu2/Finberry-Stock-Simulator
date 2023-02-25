@@ -25,10 +25,9 @@ router.post("/user", async (req, res) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         preferredName: req.body.preferredName,
+        phoneNumber: req.body.phoneNumber,
         dateOfBirth: req.body.dateOfBirth,
-        // dateOfBirth: Date.now(),
         permissionLevel: req.body.permissionLevel,
-        // createdAt: req.body.createdAt,
         createdAt: Date.now(),
         dateLastUpdated: Date.now(),
         profile: -1,
@@ -54,11 +53,6 @@ router.post("/user", async (req, res) => {
         newUser.permissionLevel = 0;
     }
 
-    // const queryUser = await User.findOne({ email: newUser.email });
-    // if (queryUser) {
-    //     return res.status(400).json({ msg: "User with this email already exist" });
-    // }
-
     try {
         const dbUser = new User(newUser);
         await dbUser.save();
@@ -68,6 +62,37 @@ router.post("/user", async (req, res) => {
     }
 });
 
+// GET user by email and username, determines if email or username is already taken beforehand
+router.get("/user/:email/:username", async (req, res) => {
+    if (!req.params.email) {
+        return res.status(400).json({ msg: "Email is missing" });
+    }
+    if (!req.params.username) {
+        return res.status(400).json({ msg: "Username is missing" });
+    }
+
+    try {
+        let emailAvailable = true;
+        let usernameAvailable = true;
+
+        const userWithEmail = await User.findOne({ email: req.params.email });
+        if (userWithEmail) { 
+            emailAvailable = false;
+        }
+
+        const userWithUsername = await User.findOne({ username: req.params.username });
+        if (userWithUsername) {
+            
+            usernameAvailable = false;
+        }
+
+        return res.json({ available: (emailAvailable && usernameAvailable), emailAvailable: emailAvailable, usernameAvailable: usernameAvailable });
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+
 // GET all Users (Only return basic information)
 router.get("/user", async (req, res) => {
     try {
@@ -76,44 +101,27 @@ router.get("/user", async (req, res) => {
 
         let tailoredUsers = [];
         users.forEach((user) => {
-            // Determine if user is premium
+            // Create a new tailored user to only return desired information.
+            desiredAttrs = ['email', 'username', 'permissionLevel', 'premiumExpiryDate'];
+
+            let tailoredUser = {};
+            desiredAttrs.forEach((key) => {
+                tailoredUser[key] = user[key];
+            });
+
+            // Determine if user is premium.
             let isPremium = true;
             if (!user.premiumExpiryDate || user.premiumExpiryDate <= Date.now()) {
                 isPremium = false;
             }
 
-            // Determing if the user has a coaching profile
-            let hasActiveCoachingProfile = false;
-            let hasPendingCoachingProfile = false;
-            user.coachingProfiles.forEach((profile) => {
-                if (profile.status == 1) {
-                    hasActiveCoachingProfile = true;
-                    return;
-                }
-                else if (profile.status == 0) {
-                    hasPendingCoachingProfile = true;
-                    return;
-                }
-            });
+            tailoredUser.isPremium = isPremium;
 
-            // For some reason just adding a new field doesnt seem to reflect in return message
-            let tailoredUser;
-            if (hasActiveCoachingProfile) {
-                tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile};
-            } else {
-                tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile,hasPendingCoachingProfile:hasPendingCoachingProfile};
-            }
-            
-            // tailoredUser['test'] = 123
-
-            // tailoredUser.test = 1233
-
+            // Add this tailored user to a list of all tailored users for return.
             tailoredUsers.push(tailoredUser);
         });
 
         return res.json(tailoredUsers);
-
-
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -125,7 +133,7 @@ router.get("/user/:email", async (req, res) => {
         return res.status(400).json({ msg: "Email is missing" });
     }
     try {
-        const user = await User.findOne({ email: req.params.email });
+        const user = await User.findOne({ email: req.params.email }).populate("coachingProfiles");
         if (!user) {
             return res.status(400).json({ msg: "User not provided email not found" });
         }
@@ -136,28 +144,31 @@ router.get("/user/:email", async (req, res) => {
             isPremium = false;
         }
 
-        // Determing if the user has a coaching profile
-        let hasActiveCoachingProfile = false;
-        let hasPendingCoachingProfile = false;
+        // Determing if the user has a coaching profile.
+        let coachingProfileStatus = "Unavailable";
         user.coachingProfiles.forEach((profile) => {
-            if (profile.status == 1) {
-                hasActiveCoachingProfile = true;
-                return;
-            }
-            else if (profile.status == 0) {
-                hasPendingCoachingProfile = true;
-                return;
+            switch(profile.status) {
+                case 0:
+                    coachingProfileStatus = "Pending";
+                    return;
+                case 1:
+                    coachingProfileStatus = "Active";
+                    return;
+                case 2:
+                    coachingProfileStatus = "Hidden";
+                    return;
             }
         });
 
-        // For some reason just adding a new field doesnt seem to reflect in return message
-        let tailoredUser;
-        if (hasActiveCoachingProfile) {
-            tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile};
-        } else {
-            tailoredUser = {baseInfo:user,isPremium:isPremium,hasActiveCoachingProfile:hasActiveCoachingProfile,hasPendingCoachingProfile:hasPendingCoachingProfile};
+        if (user.coachingProfiles.length == 0) {
+            coachingProfileStatus = "None";
         }
-        
+
+        tailoredUser = Object.assign({}, user["_doc"]); // Make copy of the input
+
+        tailoredUser.isPremium = isPremium;
+        tailoredUser.coachingProfile = coachingProfileStatus;
+
         return res.json(tailoredUser);
     } catch (e) {
         return res.status(400).json({ msg: e.message });
@@ -178,43 +189,43 @@ router.put("/user/:email", async (req, res) => {
         
         // Must ensure that some element are the same (Email must not change)
         req.body.user.email = user.email;
+        req.body.user.username = user.username;
         req.body.user.createdAt = user.createdAt;
         req.body.user._id = user._id;
 
+        // These fields should be changed elsewhere and not directly fromt this put request.
+        // req.body.user.privacySettings = user.privacySettings;
+        req.body.user.participatingSimulators = user.participatingSimulators;
+        req.body.user.badges = user.badges;
+        req.body.user.coaches = user.coaches;
+        req.body.user.premiumPaymentHistory = user.premiumPaymentHistory;
+        req.body.user.coachingProfiles = user.coachingProfiles;
+        
+        // Might want to move it elsewhere to another call
+        req.body.user.premiumExpiryDate = user.premiumExpiryDate;
+
+        // Auto set
         req.body.user.dateLastUpdated = Date.now();
 
         await User.findByIdAndUpdate(user._id, req.body.user);
 
         return res.json({ msg: "User Edit successful" });
-
-        /*
-        // Gary's Proposed Method - Slightly modified 
-        const newAttrs = req.body.user;
-        const attrKeys = Object.keys(newAttrs);
-
-        if (!newAttrs._id) {
-            return res.status(400).json({ msg: "ID is missing" });
-        }
-
-        if (!newAttrs.email) {
-            return res.status(400).json({ msg: "Email is missing" });
-        }
-
-        try {
-        const user = await User.findOne({ email: newAttrs.email });
-        attrKeys.forEach((key) => {
-            if (key !== "email" && key !== "_id") {
-                user[key] = newAttrs[key];
-            }
-        });
-        await user.save();
-        res.json(user);
-        */
-
       } catch (e) {
         return res.status(400).json({ msg: "User edit failed: " + e.message });
     }
 });
+
+
+// Deep delete user function
+async function deepDeleteUser(user_id) {
+    let userRemoved = await User.findByIdAndRemove(user_id);
+
+    // Delete all associated coaching profiles
+    userRemoved.coachingProfiles.forEach(async (coachingProfileID) => {
+        await CoachingProfile.deleteOne( {_id: coachingProfileID});
+    });
+}
+
 
 // DELETE user completely (Delete user) - We might want to add a way to cache deleted user in the future to prevent accidental account deletion
 // Note: Might reconsider allowing user to fully delete their profile
@@ -224,32 +235,12 @@ router.delete("/user/:email", async (req, res) => {
     }
 
     try {
-        /* // This works but doesnt delete all the compoenents of it
-        let userRemovedMessage = await User.remove( { email: req.params.email } ); 
-
-        if (userRemovedMessage.deletedCount == 0) {
-            userRemovedMessage.msg = "User deletion failed"
-            return res.status(400).json(userRemovedMessage);
-        } else {
-            return res.json(userRemovedMessage);
-        }
-        */
-
         const user = await User.findOne({ email: req.params.email });
         if (!user) {
             return res.status(400).json({ msg: "The User with provided email not found" });
         }
         
-        let userRemoved = await User.findByIdAndRemove(user._id);
-
-        // Delete all associated coaching profiles
-        userRemoved.coachingProfiles.forEach(async (coachingProfile) => {
-            let coachingProfileID = coachingProfile.coachingProfile;
-            
-            await CoachingProfile.deleteOne( {_id: coachingProfileID});
-        });
-
-        // await CoachingProfile.deleteMany( {_id: { $in: userRemovedMessage.coachingProfiles }}); # Need to figure out a wat to use delete many as its way more efficient
+        await deepDeleteUser(user._id);
 
         return res.json({ msg: "User successfully deleted" });
 
@@ -262,16 +253,9 @@ router.delete("/user/:email", async (req, res) => {
 router.delete("/user", async (req, res) => {
     try {
         let allUsers = await User.find({});
-
+        
         allUsers.forEach(async (specificUser) => {
-            let userRemoved = await User.findByIdAndRemove(specificUser._id);
-
-            // Delete all associated coaching profiles
-            userRemoved.coachingProfiles.forEach(async (coachingProfile) => {
-                let coachingProfileID = coachingProfile.coachingProfile;
-                
-                await CoachingProfile.deleteOne( {_id: coachingProfileID});
-            });
+            await deepDeleteUser(specificUser._id);
         });
 
         return res.json({ msg: "ALL Users successfully deleted" });
@@ -280,6 +264,10 @@ router.delete("/user", async (req, res) => {
         return res.status(400).json({ msg: "Users deletions failed: " + e.message });
     }
 });
+
+
+
+
 
 //// Coaches (User - COACHING PROFILE)
 
@@ -298,36 +286,36 @@ router.post("/coaching", async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ email: req.body.email });
+        const user = await User.findOne({ email: req.body.email }).populate("coachingProfiles");
         if (!user) {
             return res.status(400).json({ msg: "The User with provided email not found" });
         }
 
         // Now with the user, create a coaching profile for said user IF it does not already exist
-        let hasActiveOrPendingCoachingProfile = false;
+        let hasActivePendingOrPrivateCoachingProfile = false;
         user.coachingProfiles.forEach((profile) => {
-            if (profile.status == 1 || profile.status == 0) {
-                hasActiveOrPendingCoachingProfile = true;
+            if (profile.status == 1 || profile.status == 0 || profile.status == 2) {
+                hasActivePendingOrPrivateCoachingProfile = true;
                 return;
             }
         });
 
-        if (hasActiveOrPendingCoachingProfile) {
-            return res.status(400).json({ msg: "This user already has an active, pending, or user hidden associated coaching profile", user: user });
+        if (hasActivePendingOrPrivateCoachingProfile) {
+            return res.status(400).json({ msg: "This user already has an active, pending, or user hidden associated coaching profile", coachingProfiles: user.coachingProfiles });
         }
 
         // Start creation coaching profile
         let newCoachingProfile = {
             user: user._id,
-            // userEmail: user.email,
+            status: 0,
             price: req.body.price,
             description: req.body.description,
             requestJustification: req.body.requestJustification,
             image: req.body.image,
             createdAt: Date.now(),
+            dateLastUpdated: Date.now(),
         };
 
-        
         try {
             const coachingProfile = new CoachingProfile(newCoachingProfile);
 
@@ -335,13 +323,7 @@ router.post("/coaching", async (req, res) => {
 
             try {
                 // Save user with change
-                let combined = {
-                    coachingProfile: coachingProfile,
-                    status: 0,
-                    dateLastUpdated: Date.now(),
-                }
-
-                user.coachingProfiles.push(combined);
+                user.coachingProfiles.push(coachingProfile);
                 await user.save();
 
                 return res.json(coachingProfile);
@@ -357,6 +339,7 @@ router.post("/coaching", async (req, res) => {
     }
 });
 
+// GET all Coaching profiles with all data
 router.get("/coaching", async (req, res) => {
     try {
         const coachingProfile = await CoachingProfile.find();
@@ -366,13 +349,54 @@ router.get("/coaching", async (req, res) => {
     }
 });
 
-// GET user by email
+// Get all Pending coaching profiles
+router.get("/coaching/pending", async (req, res) => {
+    try {
+        const coachingProfile = await CoachingProfile.find({ status: 0 }, {_id:1,status:1,user:1,price:1,description:1,requestJustification:1,createdAt:1,dateLastUpdated:1});
+        return res.json(coachingProfile);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// Get all Active coaching profiles
+router.get("/coaching/active", async (req, res) => {
+    try {
+        const coachingProfile = await CoachingProfile.find({ status: 1 });
+        return res.json(coachingProfile);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// Get all (coach) hidden coaching profiles
+router.get("/coaching/hidden", async (req, res) => {
+    try {
+        const coachingProfile = await CoachingProfile.find({ status: 2 });
+        return res.json(coachingProfile);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+
+// Get all Terminated coaching profiles
+router.get("/coaching/terminated", async (req, res) => {
+    try {
+        const coachingProfile = await CoachingProfile.find({ status: 3, status: 4, status: 5 });
+        return res.json(coachingProfile);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// GET all coaching profile of a coach by email
 router.get("/coaching/:email", async (req, res) => {
     if (!req.params.email) {
         return res.status(400).json({ msg: "Email is missing" });
     }
     try {
-        const user = await User.findOne({}, {email:1,username:1,coachingProfiles:1,_id:0}).populate("coachingProfiles.coachingProfile");
+        const user = await User.findOne({ email: req.params.email }, {email:1,username:1,coachingProfiles:1,_id:0}).populate("coachingProfiles");
         if (!user) {
             return res.status(400).json({ msg: "User not provided email not found" });
         }
@@ -383,55 +407,100 @@ router.get("/coaching/:email", async (req, res) => {
     }
 });
 
-// The following are simply some example codes that can be changed for easier implementation, please ignore for now.
-
-
-// // PUT - Edit user coaching profile - This can be for admin editing status, 
-// router.put("/coaching/:coachingProfileID", async (req, res) => {
-//     if (!req.params.email) {
-//         return res.status(400).json({ msg: "Email is missing" });
-//     }
-//     try {
-//         const user = await User.findOne({ email: req.params.email });
-//         if (!user) {
-//           return res.status(400).json({ msg: "User with provided email not found" });
-//         }
+// PUT - Edit coach - Ensures ID and coach is unchanged
+router.put("/coaching/:coachingProfileID", async (req, res) => {
+    if (!req.params.coachingProfileID) {
+        return res.status(400).json({ msg: "Coaching Profile ID is missing" });
+    }
+    try {
+        const coachingProfile = await CoachingProfile.findById(req.params.coachingProfileID);
+        if (!coachingProfile) {
+          return res.status(400).json({ msg: "Coaching profile of the ID not found" });
+        }
         
-//         // Must ensure that some element are the same (Email must not change)
-//         req.body.user.email = user.email
-//         req.body.user.createdAt = user.createdAt
-//         req.body.user._id = user._id
+        // Must ensure that some element are the same 
+        req.body.coachingProfile.user = coachingProfile.user;
+        req.body.coachingProfile.createdAt = coachingProfile.createdAt;
+        req.body.coachingProfile._id = coachingProfile._id;
 
-//         req.body.dateLastUpdated = Date.now()
+        // These fields should be changed elsewhere and not directly fromt this put request.
+        req.body.coachingProfile.reviews = coachingProfile.reviews;
+        req.body.coachingProfile.clients = coachingProfile.clients;
 
-//         let editedUser = await User.findByIdAndUpdate(user._id, req.body.user);
+        // Auto set
+        req.body.coachingProfile.dateLastUpdated = Date.now();
 
-//         return res.json({ msg: "User Edit successful", editedUser: editedUser });
-//       } catch (e) {
-//         return res.status(400).json({ msg: "User edit failed: " + e.message });
-//     }
-// });
+        await CoachingProfile.findByIdAndUpdate(coachingProfile._id, req.body.coachingProfile);
 
-// // DELETE user completely (Delete user) - We might want to add a way to cache deleted user in the future to prevent accidental account deletion
-// router.delete("/coaching/:email", async (req, res) => {
-//     if (!req.params.email) {
-//         return res.status(400).json({ msg: "Email is missing" });
-//     }
+        return res.json({ msg: "Coaching Profile Edit successful" });
+      } catch (e) {
+        return res.status(400).json({ msg: "Coaching Profile edit failed: " + e.message });
+    }
+});
 
-//     try {
-//         let userRemovedMessage = await User.remove( { email: req.params.email } );
+// Deep delete coaching profile
+async function deepDeleteCoachingProfile(coaching_profile_id) {
+    let coachingProfileRemoved = await CoachingProfile.findByIdAndRemove(coaching_profile_id);
 
-//         if (userRemovedMessage.deletedCount == 0) {
-//             userRemovedMessage.msg = "User deletion failed"
-//             return res.status(400).json(userRemovedMessage);
-//         } else {
-//             return res.json(userRemovedMessage);
-//         }
-//       } catch (e) {
-//         return res.status(400).json({ msg: "User deletion failed: " + e.message });
-//     }
-// });
+    // Must remove the entry from the user as well
+    ownerUserID = coachingProfileRemoved.user;
+
+    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
+    try {
+        const user = await User.findById(ownerUserID);
+        if (!user) {
+            return; // Then the user was already deleted (Somehow) then we do not need to do anything more.
+        }
+        // console.log(user.coachingProfiles); // Investigating bug
+        const index = user.coachingProfiles.indexOf(coaching_profile_id);
+        if (index > -1) { // only splice array when item is found
+            user.coachingProfiles.splice(index, 1); // 2nd parameter means remove one item only
+        }
+        // console.log(index); // Investigating bug
+        // console.log(user.coachingProfiles); // Investigating bug
+
+        // user.markModified("coachingProfiles"); // Didnt seem to do anything. But want to make this work somehow
+        await user.save();
+    } catch (e) {
+    }
+}
 
 
+// DELETE coaching profile completely (Delete coaching profile)
+// Note: Debug function -  should not be used normally
+router.delete("/coaching/:coachingProfileID", async (req, res) => {
+    if (!req.params.coachingProfileID) {
+        return res.status(400).json({ msg: "Coaching Profile ID is missing" });
+    }
 
+    try {
+        const coachingProfile = await CoachingProfile.findById(req.params.coachingProfileID);
+        if (!coachingProfile) {
+          return res.status(400).json({ msg: "Coaching profile of the ID not found" });
+        }
 
+        await deepDeleteCoachingProfile(coachingProfile._id);
+
+        return res.json({ msg: "Coaching profile successfully deleted" });
+
+      } catch (e) {
+        return res.status(400).json({ msg: "Coaching profile deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL coaching profile (IN REVERSIBLE - DEBUG ONLY!!!!)
+// **** Problem with deep delete when this is done! ****
+router.delete("/coaching", async (req, res) => {
+    try {
+        let allCoachingProfiles = await CoachingProfile.find({});
+
+        allCoachingProfiles.forEach(async (specificCoachingProfile) => {
+            await deepDeleteCoachingProfile(specificCoachingProfile._id);
+        });
+
+        return res.json({ msg: "ALL Coaching profile successfully deleted" });
+
+      } catch (e) {
+        return res.status(400).json({ msg: "Coaching profile deletions failed: " + e.message });
+    }
+});

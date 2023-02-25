@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const coachesSchema = new mongoose.Schema({
     coach: {
-        type: { type: mongoose.SchemaTypes.ObjectID, ref: "User" },
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
     },
     firstInteraction: {

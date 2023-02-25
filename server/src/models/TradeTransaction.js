@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
-const tradeHistorySchema = new mongoose.Schema({
+const tradeTransactionSchema = new mongoose.Schema({
+    simulatorEnrollment: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "SimulatorEnrollment",
+        required: true,
+    },
     symbol: {
         type: String,
         required: true,
@@ -9,8 +14,8 @@ const tradeHistorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    transactionType: {
-        type: String,
+    transactionType: { // 1 - Buy, 2 - Sell, 
+        type: Number,
         required: true,
     },
     transactionTime: {
@@ -27,4 +32,4 @@ const tradeHistorySchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("TradeHistory", tradeHistorySchema);
+module.exports = mongoose.model("TradeTransaction", tradeTransactionSchema);
