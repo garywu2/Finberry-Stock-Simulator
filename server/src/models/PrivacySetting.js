@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Might be removed
 const privacySettingSchema = new mongoose.Schema({
     coachingProfile: {
         type: Boolean,

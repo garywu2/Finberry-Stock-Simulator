@@ -1,8 +1,14 @@
 const mongoose = require("mongoose");
 
-const participatingUserSchema = new mongoose.Schema({
+const simulatorEnrollmentSchema = new mongoose.Schema({
     user: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
+        required: true,
+    },
+    simulator: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "Simulator",
         required: true,
     },
     balance: {
@@ -19,10 +25,10 @@ const participatingUserSchema = new mongoose.Schema({
         default: []
     },
     tradeHistory: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "TradeHistory" }],
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "TradeTransaction" }],
         required: true,
         default: []
     },
 });
 
-module.exports = mongoose.model("ParticipatingUser", participatingUserSchema);
+module.exports = mongoose.model("SimulatorEnrollment", simulatorEnrollmentSchema);

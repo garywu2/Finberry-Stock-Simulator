@@ -12,11 +12,41 @@ const   multer  =   require("multer"),
 // Relevant schemas
 const   Article  =  require("../models/Article");
 
+//create a article
+// Note: Might want to make title unique somehow, issues with this right now.
+router.post("/", async (req, res) => {
+  const article = {
+    title: req.body.title,
+    description: req.body.description,
+    content: req.body.content,
+    externalLink: req.body.externalLink,
+    firstPosted: req.body.firstPosted,
+    dateLastUpdated: Date.now(),
+  };
+
+  if (
+    !article.title ||
+    !article.description ||
+    !article.content ||
+    !article.externalLink ||
+    !article.firstPosted
+  ) {
+    return res.status(400).json({ msg: "Article is missing one or more required field(s)" });
+  }
+  
+  try {
+      const dbArticle = new Article(article);
+      await dbArticle.save();
+      res.json(dbArticle);
+  } catch (e) {
+    return res.status(400).json({ msg: e.message });
+  }
+});
 
 //get all article
 router.get("/", async (req, res) => {
     try {
-      const articles = await Article.find();
+      const articles = await Article.find({},{title:1,description:1,externalLink:1,firstPosted:1,dateLastUpdated:1,_id:1});
       res.json(articles);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
@@ -24,12 +54,12 @@ router.get("/", async (req, res) => {
 });
 
 //get article by title
-router.get("/title/:title", async (req, res) => {
-    if (!req.params.title) {
-      return res.status(400).json({ msg: "Article title is missing" });
+router.get("/:articleID", async (req, res) => {
+    if (!req.params.articleID) {
+      return res.status(400).json({ msg: "Article ID is missing" });
     }
     try {
-      const article = await Article.findOne({ title: req.params.title });
+      const article = await Article.findById(req.params.articleID);
       if (!article) {
         return res.status(400).json({ msg: "Article not found" });
       }
@@ -39,35 +69,72 @@ router.get("/title/:title", async (req, res) => {
     }
 });
 
-//create a article
-router.post("/", async (req, res) => {
-    const article = {
-      title: req.body.title,
-      description: req.body.description,
-      content: req.body.content,
-      externalLink: req.body.externalLink,
-      firstPosted: req.body.firstPosted,
-      lastUpdate: req.body.lastUpdate,
-    };
+// PUT - Edit article
+router.put("/:articleID", async (req, res) => {
+  if (!req.params.articleID) {
+    return res.status(400).json({ msg: "Article ID is missing" });
+  }
+  try {
+      const article = await Article.findById(req.params.articleID);
+      if (!article) {
+        return res.status(400).json({ msg: "Article not found" });
+      }
+      
+      // Must ensure that some element are the same
+      req.body.article._id = article._id;
+      req.body.article.firstPosted = article.firstPosted;
 
-    if (
-      !article.title ||
-      !article.description ||
-      !article.content ||
-      !article.externalLink ||
-      !article.firstPosted ||
-      !article.lastUpdate
-    ) {
-      return res.status(400).json({ msg: "Article is missing one or more required field(s)" });
-    }
-    
-    try {
-        const dbArticle = new Article(article);
-        await dbArticle.save();
-        res.json(dbArticle);
+      // Auto set
+      req.body.article.dateLastUpdated = Date.now();
+
+      await Article.findByIdAndUpdate(article._id, req.body.article);
+
+      return res.json({ msg: "Article Edit successful" });
     } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
+      return res.status(400).json({ msg: "Article edit failed: " + e.message });
+  }
+});
+
+
+// Deep delete article function
+async function deepDeleteArticle(article_id) {
+  let articleRemoved = await Article.findByIdAndRemove(article_id);
+}
+
+// DELETE article completely
+router.delete("/:articleID", async (req, res) => {
+  if (!req.params.articleID) {
+    return res.status(400).json({ msg: "Article ID is missing" });
+  }
+  try {
+      const article = await Article.findById(req.params.articleID);
+      if (!article) {
+        return res.status(400).json({ msg: "Article not found" });
+      }
+      
+      await deepDeleteArticle(article._id);
+
+      return res.json({ msg: "Article successfully deleted" });
+
+    } catch (e) {
+      return res.status(400).json({ msg: "Article deletion failed: " + e.message });
+  }
+});
+
+// DELETE ALL Articles (IN REVERSIBLE - DEBUG ONLY!!!!)
+router.delete("/", async (req, res) => {
+  try {
+      let allArticles = await Article.find({});
+
+      allArticles.forEach(async (specificArticle) => {
+          await deepDeleteArticle(specificArticle._id);
+      });
+
+      return res.json({ msg: "ALL Articles successfully deleted" });
+
+    } catch (e) {
+      return res.status(400).json({ msg: "Articles deletions failed: " + e.message });
+  }
 });
 
 module.exports = router;

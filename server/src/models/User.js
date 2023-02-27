@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
+        unique: true
     },
     firstName: {
         type: String,
@@ -19,6 +20,10 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     preferredName: {
+        type: String,
+        required: false,
+    },
+    phoneNumber: {
         type: String,
         required: false,
     },
@@ -61,22 +66,40 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: " ", // User bio, technically not required but we can have empty location for simplicity
     },
-    privacySettings: {
-        type: { type: mongoose.SchemaTypes.ObjectID, ref: "PrivacySetting" },
-        required: false, // Object ID CANNOT have required == true
-    },
-    // isPremium: { // No need here, we should determine this based on premium expiry date
-    //     type: Boolean,
-    //     required: true,
-    //     default: false,
-    // },
     premiumExpiryDate: {
         type: Date,
         required: false,
         default: null,
     },
-    participatingSimulator: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "Simulator" }],
+    privacySettings: { // True = Visible
+        // coachingProfile: { // Doing this another way, via Putting CoachingProfile not here
+        //     type: Boolean,
+        //     required: true,
+        //     default: true
+        // },
+        personalProfile: {
+            type: Boolean,
+            required: true,
+            default: true
+        },
+        simulator: {
+            type: Boolean,
+            required: true,
+            default: true
+        },
+        leaderboard: {
+            type: Boolean,
+            required: true,
+            default: true
+        },
+        badges: {
+            type: Boolean,
+            required: true,
+            default: true
+        }
+    },
+    simulatorEnrollments: { // Does not dirrectly link to the simulator, it links to a proxy class called SimulatorEnrollment
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "SimulatorEnrollment" }],
         required: true,
         default: []
     },
@@ -95,31 +118,9 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: []
     },
-
-    // Below are coaching profile
-    // coachingProfile: {
-    //     type: { type: mongoose.SchemaTypes.ObjectID, ref: "CoachingProfile" },
-    //     required: false, // Object ID CANNOT have required == true
-    // },
+    // A user may now have a list of coaching profiles.
     coachingProfiles: {
-        type: [
-            {
-                coachingProfile: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "CoachingProfile"
-                },
-                status: { // 0 - Pending (Requested), 1 - Active, 2 - Coach decided to hide coaching profile, 3 - Coach decided to deactivate coaching profile (Cannot be undone), 4 - Coaching decided to DELETE profile (But we keep a copy), 5 - Moderator/admin suspended
-                    type: Number,
-                    required: true,
-                },
-                // Last updated date
-                dateLastUpdated: {
-                    type: Date,
-                    required: true,
-                    default: Date.now,
-                },
-            }
-        ],
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "CoachingProfile" }],
         required: true,
         default: []
     },

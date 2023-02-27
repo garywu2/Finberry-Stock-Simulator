@@ -10,3 +10,5 @@ const   multer  =   require("multer"),
         upload  =   multer({ storage: storage });
 
 
+// Stock is currently done and implemented within the "Game" route. This class is likely to either be removed,
+// Or that functions can be moved from Game.
