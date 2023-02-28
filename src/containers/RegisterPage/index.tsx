@@ -144,6 +144,19 @@ const RegisterPage = () => {
                 />
                 <TextField
                   required
+                  id='signup-username'
+                  label='Display Name'
+                  name='username'
+                  margin="normal"
+                  sx={{
+                    width: '100%'
+                  }}
+                  color="primary"
+                  value={signupState.username}
+                  onChange={handleChange}
+                />
+                <TextField
+                  required
                   type='email'
                   id='signup-email'
                   label='Email'
@@ -154,19 +167,6 @@ const RegisterPage = () => {
                   }}
                   color="primary"
                   value={signupState.email}
-                  onChange={handleChange}
-                />
-                <TextField
-                  required
-                  id='signup-username'
-                  label='Username'
-                  name='username'
-                  margin="normal"
-                  sx={{
-                    width: '100%'
-                  }}
-                  color="primary"
-                  value={signupState.username}
                   onChange={handleChange}
                 />
                 <TextField
