@@ -8,93 +8,102 @@ import { useContext, useState } from "react";
 import { signOut } from "firebase/auth";
 import { Navigate, useNavigate } from "react-router-dom";
 
-// interface Props {
-//     logout: () => void;
-//     isAuthenticated: boolean;
-// };
-// commenting because we need to implement logout logic later
+import Dropdown from '../Dropdown';
 
 interface Props {
     isAuthenticated: boolean;
 };
 
+const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Logout', url: '/logout' }];
+const links2 = [{ title: 'Login', url: '/login' }, { title: 'Register', url: '/register' }];
+
 const authLinks = (handleSubmit: any, error: any) => (
-    <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
-        {error && <Typography color='red'>{error}</Typography>}
-        <Button
-            size='small'
-            sx={{
-                backgroundColor: "secondary.main",
-                color: "white",
-                marginLeft: "1rem",
-                '&:hover': {
-                    backgroundColor: 'secondary.dark',
-                }
-            }}
-            component={Link} to='/profile'>
-            Profile
-        </Button>
-        {error && <Typography color='red'>{error}</Typography>}
-        <Button
-            size='small'
-            sx={{
-                backgroundColor: "secondary.main",
-                color: "white",
-                marginLeft: "1rem",
-                '&:hover': {
-                    backgroundColor: 'secondary.dark',
-                }
-            }}
-            component={Link} to='/SimulatorPortfolio'>
-            Simulator
-        </Button>
-        {error && <Typography color='red'>{error}</Typography>}
-        <Button
-            size='small'
-            sx={{
-                backgroundColor: "secondary.main",
-                color: "white",
-                marginLeft: "1rem",
-                '&:hover': {
-                    backgroundColor: 'secondary.dark',
-                }
-            }}
-            onClick={handleSubmit}
+    <>
+        <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
+            {error && <Typography color='red'>{error}</Typography>}
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/profile'>
+                Profile
+            </Button>
+            {error && <Typography color='red'>{error}</Typography>}
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/SimulatorPortfolio'>
+                Simulator
+            </Button>
+            {error && <Typography color='red'>{error}</Typography>}
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                onClick={handleSubmit}
             >
-            Logout
-        </Button>
-    </Box>
+                Logout
+            </Button>
+        </Box>
+        <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" }, justifyContent: 'flex-end' }}>
+            <Dropdown links={links} />
+        </Box>
+    </>
 );
 
 const guestLinks = (
-    <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
-        <Button
-            size='small'
-            sx={{
-                backgroundColor: "secondary.main",
-                color: "white",
-                marginLeft: "1rem",
-                '&:hover': {
-                    backgroundColor: 'secondary.dark',
-                }
-            }}
-            component={Link} to='/login'>
-            Login
-        </Button>
-        <Button
-            size='small'
-            sx={{
-                backgroundColor: "secondary.main",
-                color: "white",
-                marginLeft: "1rem",
-                '&:hover': {
-                    backgroundColor: 'secondary.dark',
-                }
-            }}
-            component={Link} to='/register'>
-            Register
-        </Button>
-    </Box>
+    <>
+        <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/login'>
+                Login
+            </Button>
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/register'>
+                Register
+            </Button>
+        </Box>
+        <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" }, justifyContent: 'flex-end' }}>
+            <Dropdown links={links2} />
+        </Box>
+    </>
 );
 
 const Header: React.FC<Props> = ({ isAuthenticated }) => {
@@ -107,16 +116,16 @@ const Header: React.FC<Props> = ({ isAuthenticated }) => {
 
     const handleSumbit = (e: any) => {
         signOut(auth)
-        .then((servResult: any) => {
-            console.log(servResult);
-            setError("");
-            navigate("/");
-        })
-        .catch((e: any) => {
-            setError(e.response.data.msg);
-        });
-      };
-    
+            .then((servResult: any) => {
+                console.log(servResult);
+                setError("");
+                navigate("/");
+            })
+            .catch((e: any) => {
+                setError(e.response.data.msg);
+            });
+    };
+
     return (
         <AppBar position="fixed" color="inherit">
             <Toolbar>
