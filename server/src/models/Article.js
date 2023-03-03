@@ -28,6 +28,7 @@ const articleSchema = new mongoose.Schema({
     dateLastUpdated: {
         type: Date,
         required: true,
+        default: Date.now
     },
 });
 

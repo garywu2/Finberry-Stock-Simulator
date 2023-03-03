@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
     permissionLevel: { // Let 0 be base permission, 1 be moderator, 2 be administrator, and 3 be master authority 
         type: Number,
         required: true,
+        default: 0
     },
     createdAt: {
         type: Date,
@@ -51,11 +52,6 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: 0, // Number coded: 0 = default, etc
     },
-    // payerID: { // Wait why is there a payer id to the profile???
-    //     type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
-    //     required: true,
-    //     default: []
-    // },
     location: {
         type: String,
         required: true,
@@ -71,12 +67,7 @@ const userSchema = new mongoose.Schema({
         required: false,
         default: null,
     },
-    privacySettings: { // True = Visible
-        // coachingProfile: { // Doing this another way, via Putting CoachingProfile not here
-        //     type: Boolean,
-        //     required: true,
-        //     default: true
-        // },
+    privacySettings: { 
         personalProfile: {
             type: Boolean,
             required: true,

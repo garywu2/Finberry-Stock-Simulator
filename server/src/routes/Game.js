@@ -127,26 +127,24 @@ router.get("/simulator/:simulatorID", async (req, res) => {
 
 // PUT - Edit simulator by ID
 router.put("/simulator/:simulatorID", async (req, res) => {
-    if (!req.params.simulatorID) {
-        return res.status(400).json({ msg: "simulatorID is missing" });
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+  
+    if (!newAttrs._id) {
+      return res.status(400).json({ msg: "Article id is missing" });
     }
+  
     try {
-        const simulator = await Simulator.findById(req.params.simulatorID);
-        if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+      const simulator = await Simulator.findOne({ _id: newAttrs._id });
+      attrKeys.forEach((key) => {
+        if (key !== "_id") {
+            simulator[key] = newAttrs[key];
         }
-        
-        // Must ensure that some element are the same
-        req.body.simulator._id = simulator._id;
-        req.body.simulator.participatingUsers = simulator.participatingUsers;
-
-        req.body.simulator.dateLastUpdated = Date.now();
-
-        await Simulator.findByIdAndUpdate(simulator._id, req.body.simulator);
-
-        return res.json({ msg: "Simulator Edit successful" });
-      } catch (e) {
-        return res.status(400).json({ msg: "Simulator edit failed: " + e.message });
+      });
+      await simulator.save();
+      res.json(simulator);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
     }
 });
 
@@ -267,8 +265,8 @@ async function deepDeleteSimulatorEnrollment(simulatorEnrollment_id) {
     let simulatorEnrollmentRemoved = await SimulatorEnrollment.findByIdAndRemove(simulatorEnrollment_id);
 
     // Must remove the entry from the user and the simulator as well
-    ownerUserID = simulatorEnrollmentRemoved.user;
-    ownerSimulatorID = simulatorEnrollmentRemoved.simulator;
+    const ownerUserID = simulatorEnrollmentRemoved.user;
+    const ownerSimulatorID = simulatorEnrollmentRemoved.simulator;
 
     // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion. - For both user and Simulator
     try {
@@ -413,7 +411,7 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
         // If atempt to sell stock
         let desiredHolding;
         let tradeTransaction;
-        if (newTradeTransaction.transactionType == 1) { // Atempt to buy stocks
+        if (newTradeTransaction.transactionType === 1) { // Atempt to buy stocks
             let totalCost = newTradeTransaction.price * newTradeTransaction.quantity; // How much the is needed to complete this transaction
 
             if (simulatorEnrollment.balance < totalCost) {
@@ -456,7 +454,7 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
             // Save the simulatedEnrollemnt
             await simulatorEnrollment.save();
         }
-        else if (newTradeTransaction.transactionType == 2) { // Atempt to sell stocks.
+        else if (newTradeTransaction.transactionType === 2) { // Atempt to sell stocks.
             // First we must try to 
             desiredHolding = await Holding.findOne({ simulatorEnrollment: simulatorEnrollmentID, symbol: newTradeTransaction.symbol, index: newTradeTransaction.index });
             if (!desiredHolding) {
