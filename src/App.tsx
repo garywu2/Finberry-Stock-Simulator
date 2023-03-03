@@ -3,6 +3,7 @@ import HomePage from './containers/HomePage';
 import LoginPage from './containers/LoginPage';
 import RegisterPage from './containers/RegisterPage';
 import ArticlesPage from './containers/ArticlesPage';
+import PasswordResetPage from './containers/PasswordResetPage';
 import ProfilePage from './containers/ProfilePage';
 import SimulatorPortfolioPage from './containers/SimulatorPortfolioPage';
 import GamePortfolioPage from './containers/GamePortfolioPage';
@@ -61,6 +62,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/Login" element={<LoginPage />} />
               <Route path="/Register" element={<RegisterPage />} />
+              <Route path="/PasswordReset" element={<PasswordResetPage />} />
               <Route path="/Articles" element={<ArticlesPage />} />
               <Route path="/Profile" element={<ProfilePage />} />
               <Route path="/SimulatorPortfolio" element={<SimulatorPortfolioPage />} />
