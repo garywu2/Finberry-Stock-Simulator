@@ -25,10 +25,17 @@ const   mongoose = require("mongoose"),
 const DB = process.env.DB || "mongodb://localhost/finberry";
 
 mongoose.connect(DB, () => {
-  console.log("Database Connected");
-  mongoose.connection.db.dropDatabase();
-  console.log("Dropping current database");
-});
+    console.log("Database Connected");
+    mongoose.connection.db.dropDatabase();
+    console.log("Dropping current database");
+  });
+
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+}  
 
 const addArticle = async (
     title,
@@ -79,6 +86,7 @@ const addUser = async (
 }
 
 const insertData = async () => {
+    await sleep(1000);
     await addArticle(
         "article 1",
         "First article description",
