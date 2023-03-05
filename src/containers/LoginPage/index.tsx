@@ -134,10 +134,8 @@ const LoginPage = () => {
                 >
                   Log In
                 </Button>
-                <div>
-                  <Link style={{"margin": "10px"}} to="/register">Create an account</Link>
-                  <Link style={{"margin": "10px"}} to="/PasswordReset">Password Reset</Link>
-                </div>
+                <Link style={{"margin": "10px"}} to="/register">Create an account</Link>
+                <Link style={{"margin": "10px"}} to="/PasswordReset">Reset Password</Link>
               </Grid>
               <Grid xs={2}></Grid>
             </Grid>

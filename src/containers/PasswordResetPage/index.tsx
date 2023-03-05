@@ -1,7 +1,6 @@
 import { Box, Button, Container, Grid, TextField, Typography } from "@mui/material";
 import { Link } from 'react-router-dom';
 import { useContext, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
 import { sendPasswordResetEmail } from "firebase/auth";
 import FirebaseContext from "../../context/firebase";
 
@@ -14,7 +13,6 @@ const LoginPage = () => {
   const handleChange = (e: any) => {
     setUserEmail(e.target.value);
   };
-  const navigate = useNavigate();
 
   const resetPassword = (e: any) => {
     sendPasswordResetEmail(auth, userEmail).then((e: any) => {
@@ -23,10 +21,6 @@ const LoginPage = () => {
       setError(e.message);
     });
   };
-
-  const returnToLoginPage = () => {
-    navigate("/Login");
-  }
 
   return (
     <div>
@@ -67,7 +61,7 @@ const LoginPage = () => {
                 textAlign: "center"
               }}>
                 <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
-                  Password Reset
+                  Reset password
                 </Typography>
                 <TextField
                   required
@@ -84,15 +78,12 @@ const LoginPage = () => {
                   onChange={handleChange}
                 />
                 {error && <Typography color='red'>{error}</Typography>}
-                <div>
                 <Button
                   size='medium'
-                  
+                  fullWidth
                   sx={{
                     backgroundColor: "secondary.main",
-                    margin: "10px",
                     color: "white",
-                    justifyContent: "space-between",
                     marginY: "1rem",
                     '&:hover': {
                       backgroundColor: 'secondary.dark',
@@ -102,23 +93,7 @@ const LoginPage = () => {
                 >
                   Reset Password
                 </Button>
-                <Button
-                  size='medium'
-                  
-                  sx={{
-                    backgroundColor: "secondary.main",
-                    color: "white",
-                    margin: "10px",
-                    marginY: "1rem",
-                    '&:hover': {
-                      backgroundColor: 'secondary.dark',
-                    }
-                  }}
-                  onClick={returnToLoginPage}
-                >
-                  Return to login page
-                </Button>
-                </div>
+                <Link style={{"margin": "10px"}} to="/login">Return to login page</Link>
                 {emailSent && <Typography color='green'>{emailSent}</Typography>}
               </Grid>
               <Grid xs={2}></Grid>
