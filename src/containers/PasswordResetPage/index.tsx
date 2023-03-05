@@ -1,52 +1,25 @@
 import { Box, Button, Container, Grid, TextField, Typography } from "@mui/material";
 import { Link } from 'react-router-dom';
-import axios from "axios";
 import { useContext, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { sendPasswordResetEmail } from "firebase/auth";
 import FirebaseContext from "../../context/firebase";
-import UserContext from "../../context/user";
 
 const LoginPage = () => {
   const { auth } = useContext(FirebaseContext);
-  const { user } = useContext(UserContext);
-
-  const defaultValues = {
-    username: "",
-    password: ""
-  };
-
-  const [loginState, setLoginState] = useState(defaultValues);
+  const [userEmail, setUserEmail] = useState("");
   const [error, setError] = useState("");
+  const [emailSent, setEmailSent] = useState("");
+
   const handleChange = (e: any) => {
-    const { name, value } = e.target;
-    setLoginState({ ...loginState, [name]: value });
+    setUserEmail(e.target.value);
   };
 
-  const navigate = useNavigate();
-
-  const handleSumbit = (e: any) => {
-    if (
-      loginState.username &&
-      loginState.password
-    ) {
-      signInWithEmailAndPassword(
-        auth,
-        loginState.username,
-        loginState.password
-      )
-        .then((servResult: any) => {
-          console.log(servResult);
-          setError("");
-          setLoginState(defaultValues);
-          navigate("/profile");
-        })
-        .catch((e: any) => {
-          setError(e.message);
-        });
-    } else {
-      setError("One of the required fields is missing!");
-    }
+  const resetPassword = (e: any) => {
+    sendPasswordResetEmail(auth, userEmail).then((e: any) => {
+      setEmailSent("Email Sucessfully Sent!");
+    }).catch((e: any) => {
+      setError(e.message);
+    });
   };
 
   return (
@@ -65,7 +38,6 @@ const LoginPage = () => {
           paddingTop: '5rem',
           paddingBottom: '2rem'
         }}>
-        {!user ? (
           <Box
             component='form'
             display={"flex"}
@@ -89,33 +61,20 @@ const LoginPage = () => {
                 textAlign: "center"
               }}>
                 <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
-                  Log In
+                  Reset password
                 </Typography>
                 <TextField
                   required
-                  id='login-username'
-                  label='Username'
-                  name='username'
+                  type='email'
+                  id='email'
+                  label='Email'
+                  name='email'
                   margin="normal"
                   sx={{
                     width: '100%'
                   }}
                   color="primary"
-                  value={loginState.username}
-                  onChange={handleChange}
-                />
-                <TextField
-                  required
-                  id='login-password'
-                  label='Password'
-                  type='password'
-                  name='password'
-                  margin="normal"
-                  sx={{
-                    width: '100%'
-                  }}
-                  color="primary"
-                  value={loginState.password}
+                  defaultValue={userEmail}
                   onChange={handleChange}
                 />
                 {error && <Typography color='red'>{error}</Typography>}
@@ -130,19 +89,16 @@ const LoginPage = () => {
                       backgroundColor: 'secondary.dark',
                     }
                   }}
-                  onClick={handleSumbit}
+                  onClick={resetPassword}
                 >
-                  Log In
+                  Reset Password
                 </Button>
-                <Link style={{"margin": "10px"}} to="/register">Create an account</Link>
-                <Link style={{"margin": "10px"}} to="/PasswordReset">Reset Password</Link>
+                <Link style={{"margin": "10px"}} to="/login">Return to login page</Link>
+                {emailSent && <Typography color='green'>{emailSent}</Typography>}
               </Grid>
               <Grid xs={2}></Grid>
             </Grid>
           </Box>
-        ) : (
-          <Navigate to='/profile'></Navigate>
-        )}
       </Container>
     </div>
   );
