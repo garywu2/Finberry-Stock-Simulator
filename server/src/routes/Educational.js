@@ -81,7 +81,7 @@ router.put("/", async (req, res) => {
     try {
       const article = await Article.findOne({ _id: newAttrs._id });
       attrKeys.forEach((key) => {
-        if (key !== "_id") {
+        if (key !== "_id" && key !== "firstPosted") {
           article[key] = newAttrs[key];
         }
       });

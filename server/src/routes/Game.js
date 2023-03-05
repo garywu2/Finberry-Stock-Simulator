@@ -137,7 +137,7 @@ router.put("/simulator/:simulatorID", async (req, res) => {
     try {
       const simulator = await Simulator.findOne({ _id: newAttrs._id });
       attrKeys.forEach((key) => {
-        if (key !== "_id") {
+        if (key !== "_id" && key !== "participatingUsers" && key !== "dateLastUpdated") {
             simulator[key] = newAttrs[key];
         }
       });

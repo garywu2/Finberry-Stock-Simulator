@@ -217,7 +217,7 @@ router.put("/user", async (req, res) => {
           return res.status(400).json({ msg: "User with provided email not found" });
         }
         attrKeys.forEach((key) => {
-            if (key !== "_id" && key !== "email") {
+            if (key !== "_id" && key !== "email" && key !== "createdAt" && key !== "participatingSimulators" && key !== "badges" && key !== "coaches" && key !== "premiumPaymentHistory" && key !== "coachingProfiles" && key !== "premiumExpiryDate") {
               user[key] = newAttrs[key];
             }
           });
