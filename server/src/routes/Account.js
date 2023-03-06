@@ -204,7 +204,7 @@ router.get("/user/:email", async (req, res) => {
 });
 
 // PUT - Edit user (Edit use profile feature) - But ensure email is unchanged.
-router.put("/user", async (req, res) => {
+router.put("/user/:email", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
     if (newAttrs.email === "") {
@@ -279,6 +279,10 @@ router.delete("/user", async (req, res) => {
   });
 
 //// Coaches (User - COACHING PROFILE)
+
+router.post("/coaching/newClient", async (req, res) => {
+
+});
 
 // POST - User sign up - create a new generic user (No coaching profile)
 router.post("/coaching", async (req, res) => {
@@ -420,7 +424,7 @@ router.get("/coaching/:email", async (req, res) => {
 });
 
 // PUT - Edit coach - Ensures ID and coach is unchanged
-router.put("/coaching/", async (req, res) => {
+router.put("/coaching", async (req, res) => {
     if (!req.params.coachingProfileID) {
         return res.status(400).json({ msg: "Coaching Profile ID is missing" });
     }

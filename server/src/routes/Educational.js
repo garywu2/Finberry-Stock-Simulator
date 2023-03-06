@@ -70,7 +70,7 @@ router.get("/:articleID", async (req, res) => {
 });
 
 // PUT - Edit article
-router.put("/", async (req, res) => {
+router.put("/:articleID", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
   
