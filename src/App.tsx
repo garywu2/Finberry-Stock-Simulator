@@ -36,7 +36,7 @@ const theme = responsiveFontSizes(createTheme({
     }
   },
   typography: {
-    // fontFamily: 'Source Sans Pro', commented for now
+    fontFamily: "Fredoka, Varela Round, Ubuntu, sans-serif"
   },
   components: {
     MuiButton: {
