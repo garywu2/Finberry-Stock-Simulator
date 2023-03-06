@@ -12,7 +12,7 @@ const LoginPage = () => {
   const { user } = useContext(UserContext);
 
   const defaultValues = {
-    username: "",
+    email: "",
     password: ""
   };
 
@@ -27,12 +27,12 @@ const LoginPage = () => {
 
   const handleSumbit = (e: any) => {
     if (
-      loginState.username &&
+      loginState.email &&
       loginState.password
     ) {
       signInWithEmailAndPassword(
         auth,
-        loginState.username,
+        loginState.email,
         loginState.password
       )
         .then((servResult: any) => {
@@ -93,15 +93,15 @@ const LoginPage = () => {
                 </Typography>
                 <TextField
                   required
-                  id='login-username'
-                  label='Username'
-                  name='username'
+                  id='login-email'
+                  label='Email'
+                  name='email'
                   margin="normal"
                   sx={{
                     width: '100%'
                   }}
                   color="primary"
-                  value={loginState.username}
+                  value={loginState.email}
                   onChange={handleChange}
                 />
                 <TextField
