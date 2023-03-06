@@ -213,7 +213,7 @@ const RegisterPage = () => {
                 >
                   Register
                 </Button>
-                <Link to="/login">Already have an account?</Link>
+                <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="/login">Already have an account?</Link>
               </Grid>
               <Grid xs={2}></Grid>
             </Grid>

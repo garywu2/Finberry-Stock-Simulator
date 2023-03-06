@@ -134,8 +134,8 @@ const LoginPage = () => {
                 >
                   Log In
                 </Button>
-                <Link style={{"margin": "10px"}} to="/register">Create an account</Link>
-                <Link style={{"margin": "10px"}} to="/PasswordReset">Reset Password</Link>
+                <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="/register">Create an account</Link>
+                <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="/PasswordReset">Reset Password</Link>
               </Grid>
               <Grid xs={2}></Grid>
             </Grid>

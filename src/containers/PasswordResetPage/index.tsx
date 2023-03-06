@@ -93,7 +93,7 @@ const LoginPage = () => {
                 >
                   Reset Password
                 </Button>
-                <Link style={{"margin": "10px"}} to="/login">Return to login page</Link>
+                <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="/login">Return to login page</Link>
                 {emailSent && <Typography color='green'>{emailSent}</Typography>}
               </Grid>
               <Grid xs={2}></Grid>
