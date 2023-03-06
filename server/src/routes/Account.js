@@ -392,10 +392,10 @@ router.get("/coaching/hidden", async (req, res) => {
 // Get all Terminated coaching profiles
 router.get("/coaching/terminated", async (req, res) => {
     try {
-        const coachingProfile3 = await CoachingProfile.find({ status: 3 });
-        const coachingProfile4 = await CoachingProfile.find({ status: 4 });
-        const coachingProfile5 = await CoachingProfile.find({ status: 5 });
-        const allCoachingProfiles = {...coachingProfile3, ...coachingProfile4, ...coachingProfile5 };
+        const coachingProfileDisapproved = await CoachingProfile.find({ status: 3 });
+        const coachingProfileDeactivated = await CoachingProfile.find({ status: 4 });
+        const coachingProfileModOrAdmin = await CoachingProfile.find({ status: 5 });
+        const allCoachingProfiles = {...coachingProfileDisapproved, ...coachingProfileDeactivated, ...coachingProfileModOrAdmin };
         return res.json(allCoachingProfiles);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
