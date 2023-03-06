@@ -78,6 +78,7 @@ const LoginPage = () => {
             }}
             noValidate
             autoComplete='off'
+            onSubmit={handleSumbit}
           >
             <Grid container>
               <Grid xs={2}></Grid>
@@ -130,7 +131,7 @@ const LoginPage = () => {
                       backgroundColor: 'secondary.dark',
                     }
                   }}
-                  onClick={handleSumbit}
+                  type="submit"
                 >
                   Log In
                 </Button>

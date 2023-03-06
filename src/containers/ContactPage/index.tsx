@@ -93,6 +93,7 @@ const ContactPage = () => {
                                         backgroundColor: 'secondary.dark',
                                     }
                                 }}
+                                type="submit"
                             // onClick={handleSumbit}
                             >
                                 Submit

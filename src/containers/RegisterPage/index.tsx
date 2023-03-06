@@ -103,6 +103,7 @@ const RegisterPage = () => {
             }}
             noValidate
             autoComplete='off'
+            onSubmit={handleSumbit}
           >
             <Grid container>
               <Grid xs={2}></Grid>
@@ -209,7 +210,7 @@ const RegisterPage = () => {
                       backgroundColor: 'secondary.dark',
                     }
                   }}
-                  onClick={handleSumbit}
+                  type="submit"
                 >
                   Register
                 </Button>

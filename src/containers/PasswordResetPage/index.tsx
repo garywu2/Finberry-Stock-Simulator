@@ -50,6 +50,7 @@ const LoginPage = () => {
             }}
             noValidate
             autoComplete='off'
+            onSubmit={resetPassword}
           >
             <Grid container>
               <Grid xs={2}></Grid>
@@ -89,7 +90,7 @@ const LoginPage = () => {
                       backgroundColor: 'secondary.dark',
                     }
                   }}
-                  onClick={resetPassword}
+                  type="submit"
                 >
                   Reset Password
                 </Button>
