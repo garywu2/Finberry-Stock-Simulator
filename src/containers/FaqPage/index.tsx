@@ -57,7 +57,7 @@ const FaqPage = () => {
                     sx={{
                         backgroundColor: 'white',
                         borderRadius: "1rem",
-                        width: "100%",
+                        width: { xs: "100%", sm: "100%", md: "75%", lg: "75%" },
                         margin: { sm: "0rem", lg: "3rem" },
                         paddingBottom: "3rem"
                     }}

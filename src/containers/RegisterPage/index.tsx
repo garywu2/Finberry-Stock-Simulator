@@ -97,7 +97,7 @@ const RegisterPage = () => {
             sx={{
               backgroundColor: 'white',
               borderRadius: "1rem",
-              width: "100%",
+              width: { xs: "100%", sm: "100%", md: "75%", lg: "50%" },
               paddingBottom: "3rem",
               margin: { sm: "0rem", lg: "3rem" },
             }}
