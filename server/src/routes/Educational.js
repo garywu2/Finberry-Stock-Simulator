@@ -70,29 +70,26 @@ router.get("/:articleID", async (req, res) => {
 });
 
 // PUT - Edit article
-router.put("/:articleID", async (req, res) => {
-  if (!req.params.articleID) {
-    return res.status(400).json({ msg: "Article ID is missing" });
-  }
-  try {
-      const article = await Article.findById(req.params.articleID);
-      if (!article) {
-        return res.status(400).json({ msg: "Article not found" });
-      }
-      
-      // Must ensure that some element are the same
-      req.body.article._id = article._id;
-      req.body.article.firstPosted = article.firstPosted;
-
-      // Auto set
-      req.body.article.dateLastUpdated = Date.now();
-
-      await Article.findByIdAndUpdate(article._id, req.body.article);
-
-      return res.json({ msg: "Article Edit successful" });
+router.put("/", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+  
+    if (!newAttrs._id) {
+      return res.status(400).json({ msg: "Article id is missing" });
+    }
+  
+    try {
+      const article = await Article.findOne({ _id: newAttrs._id });
+      attrKeys.forEach((key) => {
+        if (key !== "_id" && key !== "firstPosted") {
+          article[key] = newAttrs[key];
+        }
+      });
+      await article.save();
+      res.json(article);
     } catch (e) {
-      return res.status(400).json({ msg: "Article edit failed: " + e.message });
-  }
+      return res.status(400).json({ msg: e.message });
+    }
 });
 
 
