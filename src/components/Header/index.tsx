@@ -1,13 +1,13 @@
 import React from 'react';
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import Logo from "../../images/logos/logo.png"
+import Logo from "../../images/logos/logo.svg"
+import BerryLogo from "../../images/logos/berry-logo.svg"
 import FirebaseContext from "../../context/firebase";
 import UserContext from "../../context/user";
 import { useContext, useState } from "react";
 import { signOut } from "firebase/auth";
 import { Navigate, useNavigate } from "react-router-dom";
-
 import Dropdown from '../Dropdown';
 
 interface Props {
@@ -129,9 +129,16 @@ const Header: React.FC<Props> = ({ isAuthenticated }) => {
     return (
         <AppBar position="fixed" color="inherit">
             <Toolbar>
-                <Link to="/" style={{ display: 'flex', alignContent: 'center' }}>
-                    <img src={Logo} alt="Finberry Logo" style={{ flexGrow: 1 }} />
-                </Link>
+                <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+                    <Link to="/" style={{ height: '2.5rem', alignContent: 'center' }}>
+                        <img src={Logo} alt="Finberry Logo" style={{ flexGrow: 1, height: '100%' }} />
+                    </Link>
+                </Box>
+                <Box sx={{ display: { xs: "flex", md: "none" }}}>
+                    <Link to="/" style={{ height: '2.5rem', alignContent: 'center' }}>
+                        <img src={BerryLogo} alt="Finberry Logo" style={{ flexGrow: 1, height: '100%' }} />
+                    </Link>
+                </Box>
                 {isAuthenticated ? authLinks(handleSumbit, error) : guestLinks}
             </Toolbar>
         </AppBar>
