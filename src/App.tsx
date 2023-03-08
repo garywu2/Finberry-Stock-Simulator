@@ -44,6 +44,7 @@ const theme = responsiveFontSizes(createTheme({
         root: {
           color: "secondary",
           textTransform: 'none',
+          fontWeight: 'bold'
         }
       }
     },
