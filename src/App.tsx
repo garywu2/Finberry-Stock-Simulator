@@ -25,10 +25,10 @@ const theme = responsiveFontSizes(createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#7e57c2',
+      main: '#6511F5',
     },
     secondary: {
-      main: '#00897b',
+      main: '#12ce60',
     },
     info: {
       main: '#F8F9FA',
@@ -44,6 +44,7 @@ const theme = responsiveFontSizes(createTheme({
         root: {
           color: "secondary",
           textTransform: 'none',
+          fontWeight: 'bold'
         }
       }
     },
