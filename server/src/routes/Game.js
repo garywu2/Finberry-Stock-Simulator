@@ -530,7 +530,11 @@ router.get("/holding/:simulatorID", async (req, res) => {
 
         let allHodings = [];
         simulatorEnrollments.forEach((simulatorEnrollment) => {
-            allHodings.push(simulatorEnrollment.holdings);
+            allHodings.push(
+            {
+                userID: simulatorEnrollment.user,
+                holdings: simulatorEnrollment.holdings
+            });
         });
 
         return res.json(allHodings);
@@ -563,17 +567,12 @@ router.get("/holding/:simulatorID/:email", async (req, res) => {
         let userID = user._id;
 
         // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
-        const simulatorEnrollments = await SimulatorEnrollment.find({ user: userID, simulator: simulatorID }).populate("holdings");
-        if (!simulatorEnrollments.length > 0) {
+        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("holdings");
+        if (!simulatorEnrollment) {
           return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator." });
         }
 
-        let allHodings = [];
-        simulatorEnrollments.forEach((simulatorEnrollment) => {
-            allHodings.push(simulatorEnrollment.holdings);
-        });
-
-        return res.json(allHodings);
+        return res.json(simulatorEnrollment.holdings);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -624,7 +623,11 @@ router.get("/tradeHistory/:simulatorID", async (req, res) => {
 
         let allTradeHistory = [];
         simulatorEnrollments.forEach((simulatorEnrollment) => {
-            allTradeHistory.push(simulatorEnrollment.tradeHistory);
+            allTradeHistory.push(
+                {
+                    userID: simulatorEnrollment.user,
+                    tradeHistory: simulatorEnrollment.tradeHistory
+                });
         });
 
         return res.json(allTradeHistory);
@@ -657,17 +660,12 @@ router.get("/tradeHistory/:simulatorID/:email", async (req, res) => {
         let userID = user._id;
 
         // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
-        const simulatorEnrollments = await SimulatorEnrollment.find({ user: userID, simulator: simulatorID }).populate("tradeHistory");
-        if (!simulatorEnrollments.length > 0) {
+        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("tradeHistory");
+        if (!simulatorEnrollment) {
           return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator." });
         }
 
-        let allTradeHistory = [];
-        simulatorEnrollments.forEach((simulatorEnrollment) => {
-            allTradeHistory.push(simulatorEnrollment.tradeHistory);
-        });
-
-        return res.json(allTradeHistory);
+        return res.json(simulatorEnrollment.tradeHistory);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -682,5 +680,39 @@ router.delete("/tradeHistory", async (req, res) => {
   
       } catch (e) {
         return res.status(400).json({ msg: "TradeHistorys deletions failed: " + e.message });
+    }
+});
+
+// GET a list of ALL balance of a specific simulator of a specific person
+router.get("/balance/:simulatorID/:email", async (req, res) => {
+    if (!req.params.simulatorID) {
+        return res.status(400).json({ msg: "simulatorID is missing" });
+    }
+    if (!req.params.email) {
+        return res.status(400).json({ msg: "Email is missing" });
+    }
+    try {
+        const simulator = await Simulator.findById(req.params.simulatorID);
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+        }
+
+        const user = await User.findOne({ email: req.params.email });
+        if (!user) {
+          return res.status(400).json({ msg: "User with provided email not found" });
+        }
+
+        let simulatorID = simulator._id;
+        let userID = user._id;
+
+        // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
+        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("tradeHistory");
+        if (!simulatorEnrollment) {
+          return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator with the provided email." });
+        }
+
+        return res.json({"balance": simulatorEnrollment.balance});
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
     }
 });
