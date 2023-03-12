@@ -706,12 +706,12 @@ router.get("/balance/:simulatorID/:email", async (req, res) => {
         let userID = user._id;
 
         // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
-        const simulatorEnrollments = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("tradeHistory");
-        if (!simulatorEnrollments) {
+        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("tradeHistory");
+        if (!simulatorEnrollment) {
           return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator with the provided email." });
         }
 
-        return res.json({"balance": simulatorEnrollments.balance});
+        return res.json({"balance": simulatorEnrollment.balance});
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
