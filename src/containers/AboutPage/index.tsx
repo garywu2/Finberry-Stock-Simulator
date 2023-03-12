@@ -15,12 +15,32 @@ interface Bio {
 }
 
 const bios: Bio[] = [
-    { name: 'Haseeb Khan', description: 'Hello! I enjoy travelling, photography, bouldering, and spontaneous adventures with friends and family. The potential for creating entrepreneurial products and solutions excites me greatly.' },
-    { name: 'Brooke Mitchell', description: 'Hi, I\'m Brooke. Ever since I was a kid running my own lemonade stands, I have been fascinated with the idea of entrepreneurial work and self-employment. I am a creative individual and I believe this helps me come up with innovative business ideas and creative solutions to potential problems. I love using Finberry to refine my investment skills and to compete against my fellow founders!' },
-    { name: 'Gary Wu', description: 'I am in my fourth year of a Software Engineering degree. Through previous internship experiences and projects, I’ve had experience with back-end development and the infrastructure side of the application. The primary languages I worked with include React, Express and a variety of different AWS infrastructures.' },
-    { name: 'Pin Hong Long', description: 'Hello I am Pin Hong Long, or simply Daniel. I have been fascinated with technology from very early on, this led to my early interest in computers and programming. This is evident by my strong interest in anything technology-related like video games, applications, and websites. With my interest in those fields, I believe it will be very helpful for Finberry.' },
-    { name: 'Muhammad Tariq', description: 'Hi I’m Muhammad Hassan Tariq. I have always been fascinated with computers and different technologies and recently crypto and fintech which led to the idea of our capstone project. I have also always believed in the entrepreneurial spirit and taking meaningful ideas to truly impact the world. Outside of school or work I like playing competitive games whether that be video games, sports, or board games and I also like travelling and spending time with friends and family.' }
-];
+  {
+    name: 'Haseeb Khan',
+    description:
+      'Hello! I enjoy travelling, photography, bouldering, and spontaneous adventures with friends and family. The potential for creating entrepreneurial products and solutions excites me greatly.',
+  },
+  {
+    name: 'Brooke Mitchell',
+    description:
+      "Hi, I'm Brooke. Ever since I was a kid running my own lemonade stands, I have been fascinated with the idea of entrepreneurial work and self-employment. I am a creative individual and I believe this helps me come up with innovative business ideas and creative solutions to potential problems. I love using Finberry to refine my investment skills and to compete against my fellow founders!",
+  },
+  {
+    name: 'Gary Wu',
+    description:
+      'I am in my fourth year of a Software Engineering degree. Through previous internship experiences and projects, I’ve had experience with back-end development and the infrastructure side of the application. The primary languages I worked with include React, Express and a variety of different AWS infrastructures.',
+  },
+  {
+    name: 'Pin Hong Long',
+    description:
+      'Hello I am Pin Hong Long, or simply Daniel. I have been fascinated with technology from very early on, this led to my early interest in computers and programming. This is evident by my strong interest in anything technology-related like video games, applications, and websites. With my interest in those fields, I believe it will be very helpful for Finberry.',
+  },
+  {
+    name: 'Muhammad Tariq',
+    description:
+      'Hi I’m Muhammad Hassan Tariq. I have always been fascinated with computers and different technologies and recently crypto and fintech which led to the idea of our capstone project. I have also always believed in the entrepreneurial spirit and taking meaningful ideas to truly impact the world. Outside of school or work I like playing competitive games whether that be video games, sports, or board games and I also like travelling and spending time with friends and family.',
+  },
+]
 
 const AboutPage = () => {
   return (
