@@ -62,6 +62,22 @@ router.post("/user", async (req, res) => {
     }
 });
 
+// Get user by ID (Emergency patch)
+router.get("/user/id/:_id", async (req, res) => {
+    if (!req.params._id) {
+      return res.status(400).json({ msg: "User id is missing" });
+    }
+    try {
+      const user = await User.findOne({ _id: req.params._id });
+      if (!user) {
+        return res.status(400).json({ msg: "User not found" });
+      }
+      res.json(user);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+  });
+
 // GET user by email and username, determines if email or username is already taken beforehand
 router.get("/user/:email/:username", async (req, res) => {
     if (!req.params.email) {
@@ -135,21 +151,6 @@ router.get("/user/basic", async (req, res) => {
       return res.status(400).json({ msg: e.message });
     }
 });
-
-router.get("/user/:_id", async (req, res) => {
-    if (!req.params._id) {
-      return res.status(400).json({ msg: "User id is missing" });
-    }
-    try {
-      const user = await User.findOne({ _id: req.params._id });
-      if (!user) {
-        return res.status(400).json({ msg: "User not found" });
-      }
-      res.json(user);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-  });
 
 // GET user by email
 router.get("/user/:email", async (req, res) => {
