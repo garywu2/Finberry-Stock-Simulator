@@ -68,7 +68,7 @@ router.get("/user/id/:_id", async (req, res) => {
       return res.status(400).json({ msg: "User id is missing" });
     }
     try {
-      const user = await User.findOne({ _id: req.params._id });
+      const user = await User.findOne({ _id: req.params._id }).populate(["coachingProfiles", "simulatorEnrollments"]);
       if (!user) {
         return res.status(400).json({ msg: "User not found" });
       }
@@ -158,7 +158,7 @@ router.get("/user/:email", async (req, res) => {
         return res.status(400).json({ msg: "Email is missing" });
     }
     try {
-        const user = await User.findOne({ email: req.params.email }).populate("coachingProfiles");
+        const user = await User.findOne({ email: req.params.email }).populate(["coachingProfiles", "simulatorEnrollments"]);
         if (!user) {
             return res.status(400).json({ msg: "User not provided email not found" });
         }
@@ -218,7 +218,7 @@ router.put("/user/:email", async (req, res) => {
           return res.status(400).json({ msg: "User with provided email not found" });
         }
         attrKeys.forEach((key) => {
-        if (key !== "_id" && key !== "email" && key !== "createdAt" && key !== "participatingSimulators" && key !== "badges" && key !== "coaches" && key !== "premiumPaymentHistory" && key !== "coachingProfiles" && key !== "premiumExpiryDate") {
+        if (key !== "_id" && key !== "email" && key !== "createdAt" && key !== "simulatorEnrollments" && key !== "badges" && key !== "coaches" && key !== "premiumPaymentHistory" && key !== "coachingProfiles" && key !== "premiumExpiryDate") {
             user[key] = newAttrs[key];
         }
         });
