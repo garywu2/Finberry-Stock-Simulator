@@ -1,16 +1,17 @@
 import {
-    Box,
-    Container,
-    Grid,
-    Typography,
-    Card,
-    CardContent,
-    CardMedia
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Card,
+  CardContent,
+  CardMedia,
 } from '@mui/material'
+import TeamPhoto from '../../images/photos/team-photo.jpg'
 
 interface Bio {
-    name: string;
-    description: string;
+  name: string
+  description: string
 }
 
 const bios: Bio[] = [
@@ -22,74 +23,124 @@ const bios: Bio[] = [
 ];
 
 const AboutPage = () => {
-    return (
-        <div>
-            <Container
-                sx={{
-                    backgroundColor: 'primary.main',
-                    minHeight: '100vh',
-                    minWidth: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '3rem',
-                    boxShadow: '0 4px 15px -6px black',
-                    marginBottom: '1rem',
-                    paddingTop: '5rem',
-                    paddingBottom: '2rem'
-                }}
-            >
-                <Box
-                    display={"flex"}
+  return (
+    <div>
+      <Container
+        sx={{
+          backgroundColor: 'primary.main',
+          minHeight: '100vh',
+          minWidth: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '3rem',
+          boxShadow: '0 4px 15px -6px black',
+          marginBottom: '1rem',
+          paddingTop: '5rem',
+          paddingBottom: '2rem',
+        }}
+      >
+        <Box
+          display={'flex'}
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: '1rem',
+            width: '100%',
+            margin: { sm: '0rem', lg: '3rem' },
+            paddingBottom: '3rem',
+          }}
+        >
+          <Grid container>
+            <Grid xs={2}></Grid>
+            <Grid xs={8}>
+              <Typography
+                variant='h3'
+                align='center'
+                fontWeight={400}
+                padding={'2rem 0'}
+              >
+                About Us
+              </Typography>
+              <Typography
+                variant='h5'
+                align='center'
+                color='text.secondary'
+                paragraph
+              >
+                Founded in 2022 by friends from the University of Calgary,
+                Finberry offers a free, hands-on experience for learning about
+                investing through stock trading simulations, without risking
+                your own money.
+              </Typography>
+            </Grid>
+            <Grid xs={2}></Grid>
+            <Container>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Card
                     sx={{
-                        backgroundColor: 'white',
-                        borderRadius: "1rem",
-                        width: "100%",
-                        margin: { sm: "0rem", lg: "3rem" },
-                        paddingBottom: "3rem"
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
                     }}
-                >
-                    <Grid container>
-                        <Grid xs={2}></Grid>
-                        <Grid xs={8}>
-                            <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
-                                About Us
-                            </Typography>
-                            <Typography variant="h5" align="center" color="text.secondary" paragraph>
-                                Finberry was founded in 2022 by a group of friends who found it difficult to break into the world of investing. With so many contradicting resources available and limited funds, we didn’t want to invest our money without practicing beforehand. There were many simulated investing apps but they were not fun and not free. We didn’t want to feel like it was a job to learn how to invest and instead wanted to create a website that provided a fun and hands-on experience to learn how to trade stocks and invest money.
-                            </Typography>
-                        </Grid>
-                        <Grid xs={2}></Grid>
-                        <Container>
-                            <Grid container spacing={2}>
-                                {bios.map((bio, index) => (
-                                    <Grid item key={index} xs={12} sm={6} md={3}>
-                                        <Card
-                                            sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', }}
-                                        >
-                                            <CardContent sx={{ flexGrow: 1 }}>
-                                                <CardMedia
-                                                    component="img"
-                                                    image="https://source.unsplash.com/random"
-                                                    alt="random"
-                                                    sx={{ width: '100%', borderRadius: '1rem', marginBottom: '1rem' }}
-                                                />
-                                                <Typography gutterBottom variant="h5" align='center' component="h2">
-                                                    {bio.name}
-                                                </Typography>
-                                                <Typography >
-                                                    {bio.description}
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Container>
-                    </Grid></Box>
+                  >
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <CardMedia
+                        component='img'
+                        image={TeamPhoto}
+                        alt='random'
+                        sx={{
+                          width: '100%',
+                          borderRadius: '1rem',
+                          marginBottom: '1rem',
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </Grid>
+                {bios.map((bio, index) => (
+                  <Grid item key={index} xs={12} sm={6} md={3}>
+                    <Card
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <CardContent sx={{ flexGrow: 1 }}>
+                        <CardMedia
+                          component='img'
+                          image='https://source.unsplash.com/random'
+                          alt='random'
+                          sx={{
+                            height: '15rem',
+                            width: '100%',
+                            borderRadius: '1rem',
+                            marginBottom: '1rem',
+                          }}
+                        />
+                        <Typography
+                          gutterBottom
+                          variant='h5'
+                          align='center'
+                          component='h2'
+                        >
+                          {bio.name}
+                        </Typography>
+                        <Typography>{bio.description}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
             </Container>
-        </div>
-    )
+          </Grid>
+        </Box>
+      </Container>
+    </div>
+  )
 }
 
 export default AboutPage
