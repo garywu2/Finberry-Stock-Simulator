@@ -53,7 +53,18 @@ const HomePage = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Grid xs={12} lg={6}>
+                <Grid
+                  xs={12}
+                  lg={6}
+                  sx={{
+                    padding: {
+                      lg: '2rem',
+                      md: '5rem 10rem',
+                      sm: '5rem 7rem',
+                      xs: '0rem',
+                    },
+                  }}
+                >
                   <Typography
                     component='div'
                     variant='h3'
@@ -103,7 +114,7 @@ const HomePage = () => {
                       flexDirection: 'column',
                       justifyContent: 'center',
                       marginBottom: '1rem',
-                      width: { xs: '100%', lg: '80%' },
+                      width: { xs: '100%', md: '70%', sm: '70%', lg: '80%' },
                       margin: 'auto',
                     }}
                   >
