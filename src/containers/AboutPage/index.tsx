@@ -114,7 +114,7 @@ const AboutPage = () => {
                   <CardMedia
                     component='img'
                     image={TeamPhoto}
-                    alt='random'
+                    alt='Team photo'
                     sx={{
                       borderRadius: '1rem',
                     }}
