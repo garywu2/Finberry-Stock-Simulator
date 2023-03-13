@@ -755,6 +755,7 @@ router.delete("/review", async (req, res) => {
 
 router.get("/test", async (req, res) => {
     console.log("hi");
+    return res.json({ msg: "Heyyyyy" });
 });
 
 // // WIP
