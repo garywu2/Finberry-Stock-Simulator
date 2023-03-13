@@ -103,6 +103,8 @@ const HomePage = () => {
                       flexDirection: 'column',
                       justifyContent: 'center',
                       marginBottom: '1rem',
+                      width: { xs: '100%', lg: '80%' },
+                      margin: 'auto',
                     }}
                   >
                     <CardContent>
