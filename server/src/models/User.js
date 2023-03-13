@@ -99,8 +99,8 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: []
     },
-    coaches: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "Coaches" }],
+    coachingCoachs: {
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "CoachingCoach" }],
         required: true,
         default: []
     },

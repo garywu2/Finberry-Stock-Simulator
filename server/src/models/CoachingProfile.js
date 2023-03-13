@@ -63,8 +63,8 @@ const coachingProfileSchema = new mongoose.Schema({
         required: true,
         default: []
     },
-    clients: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "Client" }],
+    coachingClients: {
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "CoachingClient" }],
         required: true,
         default: []
     },

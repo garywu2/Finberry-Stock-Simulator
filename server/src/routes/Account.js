@@ -13,7 +13,10 @@ const   multer  =   require("multer"),
 const   User                =   require("../models/user"),
         CoachingProfile     =   require("../models/coachingProfile"),
         Review              =   require("../models/review"),
-        CoachingSession     =   require("../models/coachingSession");
+        CoachingClient      =   require("../models/coachingClient"),
+        CoachingCoach       =   require("../models/coachingCoach"),
+        CoachingSession     =   require("../models/coachingSession"),
+        ChatMessage         =   require("../models/chatMessage");
 
 
         
@@ -250,7 +253,7 @@ router.put("/user/:email", async (req, res) => {
           return res.status(400).json({ msg: "User with provided email not found" });
         }
         attrKeys.forEach((key) => {
-        if (key !== "_id" && key !== "email" && key !== "createdAt" && key !== "simulatorEnrollments" && key !== "badges" && key !== "coaches" && key !== "premiumPaymentHistory" && key !== "coachingProfiles" && key !== "premiumExpiryDate") {
+        if (key !== "_id" && key !== "email" && key !== "createdAt" && key !== "simulatorEnrollments" && key !== "badges" && key !== "coachingCoachs" && key !== "premiumPaymentHistory" && key !== "coachingProfiles" && key !== "premiumExpiryDate") {
             user[key] = newAttrs[key];
         }
         });
@@ -810,3 +813,8 @@ router.delete("/review", async (req, res) => {
 //         return res.status(400).json({ msg: "Entrolling user to simulator failed: " + e.message });
 //     }
 // });
+
+// CoachingClient      =   require("../models/coachingClient"),
+// CoachingCoach       =   require("../models/coachingCoach"),
+// CoachingSession     =   require("../models/coachingSession"),
+// ChatMessage         =   require("../models/chatMessage");
