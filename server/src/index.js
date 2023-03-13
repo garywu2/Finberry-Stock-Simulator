@@ -2,13 +2,12 @@ const express         =   require("express"),
       mongoose        =   require("mongoose");
 
 require("./models/CoachingProfile");
-require("./models/user");
+require("./models/User");
 require("./models/Article");
-require("./models/user");
-require("./models/simulator");
-require("./models/simulatorEnrollment");
-require("./models/holding");
-require("./models/tradeTransaction");
+require("./models/Simulator");
+require("./models/SimulatorEnrollment");
+require("./models/Holding");
+require("./models/TradeTransaction");
 
 const DB = process.env.DB || "mongodb://localhost/finberry";
 mongoose.connect(DB, () => {
