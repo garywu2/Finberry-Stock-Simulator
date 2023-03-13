@@ -30,13 +30,14 @@ const ProfilePage = () => {
         }
     }
 
-    React.useEffect(() => {
+    // Commenting out since its not being used, will be used later
+    // React.useEffect(() => {
 
-        axios.get('http://localhost:5000/account/user/' + String(user.email)).then((response) => {
-            setItems(response.data);
-            console.log(items)
-        });
-    }, []);
+    //     axios.get('http://localhost:5000/account/user/' + String(user.email)).then((response) => {
+    //         setItems(response.data);
+    //         console.log(items)
+    //     });
+    // }, []);
 
     return (
         <Container
