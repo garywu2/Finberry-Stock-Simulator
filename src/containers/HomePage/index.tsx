@@ -1,24 +1,27 @@
 import {
   Box,
   Button,
+  Card,
+  CardContent,
+  CardMedia,
   Container,
   Grid,
   Typography,
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { useContext, useState } from "react";
+import { useContext, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import Pricing from '../../components/Pricing'
-import UserContext from "../../context/user";
-
+import UserContext from '../../context/user'
+import IPad from '../../images/photos/ipad-mini.png'
 
 const HomePage = () => {
-  const { user } = useContext(UserContext);
-  const navigate = useNavigate();
+  const { user } = useContext(UserContext)
+  const navigate = useNavigate()
 
-  return (<div>
-    {!user ?
-      (
+  return (
+    <div>
+      {!user ? (
         <div>
           <Container
             sx={{
@@ -31,20 +34,26 @@ const HomePage = () => {
               borderRadius: '3rem',
               boxShadow: '0 4px 15px -6px black',
               marginBottom: '1rem',
-              padding: '2rem'
+              padding: '2rem',
             }}
           >
             <Box
-              display={"flex"}
+              display={'flex'}
               sx={{
-                width: "100%",
-                margin: { sm: "0rem", lg: "3rem" },
-                paddingBottom: "3rem"
+                width: '100%',
+                margin: { sm: '0rem', lg: '3rem' },
+                paddingBottom: '3rem',
               }}
             >
-              <Grid container>
-                <Grid xs={1} lg={1}></Grid>
-                <Grid xs={10} lg={4}>
+              <Grid
+                container
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Grid xs={12} lg={6}>
                   <Typography
                     component='div'
                     variant='h3'
@@ -64,8 +73,8 @@ const HomePage = () => {
                   >
                     <Box fontWeight='500' display='inline'>
                       Finberry empowers you with hands-on, simulated investing
-                      experience without risking your money. Sign up today to start
-                      learning!
+                      experience without risking your money. Sign up today to
+                      start learning!
                     </Box>
                   </Typography>
                   <Button
@@ -83,22 +92,28 @@ const HomePage = () => {
                     <b>Get Started</b>
                   </Button>
                 </Grid>
-                <Grid xs={1} lg={0}></Grid>
-                <Grid xs={1} lg={0}></Grid>
-                <Grid xs={10} lg={4} sx={{ paddingTop: { xs: "2rem", lg: "0rem" } }}>
-                  <Typography
-                    component='div'
-                    variant='h3'
-                    align='left'
-                    fontWeight={400}
-                    sx={{ color: 'white', marginBottom: '1rem' }}
+                <Grid
+                  xs={12}
+                  lg={6}
+                  sx={{ paddingTop: { xs: '2rem', lg: '0rem' } }}
+                >
+                  <Card
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      marginBottom: '1rem',
+                    }}
                   >
-                    <Box fontWeight='fontWeightBold' display='inline'>
-                      We'll eventually show app previews here.
-                    </Box>
-                  </Typography>
+                    <CardContent>
+                      <CardMedia
+                        component='img'
+                        image={IPad}
+                        alt='iPad App Preview'
+                      />
+                    </CardContent>
+                  </Card>
                 </Grid>
-                <Grid xs={1} lg={1}></Grid>
               </Grid>
             </Box>
           </Container>
@@ -112,11 +127,12 @@ const HomePage = () => {
               justifyContent: 'center',
               marginTop: '1rem',
               marginBottom: '1rem',
-              padding: '2rem'
+              padding: '2rem',
             }}
           >
             <Typography variant='h3' align='center' fontWeight={400}>
-              Some content about the top 5 stocks today (name, price, change, chart)
+              Some content about the top 5 stocks today (name, price, change,
+              chart)
             </Typography>
           </Container>
           <Container
@@ -132,7 +148,7 @@ const HomePage = () => {
               justifyContent: 'center',
               marginTop: '1rem',
               marginBottom: '1rem',
-              padding: '2rem'
+              padding: '2rem',
             }}
           >
             <Pricing />
@@ -141,7 +157,7 @@ const HomePage = () => {
       ) : (
         <Navigate to='/profile'></Navigate>
       )}
-  </div>
+    </div>
   )
 }
 
