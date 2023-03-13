@@ -49,8 +49,7 @@ app.use("/payment", Payment);
 
 app.use("/stock", Stock);
 
-const PORT = 5010;
-console.log("Good so far");
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`server started on ${PORT}`));
 
 module.exports = app;
