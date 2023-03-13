@@ -1,15 +1,22 @@
 const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema({
+    coachingProfile: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "CoachingProfile",
+        required: true,
+    },
     coach: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
     },
     user: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
     },
-    date: {
+    createdAt: {
         type: Date,
         required: true,
     },
@@ -30,7 +37,7 @@ const reviewSchema = new mongoose.Schema({
         required: false,
         default: false
     },
-    reviewed: {
+    requireReview: {
         type: Boolean,
         required: true,
         default: false
@@ -39,6 +46,18 @@ const reviewSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
         default: false,
+    },
+    userEdited: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+
+    // Last updated date
+    dateLastUpdated: {
+        type: Date,
+        required: true,
+        default: Date.now,
     },
 });
 

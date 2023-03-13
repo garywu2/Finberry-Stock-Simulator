@@ -130,17 +130,18 @@ router.put("/simulator/:simulatorID", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
   
-    if (!newAttrs._id) {
+    if (!req.params.simulatorID) {
       return res.status(400).json({ msg: "Article id is missing" });
     }
   
     try {
-      const simulator = await Simulator.findOne({ _id: newAttrs._id });
+      const simulator = await Simulator.findOne({ _id: req.params.simulatorID });
       attrKeys.forEach((key) => {
         if (key !== "_id" && key !== "participatingUsers" && key !== "dateLastUpdated") {
             simulator[key] = newAttrs[key];
         }
       });
+      simulator["dateLastUpdated"] = Date.now();
       await simulator.save();
       res.json(simulator);
     } catch (e) {
