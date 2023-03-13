@@ -1,6 +1,7 @@
 // Express and the routers
 const   express =   require("express"),
-        router  =   express.Router();
+        router  =   express.Router(),
+        mongoose = require("mongoose");
 
 module.exports  =   router;
 
@@ -10,8 +11,8 @@ const   multer  =   require("multer"),
         upload  =   multer({ storage: storage });
 
 // // Relevant schemas
-const   User                =   require("../models/user"),
-        CoachingProfile     =   require("../models/coachingProfile");
+const   User                =   mongoose.model("User"),
+        CoachingProfile     =   mongoose.model("coachingprofile");
 
 
         

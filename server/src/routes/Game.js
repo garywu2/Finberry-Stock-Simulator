@@ -1,6 +1,7 @@
 // Express and the routers
-const   express =   require("express"),
-        router  =   express.Router();
+const   express  =   require("express"),
+        router   =   express.Router(),
+        mongoose = require("mongoose");
 
 module.exports  =   router;
 
@@ -10,11 +11,11 @@ const   multer  =   require("multer"),
         upload  =   multer({ storage: storage });
 
 // Relevant schemas
-const   User                    =   require("../models/user"),
-        Simulator               =   require("../models/simulator"),
-        SimulatorEnrollment     =   require("../models/simulatorEnrollment"),
-        Holding                 =   require("../models/holding"),
-        TradeTransaction        =   require("../models/tradeTransaction");
+const   User                    =   mongoose.model("User"),
+        Simulator               =   mongoose.model("Simulator"),
+        SimulatorEnrollment     =   mongoose.model("SimulatorEnrollment"),
+        Holding                 =   mongoose.model("Holding"),
+        TradeTransaction        =   mongoose.model("TradeTransaction");
 
 
 //// Simulator - Itself

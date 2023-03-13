@@ -1,6 +1,21 @@
 const express         =   require("express"),
-      mongoose        =   require("mongoose"),
-      Accounts        =   require("./routes/Account"),
+      mongoose        =   require("mongoose");
+
+require("./models/CoachingProfile");
+require("./models/user");
+require("./models/Article");
+require("./models/user");
+require("./models/simulator");
+require("./models/simulatorEnrollment");
+require("./models/holding");
+require("./models/tradeTransaction");
+
+const DB = process.env.DB || "mongodb://localhost/finberry";
+mongoose.connect(DB, () => {
+  console.log("Database Connected");
+});
+          
+const Accounts        =   require("./routes/Account"),
       // User            =   require("./routes/Account/user"),
       // CoachingProfile =   require("./routes/Account/coachingProfile"),
       Educational     =   require("./routes/Educational"),
@@ -13,12 +28,6 @@ const express         =   require("express"),
 
 const app = express();
 app.use(cors());
-
-const DB = process.env.DB || "mongodb://localhost/finberry";
-
-mongoose.connect(DB, () => {
-  console.log("Database Connected");
-});
 
 //Body parser middleware
 app.use(express.json());

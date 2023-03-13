@@ -69,4 +69,4 @@ const coachingProfileSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model("CoachingProfile", coachingProfileSchema);
+module.exports = mongoose.model("coachingprofile", coachingProfileSchema);
