@@ -1,7 +1,7 @@
 // Express and the routers
 const   express  =   require("express"),
         router   =   express.Router(),
-        mongoose = require("mongoose");
+        mongoose =   require("mongoose");
 
 module.exports  =   router;
 

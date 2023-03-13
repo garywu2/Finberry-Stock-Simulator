@@ -1,7 +1,7 @@
 // Express and the routers
 const   express =   require("express"),
         router  =   express.Router(),
-        mongoose = require("mongoose");
+        mongoose =  require("mongoose");
 
 module.exports  =   router;
 
@@ -751,6 +751,11 @@ router.delete("/review", async (req, res) => {
       } catch (e) {
         return res.status(400).json({ msg: "Review deletions failed: " + e.message });
     }
+});
+
+router.get("/test", async (req, res) => {
+    console.log("hi");
+    return res.json({ msg: "Heyyyyy" });
 });
 
 // // WIP
