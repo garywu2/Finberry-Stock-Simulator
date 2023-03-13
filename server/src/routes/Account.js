@@ -68,7 +68,22 @@ router.get("/user/id/:_id", async (req, res) => {
       return res.status(400).json({ msg: "User id is missing" });
     }
     try {
-      const user = await User.findOne({ _id: req.params._id }).populate(["coachingProfiles", "simulatorEnrollments"]);
+      const user = await User.findById(req.params._id).populate(
+            [
+                {
+                    path: "coachingProfiles"
+                },
+                {
+                    path: "simulatorEnrollments",
+                    select: "simulator balance",
+                    populate: {
+                        path: "simulator",
+                        select: "-simulatorEnrollments"
+                    }
+                }
+            ]
+        );
+      
       if (!user) {
         return res.status(400).json({ msg: "User not found" });
       }
@@ -158,7 +173,22 @@ router.get("/user/:email", async (req, res) => {
         return res.status(400).json({ msg: "Email is missing" });
     }
     try {
-        const user = await User.findOne({ email: req.params.email }).populate(["coachingProfiles", "simulatorEnrollments"]);
+        const user = await User.findOne({ email: req.params.email }).populate(
+                [
+                    {
+                        path: "coachingProfiles"
+                    },
+                    {
+                        path: "simulatorEnrollments",
+                        select: "simulator balance",
+                        populate: {
+                            path: "simulator",
+                            select: "-simulatorEnrollments"
+                        }
+                    }
+                ]
+            );
+
         if (!user) {
             return res.status(400).json({ msg: "User not provided email not found" });
         }
