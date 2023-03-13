@@ -8,9 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "populate": "nodemon src/populateModels.js",
-    "dev-server": "node src/",
-    "start": "node src/"
+    "populate": "nodemon api/populateModels.js",
+    "dev-server": "node api/",
+    "start": "node api/"
   },
   "keywords": [],
   "author": "",

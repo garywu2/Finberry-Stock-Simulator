@@ -1,28 +1,28 @@
 const express         =   require("express"),
       mongoose        =   require("mongoose");
 
-require("./models/CoachingProfile");
-require("./models/User");
-require("./models/Article");
-require("./models/Simulator");
-require("./models/SimulatorEnrollment");
-require("./models/Holding");
-require("./models/TradeTransaction");
-require("./models/Review");
-require("./models/CoachingSession");
+require("../src/models/CoachingProfile");
+require("../src/models/User");
+require("../src/models/Article");
+require("../src/models/Simulator");
+require("../src/models/SimulatorEnrollment");
+require("../src/models/Holding");
+require("../src/models/TradeTransaction");
+require("../src/models/Review");
+require("../src/models/CoachingSession");
 
 const DB = process.env.DB || "mongodb://localhost/finberry";
 mongoose.connect(DB, () => {
   console.log("Database Connected");
 });
           
-const Accounts        =   require("./routes/Account"),
+const Accounts        =   require("../src/routes/Account"),
       // User            =   require("./routes/Account/user"),
       // CoachingProfile =   require("./routes/Account/coachingProfile"),
-      Educational     =   require("./routes/Educational"),
-      Game            =   require("./routes/Game"),
-      Payment         =   require("./routes/Payment"),
-      Stock           =   require("./routes/Stock"),
+      Educational     =   require("../src/routes/Educational"),
+      Game            =   require("../src/routes/Game"),
+      Payment         =   require("../src/routes/Payment"),
+      Stock           =   require("../src/routes/Stock"),
       cors            =   require("cors");
 
 // import dailyRefresh from "./stock"
