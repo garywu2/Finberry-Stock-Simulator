@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "populate": "nodemon api/populateModels.js",
-    "dev-server": "node api/"
+    "populate": "nodemon src/populateModels.js",
+    "dev-server": "node ./"
   },
   "keywords": [],
   "author": "",
