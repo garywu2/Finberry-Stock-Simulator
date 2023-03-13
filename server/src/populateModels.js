@@ -1,8 +1,11 @@
 const   mongoose = require("mongoose"),
         fs = require("fs"),
         Article = require("./models/Article"),
-        User = require("./models/User");
-        
+        User = require("./models/User"),
+        path = require('path');
+
+
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 //const Badge = require("./models/Badge");
 // const ChatLog = require("./models/ChatLog");
 // const Client = require("./models/Client");
@@ -26,7 +29,7 @@ const DB = process.env.DB || "mongodb://localhost/finberry";
 
 mongoose.connect(DB, () => {
     console.log("Database Connected");
-    mongoose.connection.db.dropDatabase();
+    //mongoose.connection.db.dropDatabase();
     console.log("Dropping current database");
   });
 

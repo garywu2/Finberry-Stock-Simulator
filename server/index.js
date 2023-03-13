@@ -1,6 +1,8 @@
 const express         =   require("express"),
-      mongoose        =   require("mongoose");
+      mongoose        =   require("mongoose"),
+      path            =   require('path');
 
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 require("./src/models/CoachingProfile");
 require("./src/models/User");
 require("./src/models/Article");
