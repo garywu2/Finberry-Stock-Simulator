@@ -753,6 +753,10 @@ router.delete("/review", async (req, res) => {
     }
 });
 
+router.get("/test", async (req, res) => {
+    console.log("hi");
+});
+
 // // WIP
 // /// User applies for a session with a coach, specificially through a coaching profile.
 // // Enroll an user to a coaching profile (applying for a session). - Basically creates an CoachingSession Object
