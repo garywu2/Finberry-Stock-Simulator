@@ -75,17 +75,18 @@ router.put("/:articleID", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
   
-    if (!newAttrs._id) {
+    if (!req.params.articleID) {
       return res.status(400).json({ msg: "Article id is missing" });
     }
   
     try {
-      const article = await Article.findOne({ _id: newAttrs._id });
+      const article = await Article.findOne({ _id: req.params.articleID });
       attrKeys.forEach((key) => {
         if (key !== "_id" && key !== "firstPosted") {
           article[key] = newAttrs[key];
         }
       });
+      article["dateLastUpdated"] = Date.now();
       await article.save();
       res.json(article);
     } catch (e) {

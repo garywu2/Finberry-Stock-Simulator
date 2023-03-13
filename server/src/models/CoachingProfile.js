@@ -57,6 +57,7 @@ const coachingProfileSchema = new mongoose.Schema({
         default: Date.now,
     },
 
+    // Perhaps we do not even need a list here. As the coaching profile already have a reference to know where this is. (Maybe we can consider removing this later)
     reviews: {
         type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "Review" }],
         required: true,
