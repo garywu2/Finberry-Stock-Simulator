@@ -8,8 +8,8 @@ require("./models/Simulator");
 require("./models/SimulatorEnrollment");
 require("./models/Holding");
 require("./models/TradeTransaction");
-require("../models/Review");
-require("../models/CoachingSession");
+require("./models/Review");
+require("./models/CoachingSession");
 
 const DB = process.env.DB || "mongodb://localhost/finberry";
 mongoose.connect(DB, () => {
