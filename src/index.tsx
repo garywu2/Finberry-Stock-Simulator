@@ -10,9 +10,13 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <FirebaseContext.Provider value={{ auth }}>
-    <CssBaseline />
-    <App />
-  </FirebaseContext.Provider>
+  <ApiProvider api={apiSlice}>
+    <Provider store={store}></Provider>
+      <FirebaseContext.Provider value={{ auth }}>
+        <CssBaseline />
+        <App />
+       </FirebaseContext.Provider>
+    </Provider>
+  </ApiProvider>
 );
 

@@ -13,7 +13,7 @@ import CoachCataloguePage from './containers/CoachCataloguePage';
 import FaqPage from './containers/FaqPage';
 import ContactPage from './containers/ContactPage';
 import AboutPage from './containers/AboutPage';
-
+import NotFoundPage from './containers/NotFoundPage';
 import useAuthListener from "./hooks/use-auth";
 import UserContext from "./context/user";
 import { createTheme, ThemeProvider, responsiveFontSizes } from '@mui/material/styles';
@@ -74,6 +74,7 @@ function App() {
               <Route path="/FAQ" element={<FaqPage />} />
               <Route path="/Contact" element={<ContactPage />} />
               <Route path="/About" element={<AboutPage />} />
+              <Route path="*" element={<NotFoundPage />}/>
             </Routes>
             <Footer />
           </div>

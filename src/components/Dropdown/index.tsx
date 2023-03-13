@@ -8,6 +8,7 @@ import { signOut } from "firebase/auth";
 import { Navigate, useNavigate } from "react-router-dom";
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useDispatch, useSelector } from "react-redux";
 
 
 interface Props {
@@ -22,6 +23,8 @@ interface Link {
 const Dropdown: React.FC<Props> = ({ links }) => {
     const { auth } = useContext(FirebaseContext);
     const { user } = useContext(UserContext);
+    //Gonna have to use this because coach will have different dropdowns then user for example
+    // const userInfo = useSelector((state: any) => state.appState.userInfo);
 
     const [error, setError] = useState("");
 
