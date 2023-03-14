@@ -12,18 +12,13 @@ const   multer  =   require("multer"),
 
 // // Relevant schemas
 const   User                =   mongoose.model("User"),
-        CoachingProfile     =   mongoose.model("coachingprofile"),
+        CoachingProfile     =   mongoose.model("CoachingProfile"),
         Review              =   mongoose.model("Review"),
-        CoachingSession     =   mongoose.model("CoachingSession");
+        CoachingClient      =   mongoose.model("CoachingClient"),
+        CoachingCoach       =   mongoose.model("CoachingCoach"),
+        CoachingSession     =   mongoose.model("CoachingSession"),
+        ChatMessage         =   mongoose.model("ChatMessage");
 
-        // const   User                =   require("../models/user"),
-        // CoachingProfile     =   require("../models/coachingProfile"),
-        // Review              =   require("../models/review"),
-        // CoachingClient      =   require("../models/coachingClient"),
-        // CoachingCoach       =   require("../models/coachingCoach"),
-        // CoachingSession     =   require("../models/coachingSession"),
-        // ChatMessage         =   require("../models/chatMessage");
-        
 //// USER and PROFILE (Not coaching)
 
 // POST - User sign up - create a new generic user (No coaching profile)
@@ -375,6 +370,9 @@ router.post("/coaching", async (req, res) => {
         };
 
         try {
+            // Ensure correct types (Force convert to integer (inside the try catch))
+            newCoachingProfile.price = Number(newCoachingProfile.price);
+            
             const coachingProfile = new CoachingProfile(newCoachingProfile);
 
             await coachingProfile.save();
@@ -441,10 +439,11 @@ router.get("/coaching/hidden", async (req, res) => {
 // Get all Terminated coaching profiles
 router.get("/coaching/terminated", async (req, res) => {
     try {
-        const coachingProfileDisapproved = await CoachingProfile.find({ status: 3 });
-        const coachingProfileDeactivated = await CoachingProfile.find({ status: 4 });
-        const coachingProfileModOrAdmin = await CoachingProfile.find({ status: 5 });
-        const allCoachingProfiles = {...coachingProfileDisapproved, ...coachingProfileDeactivated, ...coachingProfileModOrAdmin };
+        // const coachingProfileDisapproved = await CoachingProfile.find({ status: 3 }); // How can you be so inefficient.
+        // const coachingProfileDeactivated = await CoachingProfile.find({ status: 4 });
+        // const coachingProfileModOrAdmin = await CoachingProfile.find({ status: 5 });
+        // const allCoachingProfiles = {...coachingProfileDisapproved, ...coachingProfileDeactivated, ...coachingProfileModOrAdmin };
+        const allCoachingProfiles = await CoachingProfile.find({ status: 3, status: 4, status: 5 });
         return res.json(allCoachingProfiles);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
@@ -474,6 +473,10 @@ router.put("/coaching/:coachingProfileID", async (req, res) => {
         return res.status(400).json({ msg: "Coaching Profile ID is missing" });
     }
     try {
+        // Ensure correct types (Force convert to integer (inside the try catch))
+        // req.body.coachingProfile.price = Number( req.body.coachingProfile.price);
+        // req.body.coachingProfile.status = Number( req.body.coachingProfile.status);
+
         const coachingProfile = await CoachingProfile.findById(req.params.coachingProfileID);
         if (!coachingProfile) {
           return res.status(400).json({ msg: "Coaching profile of the ID not found" });
@@ -614,6 +617,9 @@ router.post("/review", async (req, res) => {
     };
 
     try {
+        // Ensure correct types (Force convert to integer (inside the try catch))
+        newReview.rating = Number(newReview.rating);
+
         const review = new Review(newReview);
         await review.save();
         
@@ -674,6 +680,9 @@ router.put("/review/:reviewID", async (req, res) => {
     }
 
     try {
+        // // Ensure correct types (Force convert to integer (inside the try catch))
+        // req.body.rating = Number(req.body.rating);
+
         const review = await Review.findById(req.params.reviewID);
         if (!review) {
           return res.status(400).json({ msg: "Review of the ID not found" });
