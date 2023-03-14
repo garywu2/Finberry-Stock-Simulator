@@ -44,6 +44,9 @@ router.post("/simulator", async (req, res) => {
     }
 
     try {
+        // Ensure correct types (Force convert to integer (inside the try catch))
+        newSimulator.userStartFund = Number(newSimulator.userStartFund);
+
         const dbSimulator = new Simulator(newSimulator);
         await dbSimulator.save();
         return res.json(dbSimulator);
@@ -132,19 +135,22 @@ router.put("/simulator/:simulatorID", async (req, res) => {
     const attrKeys = Object.keys(newAttrs);
   
     if (!req.params.simulatorID) {
-      return res.status(400).json({ msg: "Article id is missing" });
+      return res.status(400).json({ msg: "Simulator id is missing" });
     }
   
     try {
-      const simulator = await Simulator.findOne({ _id: req.params.simulatorID });
-      attrKeys.forEach((key) => {
-        if (key !== "_id" && key !== "participatingUsers" && key !== "dateLastUpdated") {
-            simulator[key] = newAttrs[key];
-        }
-      });
-      simulator["dateLastUpdated"] = Date.now();
-      await simulator.save();
-      res.json(simulator);
+        // // Ensure correct types (Force convert to integer (inside the try catch))
+        // newAttrs.userStartFund = Number(newAttrs.userStartFund);
+            
+        const simulator = await Simulator.findOne({ _id: req.params.simulatorID });
+        attrKeys.forEach((key) => {
+            if (key !== "_id" && key !== "participatingUsers" && key !== "dateLastUpdated") {
+                simulator[key] = newAttrs[key];
+            }
+        });
+        simulator["dateLastUpdated"] = Date.now();
+        await simulator.save();
+        res.json(simulator);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -378,6 +384,11 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
     }
 
     try {
+        // Ensure correct types (Force convert to integer (inside the try catch))
+        req.body.quantity = Number(req.body.quantity);
+        req.body.price = Number(req.body.price);
+        req.body.transactionType = Number(req.body.transactionType);
+
         const simulator = await Simulator.findById(req.params.simulatorID);
         if (!simulator) {
             return res.status(400).json({ msg: "Simulator with provided ID not found" });
