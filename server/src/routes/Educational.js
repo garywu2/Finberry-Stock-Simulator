@@ -1,6 +1,7 @@
 // Express and the routers
-const   express =   require("express"),
-        router  =   express.Router();
+const   express  =   require("express"),
+        router   =   express.Router(),
+        mongoose =   require("mongoose");
 
 module.exports  =   router;
 
@@ -10,7 +11,7 @@ const   multer  =   require("multer"),
         upload  =   multer({ storage: storage });
 
 // Relevant schemas
-const   Article  =  require("../models/Article");
+const   Article  =  mongoose.model("Article");
 
 //create a article
 // Note: Might want to make title unique somehow, issues with this right now.
