@@ -1,6 +1,7 @@
 // Express and the routers
 const   express =   require("express"),
-        router  =   express.Router();
+        router  =   express.Router(),
+        mongoose =  require("mongoose");
 
 module.exports  =   router;
 
@@ -10,15 +11,18 @@ const   multer  =   require("multer"),
         upload  =   multer({ storage: storage });
 
 // // Relevant schemas
-const   User                =   require("../models/user"),
-        CoachingProfile     =   require("../models/coachingProfile"),
-        Review              =   require("../models/review"),
-        CoachingClient      =   require("../models/coachingClient"),
-        CoachingCoach       =   require("../models/coachingCoach"),
-        CoachingSession     =   require("../models/coachingSession"),
-        ChatMessage         =   require("../models/chatMessage");
+const   User                =   mongoose.model("User"),
+        CoachingProfile     =   mongoose.model("coachingprofile"),
+        Review              =   mongoose.model("Review"),
+        CoachingSession     =   mongoose.model("CoachingSession");
 
-
+        // const   User                =   require("../models/user"),
+        // CoachingProfile     =   require("../models/coachingProfile"),
+        // Review              =   require("../models/review"),
+        // CoachingClient      =   require("../models/coachingClient"),
+        // CoachingCoach       =   require("../models/coachingCoach"),
+        // CoachingSession     =   require("../models/coachingSession"),
+        // ChatMessage         =   require("../models/chatMessage");
         
 //// USER and PROFILE (Not coaching)
 
@@ -753,6 +757,11 @@ router.delete("/review", async (req, res) => {
       } catch (e) {
         return res.status(400).json({ msg: "Review deletions failed: " + e.message });
     }
+});
+
+router.get("/test", async (req, res) => {
+    console.log("hi");
+    return res.json({ msg: "Heyyyyy" });
 });
 
 // // WIP
