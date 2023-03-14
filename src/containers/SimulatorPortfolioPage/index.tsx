@@ -64,6 +64,26 @@ const SimulatorPortfolioPage = () => {
         }
     }
 
+    if(realTimePrice) {
+        axios({
+            method: 'post',
+            url:  route + 'game/simulator/' + userItems.simulatorEnrollments[simIndex].simulator._id + '/' + String(user.email) ,
+            headers: {},
+            data: {
+                "symbol": items.meta.symbol,
+                "index": items.meta.exchange,
+                "transactionType": 1,
+                "quantity": buyAmount,
+                "price": realTimePrice.price,
+                "transactionTime": Date.now()
+            }
+        }).then((result: any) => {
+            axios.get(route + 'account/user/' + String(user.email)).then((response) => {
+            setUserItems(response.data);
+            });
+        });
+    }
+
     const handleSimulatorChange = (event: any) => {
         setSelectedSimulator(event.target.value);
     };
@@ -99,28 +119,8 @@ const SimulatorPortfolioPage = () => {
 
     const handleSubmit = (event: any) => {
         axios.get('https://api.twelvedata.com/price?symbol=' + items.meta.symbol + '&apikey=bda95123e0344a5ba4e148064a3eabea').then((response) => {
-            setRealTimePrice(response.data)
+            setRealTimePrice(response.data);
         });
-
-        if(realTimePrice) {
-            axios({
-                method: 'post',
-                url:  route + 'game/simulator/' + userItems.simulatorEnrollments[simIndex].simulator + '/' + String(user.email) ,
-                headers: {},
-                data: {
-                    "symbol": items.meta.symbol,
-                    "index": items.meta.exchange,
-                    "transactionType": 1,
-                    "quantity": buyAmount,
-                    "price": realTimePrice.price,
-                    "transactionTime": Date.now()
-                }
-            }).then((result: any) => {
-                axios.get(route + 'account/user/' + String(user.email)).then((response) => {
-                setUserItems(response.data);
-                });
-            });
-        }
     }
 
     const handleEnrollSubmit = (event: any) => {
