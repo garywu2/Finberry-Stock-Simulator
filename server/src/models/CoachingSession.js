@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const sessionSchema = new mongoose.Schema({
+const coachingSessionSchema = new mongoose.Schema({
     startTime: {
         type: Date,
         required: true,
@@ -14,11 +14,13 @@ const sessionSchema = new mongoose.Schema({
         required: true,
     },
     coach: {
-        type: { type: mongoose.SchemaTypes.ObjectId, ref: "User" },
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
     },
     client: {
-        type: { type: mongoose.SchemaTypes.ObjectId, ref: "User" },
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
       },
     paymentHistory: {
@@ -33,4 +35,4 @@ const sessionSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("Session", sessionSchema);
+module.exports = mongoose.model("CoachingSession", coachingSessionSchema);

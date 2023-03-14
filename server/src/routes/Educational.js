@@ -1,6 +1,7 @@
 // Express and the routers
-const   express =   require("express"),
-        router  =   express.Router();
+const   express  =   require("express"),
+        router   =   express.Router(),
+        mongoose =   require("mongoose");
 
 module.exports  =   router;
 
@@ -10,7 +11,7 @@ const   multer  =   require("multer"),
         upload  =   multer({ storage: storage });
 
 // Relevant schemas
-const   Article  =  require("../models/Article");
+const   Article  =  mongoose.model("Article");
 
 //create a article
 // Note: Might want to make title unique somehow, issues with this right now.
@@ -74,17 +75,18 @@ router.put("/:articleID", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
   
-    if (!newAttrs._id) {
+    if (!req.params.articleID) {
       return res.status(400).json({ msg: "Article id is missing" });
     }
   
     try {
-      const article = await Article.findOne({ _id: newAttrs._id });
+      const article = await Article.findOne({ _id: req.params.articleID });
       attrKeys.forEach((key) => {
         if (key !== "_id" && key !== "firstPosted") {
           article[key] = newAttrs[key];
         }
       });
+      article["dateLastUpdated"] = Date.now();
       await article.save();
       res.json(article);
     } catch (e) {

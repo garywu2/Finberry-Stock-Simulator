@@ -1,6 +1,7 @@
 // Express and the routers
-const   express =   require("express"),
-        router  =   express.Router();
+const   express  =   require("express"),
+        router   =   express.Router(),
+        mongoose =   require("mongoose");
 
 module.exports  =   router;
 
@@ -10,11 +11,11 @@ const   multer  =   require("multer"),
         upload  =   multer({ storage: storage });
 
 // Relevant schemas
-const   User                    =   require("../models/user"),
-        Simulator               =   require("../models/simulator"),
-        SimulatorEnrollment     =   require("../models/simulatorEnrollment"),
-        Holding                 =   require("../models/holding"),
-        TradeTransaction        =   require("../models/tradeTransaction");
+const   User                    =   mongoose.model("User"),
+        Simulator               =   mongoose.model("Simulator"),
+        SimulatorEnrollment     =   mongoose.model("SimulatorEnrollment"),
+        Holding                 =   mongoose.model("Holding"),
+        TradeTransaction        =   mongoose.model("TradeTransaction");
 
 
 //// Simulator - Itself
@@ -130,17 +131,18 @@ router.put("/simulator/:simulatorID", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
   
-    if (!newAttrs._id) {
+    if (!req.params.simulatorID) {
       return res.status(400).json({ msg: "Article id is missing" });
     }
   
     try {
-      const simulator = await Simulator.findOne({ _id: newAttrs._id });
+      const simulator = await Simulator.findOne({ _id: req.params.simulatorID });
       attrKeys.forEach((key) => {
         if (key !== "_id" && key !== "participatingUsers" && key !== "dateLastUpdated") {
             simulator[key] = newAttrs[key];
         }
       });
+      simulator["dateLastUpdated"] = Date.now();
       await simulator.save();
       res.json(simulator);
     } catch (e) {
