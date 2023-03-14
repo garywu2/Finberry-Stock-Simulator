@@ -51,7 +51,7 @@ const SimulatorPortfolioPage = () => {
     var simIndex = 0;
     if (selectedSimulator && userItems.simulatorEnrollments && userItems.simulatorEnrollments.length > 0) {
         for(var i = 0; i < userItems.simulatorEnrollments.length; i += 1) {
-            // statement below gets uncommented when Daniel changes route
+            // statement below gets uncommented when Daniel changes route 
             // if (selectedSimulator == userItems.simulatorEnrollments[i].title){
             if (selectedSimulator == 'All Time'){
                 simulatorExists = true;
