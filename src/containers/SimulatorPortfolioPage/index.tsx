@@ -16,6 +16,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 import UserContext from "../../context/user";
 
 import Chart from '../../components/Chart';
+const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/"; 
+
 
 const SimulatorPortfolioPage = () => {
     const { user } = useContext(UserContext);
@@ -101,7 +103,7 @@ const SimulatorPortfolioPage = () => {
         if(realTimePrice) {
             axios({
                 method: 'post',
-                url:  'http://localhost:5000/game/simulator/' + userItems.simulatorEnrollments[simIndex].simulator + '/' + String(user.email) ,
+                url:  route + 'game/simulator/' + userItems.simulatorEnrollments[simIndex].simulator + '/' + String(user.email) ,
                 headers: {},
                 data: {
                     "symbol": items.meta.symbol,
@@ -112,7 +114,7 @@ const SimulatorPortfolioPage = () => {
                     "transactionTime": Date.now()
                 }
             }).then((result: any) => {
-                axios.get('http://localhost:5000/account/user/' + String(user.email)).then((response) => {
+                axios.get(route + 'account/user/' + String(user.email)).then((response) => {
                 setUserItems(response.data);
                 });
             });
@@ -122,7 +124,7 @@ const SimulatorPortfolioPage = () => {
     }
 
     React.useEffect(() => {
-        axios.get('http://localhost:5000/account/user/' + String(user.email)).then((response) => {
+        axios.get(route + 'account/user/' + String(user.email)).then((response) => {
             setUserItems(response.data);
         });
     }, []);
