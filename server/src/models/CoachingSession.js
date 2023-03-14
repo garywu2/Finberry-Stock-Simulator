@@ -1,16 +1,14 @@
 const mongoose = require("mongoose");
 
 const coachingSessionSchema = new mongoose.Schema({
-    startTime: {
-        type: Date,
+    coachingCoach: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "CoachingCoach",
         required: true,
     },
-    endTime: {
-        type: Date,
-        required: true,
-    },
-    active: {
-        type: Date,
+    coachingClient: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "CoachingClient",
         required: true,
     },
     coach: {
@@ -22,14 +20,35 @@ const coachingSessionSchema = new mongoose.Schema({
         type: mongoose.SchemaTypes.ObjectID,
         ref: "User",
         required: true,
-      },
+    },
+    requestedTime: { // When session is first requested by client
+        type: Date,
+        required: true,
+    },
+    startTime: { // When session is first formally accepted by coach.
+        type: Date,
+        required: true,
+    },
+    endTime: { // When session is finally terminated
+        type: Date,
+        required: true,
+    },
+    autoTerminationTime: { // When session is automatically terminated
+        type: Date,
+        required: true,
+    },
+    active: {
+        type: Date,
+        required: true,
+    },
+    
     paymentHistory: {
         type: [{ type: mongoose.SchemaTypes.ObjectId, ref: "PaymentHistory"} ],
         required: true,
         default: []
     },
-    chatLogs: {
-        type: [{ type: mongoose.SchemaTypes.ObjectId, ref: "ChatLog"} ],
+    chatMessages: {
+        type: [{ type: mongoose.SchemaTypes.ObjectId, ref: "ChatMessage"} ],
         require: true,
         default: []
     }
