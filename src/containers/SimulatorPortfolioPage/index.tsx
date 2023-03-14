@@ -14,6 +14,7 @@ import React, {useContext, useState} from 'react';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import UserContext from "../../context/user";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import Chart from '../../components/Chart';
 const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/"; 
@@ -25,6 +26,7 @@ const SimulatorPortfolioPage = () => {
     const [userItems, setUserItems] = React.useState<any>([]);
     const [realTimePrice, setRealTimePrice] = React.useState<any>();
     // const [balItem, setBalItem] = React.useState<any>([]);
+    const navigate = useNavigate();
 
     var data = []
 
@@ -119,8 +121,18 @@ const SimulatorPortfolioPage = () => {
                 });
             });
         }
-        
-        
+    }
+
+    const handleEnrollSubmit = (event: any) => {
+        axios({
+            method: 'post',
+            url: route + 'game/simulator/6410d31592fe8c435c022b01',
+            data: {
+                "email": String(user.email)
+            }
+        }).then((e: any) => {
+            window.location.reload();
+        });
     }
 
     React.useEffect(() => {
@@ -176,14 +188,29 @@ const SimulatorPortfolioPage = () => {
                 </div>
             )}
 
-            
+            {selectedSimulator && !simulatorExists ? (
+                <Button
+                    size='small'
+                    sx={{
+                        backgroundColor: "secondary.main",
+                        color: "white",
+                        marginY: "1rem",
+                        '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                        }
+                    }}
+                    onClick={handleEnrollSubmit}
+                    component={Link} to='/SimulatorPortfolio'>
+                    Enroll Now
+                </Button>
+            ) : (
+                <p></p>
+            )}
 
             {selectedSimulator && simulatorExists ? (
             <p>
                 Your account balance: {userItems.simulatorEnrollments[simIndex].balance}
             </p>
-
-            
             ) : (
                 <p></p>
             )}
