@@ -29,6 +29,7 @@ const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://lo
 var simulatorExists = false;
 var simIndex = 0;
 var rows: any[] = [];
+var chartData: any[] = []
 
 const SimulatorPortfolioPage = () => {
     const { user } = useContext(UserContext);
@@ -55,14 +56,6 @@ const SimulatorPortfolioPage = () => {
     );
 
     const simulators = ['All Time', 'Monthly', 'Weekly']
-
-    var chartData = []
-    if (chartItems) {
-        for (var i = chartItems.values.length - 1; i >= 0; i--) {
-            var temp = { date: String(chartItems.values[i].datetime), price: Number(chartItems.values[i].close) };
-            chartData.push(temp)
-        }
-    }
 
     React.useEffect(() => {
         axios.get(route + 'account/user/' + String(user.email)).then((response) => {
@@ -141,9 +134,16 @@ const SimulatorPortfolioPage = () => {
         axios.get('https://api.twelvedata.com/time_series?&start_date=' + finalStr2 + '&symbol=' + String(selectedValue) + '&interval=1month&apikey=bda95123e0344a5ba4e148064a3eabea').then((response) => {
             setChartItems(response.data)
             var saveData = response.data;
+            chartData = [];
+            if (saveData) {
+                for (var i = saveData.values.length - 1; i >= 0; i--) {
+                    var temp = { date: String(saveData.values[i].datetime), price: Number(saveData.values[i].close) };
+                    chartData.push(temp)
+                }
+            }
             axios.get('https://api.twelvedata.com/price?symbol=' + saveData.meta.symbol + '&apikey=bda95123e0344a5ba4e148064a3eabea').then((response) => {
-            setRealTimePrice(response.data);
-        });
+                setRealTimePrice(response.data);
+            });
         });
         
         
@@ -304,7 +304,7 @@ const SimulatorPortfolioPage = () => {
                 <p></p>
             )}
             
-            {selectedSimulator && simulatorExists && chartItems ? (
+            {selectedSimulator && simulatorExists && chartData.length > 0 ? (
                 <Container
                     sx={{
                         backgroundColor: 'white',
@@ -337,7 +337,7 @@ const SimulatorPortfolioPage = () => {
                             marginBottom: '1rem',
                         }}
                     >
-                        <Chart chartData={chartData} />
+                        <Chart data={chartData} />
                     </Paper>
                     <Typography variant='h4' align='center' fontWeight={50}>
                         Place an order:
