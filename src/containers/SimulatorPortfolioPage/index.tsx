@@ -23,7 +23,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 import UserContext from "../../context/user";
 import { Navigate, useNavigate } from "react-router-dom";
 import Chart from '../../components/Chart';
-// import Orders from "../../components/Orders";
+
 const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/"; 
 
 var simulatorExists = false;
@@ -63,6 +63,28 @@ const SimulatorPortfolioPage = () => {
         });
     }, []);
 
+    function updateRows(data: any) {
+        var trueAction = '';
+        rows = [];
+        for(var i = 0; i < data.length; i++) {
+            if(data[i].transactionType == 1){
+                trueAction = 'Buy'
+            }
+            else {
+                trueAction = 'Sell'
+            }
+            rows.push({
+                id: data[i]._id,
+                date: data[i].transactionTime,
+                action: trueAction,
+                symbol: data[i].symbol,
+                exchange: data[i].index,
+                price: data[i].price,
+                quantity: data[i].quantity,
+            })
+        }
+    };
+
     const handleSimulatorChange = (event: any) => {
         var sim = String(event.target.value);
         setSelectedSimulator(event.target.value);
@@ -73,32 +95,17 @@ const SimulatorPortfolioPage = () => {
                     simulatorExists = true;
                     simIndex = i;
                 }
+                else {
+                    simulatorExists = false;
+                    simIndex = 0;
+                }
             }
         }
 
         if (simulatorExists) {
             axios.get(route + 'game/tradeHistory/' + userItem.simulatorEnrollments[simIndex].simulator._id + '/' + String(user.email)).then((response) => {
                 setTradeHistoryItems(response.data);
-                
-                var tempData = response.data;
-                var trueAction = ''
-                for(var i = 0; i < tempData.length; i++) {
-                    if(tempData[i].transactionType == 1){
-                        trueAction = 'Buy'
-                    }
-                    else {
-                        trueAction = 'Sell'
-                    }
-                    rows.push({
-                        id: tempData[i]._id,
-                        date: tempData[i].transactionTime,
-                        action: trueAction,
-                        symbol: tempData[i].symbol,
-                        exchange: tempData[i].index,
-                        price: tempData[i].price,
-                        quantity: tempData[i].quantity,
-                    })
-                }
+                updateRows(response.data);
             });
         }
     };
@@ -165,7 +172,11 @@ const SimulatorPortfolioPage = () => {
                 }
             }).then((result: any) => {
                 axios.get(route + 'account/user/' + String(user.email)).then((response) => {
-                setUserItem(response.data);
+                    setUserItem(response.data);
+                    axios.get(route + 'game/tradeHistory/' + userItem.simulatorEnrollments[simIndex].simulator._id + '/' + String(user.email)).then((response) => {
+                        setTradeHistoryItems(response.data);
+                        updateRows(response.data);
+                    });
                 });
             });
         }
@@ -189,6 +200,10 @@ const SimulatorPortfolioPage = () => {
             .then((result: any) => {
                 axios.get(route + 'account/user/' + String(user.email)).then((response) => {
                     setUserItem(response.data);
+                    axios.get(route + 'game/tradeHistory/' + userItem.simulatorEnrollments[simIndex].simulator._id + '/' + String(user.email)).then((response) => {
+                        setTradeHistoryItems(response.data);
+                        updateRows(response.data);
+                    });
                 });
             });
         }

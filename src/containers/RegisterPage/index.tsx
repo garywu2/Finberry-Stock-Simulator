@@ -6,6 +6,7 @@ import { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import FirebaseContext from "../../context/firebase";
 import UserContext from "../../context/user";
+
 const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/";
 
 const RegisterPage = () => {
