@@ -138,7 +138,7 @@ const SimulatorPortfolioPage = () => {
         
         const finalStr2 = stringNewDate.substring(0, stringNewDate.indexOf('T'));
 
-        axios.get('https://api.twelvedata.com/time_series?&start_date=' + finalStr2 + '&symbol=' + String(selectedValue) + '&interval=1month&apikey=bda95123e0344a5ba4e148064a3eabea').then((response) => {
+        axios.get('https://api.twelvedata.com/time_series?&start_date=' + finalStr2 + '&symbol=' + String(selectedValue) + `&interval=1month&apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}`).then((response) => {
             setChartItems(response.data)
             var saveData = response.data;
             chartData = [];
