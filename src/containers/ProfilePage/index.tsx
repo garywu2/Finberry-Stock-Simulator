@@ -16,7 +16,7 @@ const ProfilePage = () => {
     const [items2, setItems2] = React.useState<any>();
 
     React.useEffect(() => {
-        axios.get(`https://api.twelvedata.com/time_series?&start_date=2005-02-01&symbol=aapl&interval=1month&apikey=${process.env.TWELVEDATA_API_KEY}`).then((response) => {
+        axios.get(`https://api.twelvedata.com/time_series?&start_date=2005-02-01&symbol=aapl&interval=1month&apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}`).then((response) => {
             setItems2(response.data)
         });
     }, []);
