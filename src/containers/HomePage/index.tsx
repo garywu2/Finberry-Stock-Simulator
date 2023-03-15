@@ -7,13 +7,13 @@ import {
   Container,
   Grid,
   Typography,
-} from '@mui/material'
-import { styled } from '@mui/material/styles'
-import { useContext, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-import Pricing from '../../components/Pricing'
-import UserContext from '../../context/user'
-import IPad from '../../images/photos/ipad-mini.png'
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { useContext, useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import Pricing from '../../components/Pricing';
+import UserContext from '../../context/user';
+import IPad from '../../images/photos/ipad-mini.png';
 
 const HomePage = () => {
   const { user } = useContext(UserContext)
