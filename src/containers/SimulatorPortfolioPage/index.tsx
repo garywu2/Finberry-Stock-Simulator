@@ -148,7 +148,7 @@ const SimulatorPortfolioPage = () => {
                     chartData.push(temp)
                 }
             }
-            axios.get('https://api.twelvedata.com/price?symbol=' + saveData.meta.symbol + '&apikey=bda95123e0344a5ba4e148064a3eabea').then((response) => {
+            axios.get('https://api.twelvedata.com/price?symbol=' + saveData.meta.symbol + `&apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}`).then((response) => {
                 setRealTimePrice(response.data);
             });
         });
