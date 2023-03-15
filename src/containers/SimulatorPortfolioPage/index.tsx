@@ -8,6 +8,13 @@ import {
     TextField,
     Typography,
 } from '@mui/material'
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Title from '../../components/Title';
+import { TableContainer } from '@mui/material';
 import { Link } from 'react-router-dom'
 import { styled } from '@mui/material/styles'
 import React, {useContext, useState} from 'react';
@@ -16,7 +23,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 import UserContext from "../../context/user";
 import { Navigate, useNavigate } from "react-router-dom";
 import Chart from '../../components/Chart';
+// import Orders from "../../components/Orders";
 const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/"; 
+
+var simulatorExists = false;
+var simIndex = 0;
+var rows: any[] = [];
 
 const SimulatorPortfolioPage = () => {
     const { user } = useContext(UserContext);
@@ -24,6 +36,7 @@ const SimulatorPortfolioPage = () => {
     const [userItem, setUserItem] = React.useState<any>([]);
     const [chartItems, setChartItems] = React.useState<any>();
     const [realTimePrice, setRealTimePrice] = React.useState<any>();
+    const [tradeHistoryItems, setTradeHistoryItems] = React.useState<any>();
     const [stockSearchTerm, setStockSearchTerm] = useState('');
     const [buyQuantity, setBuyQuantity] = useState(0);
     const [sellQuantity, setSellQuantity] = useState(0);
@@ -51,17 +64,6 @@ const SimulatorPortfolioPage = () => {
         }
     }
 
-    var simulatorExists = false;
-    var simIndex = 0;
-    if (selectedSimulator && userItem.simulatorEnrollments && userItem.simulatorEnrollments.length > 0) {
-        for(var i = 0; i < userItem.simulatorEnrollments.length; i += 1) {
-            if (selectedSimulator == userItem.simulatorEnrollments[i].simulator.title){
-                simulatorExists = true;
-                simIndex = i;
-            }
-        }
-    }
-
     React.useEffect(() => {
         axios.get(route + 'account/user/' + String(user.email)).then((response) => {
             setUserItem(response.data);
@@ -69,7 +71,43 @@ const SimulatorPortfolioPage = () => {
     }, []);
 
     const handleSimulatorChange = (event: any) => {
+        var sim = String(event.target.value);
         setSelectedSimulator(event.target.value);
+
+        if (sim && userItem.simulatorEnrollments && userItem.simulatorEnrollments.length > 0) {
+            for(var i = 0; i < userItem.simulatorEnrollments.length; i += 1) {
+                if (sim == userItem.simulatorEnrollments[i].simulator.title){
+                    simulatorExists = true;
+                    simIndex = i;
+                }
+            }
+        }
+
+        if (simulatorExists) {
+            axios.get(route + 'game/tradeHistory/' + userItem.simulatorEnrollments[simIndex].simulator._id + '/' + String(user.email)).then((response) => {
+                setTradeHistoryItems(response.data);
+                
+                var tempData = response.data;
+                var trueAction = ''
+                for(var i = 0; i < tempData.length; i++) {
+                    if(tempData[i].transactionType == 1){
+                        trueAction = 'Buy'
+                    }
+                    else {
+                        trueAction = 'Sell'
+                    }
+                    rows.push({
+                        id: tempData[i]._id,
+                        date: tempData[i].transactionTime,
+                        action: trueAction,
+                        symbol: tempData[i].symbol,
+                        exchange: tempData[i].index,
+                        price: tempData[i].price,
+                        quantity: tempData[i].quantity,
+                    })
+                }
+            });
+        }
     };
 
     const handleBuyInputChange = (event: any) => {
@@ -166,6 +204,10 @@ const SimulatorPortfolioPage = () => {
         }).then((e: any) => {
             window.location.reload();
         });
+    }
+
+    function preventDefault(event: React.MouseEvent) {
+        event.preventDefault();
     }
 
     return (
@@ -345,6 +387,43 @@ const SimulatorPortfolioPage = () => {
                     Sell {chartItems.meta.symbol}
                     </Button>
                 </Container>
+            ) : (
+                <p></p>
+            )}
+
+            {selectedSimulator && simulatorExists ? (
+                <TableContainer>
+                    <Title>Recent Orders</Title>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Date</TableCell>
+                                <TableCell>Action</TableCell>
+                                <TableCell>Symbol</TableCell>
+                                <TableCell>Exchange</TableCell>
+                                <TableCell>Price</TableCell>
+                                <TableCell>Quantity</TableCell>
+                                <TableCell align="right">Trade Amount</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {rows.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{row.date}</TableCell>
+                                    <TableCell>{row.action}</TableCell>
+                                    <TableCell>{row.symbol}</TableCell>
+                                    <TableCell>{row.exchange}</TableCell>
+                                    <TableCell>{`$${row.price}`}</TableCell>
+                                    <TableCell>{row.quantity}</TableCell>
+                                    <TableCell align="right">{`$${row.price * row.quantity}`}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    <Link color="primary" to={'/'} style={{ margin: '2rem 0' }} onClick={preventDefault} >
+                        See more orders
+                    </Link>
+                </TableContainer>
             ) : (
                 <p></p>
             )}
