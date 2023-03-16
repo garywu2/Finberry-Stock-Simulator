@@ -29,7 +29,8 @@ const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://lo
 var simulatorExists = false;
 var simIndex = 0;
 var rows: any[] = [];
-var chartData: any[] = []
+var chartData: any[] = [];
+var currSimId = 0;
 
 const SimulatorPortfolioPage = () => {
     const { user } = useContext(UserContext);
@@ -94,10 +95,12 @@ const SimulatorPortfolioPage = () => {
                 if (sim == userItem.simulatorEnrollments[i].simulator.title){
                     simulatorExists = true;
                     simIndex = i;
+                    currSimId = userItem.simulatorEnrollments[i].simulator._id;
                 }
                 else {
                     simulatorExists = false;
                     simIndex = 0;
+                    currSimId = 0;
                 }
             }
         }
@@ -212,7 +215,7 @@ const SimulatorPortfolioPage = () => {
     const handleEnrollSubmit = (event: any) => {
         axios({
             method: 'post',
-            url: route + 'game/simulator/6410d31592fe8c435c022b01',
+            url: route + 'game/simulator/' + currSimId,
             data: {
                 "email": String(user.email)
             }
