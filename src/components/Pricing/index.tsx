@@ -12,48 +12,45 @@ import { Link } from 'react-router-dom';
 import Container from '@mui/material/Container';
 
 const tiers = [
-    {
-        title: 'Free',
-        price: '0',
-        description: [
-            'Simulated Trading',
-            'Basic Games',
-            'Basic Badges',
-            'Ads',
-        ],
-        buttonText: 'Sign up for free',
-        buttonVariant: 'outlined',
-        linkTo: '/register'
-    },
-    {
-        title: 'Plus',
-        subheader: 'Most popular',
-        price: '4.99',
-        description: [
-            'Simulated Trading',
-            'Exclusive Games',
-            'Exclusive Badges',
-            'Ad-free',
-            '5% Coaching Discount',
-        ],
-        buttonText: 'Get started',
-        buttonVariant: 'contained',
-        linkTo: '/register'
-    },
-    {
-        title: 'Enterprise',
-        price: '30',
-        description: [
-            'stuff',
-            'more stuff',
-            'and more stuff',
-            'Phone & email support',
-        ],
-        buttonText: 'Contact us',
-        buttonVariant: 'outlined',
-        linkTo: '/contact'
-    },
-];
+  {
+    title: 'Free',
+    price: '0',
+    description: ['Simulated Trading', 'Basic Games', 'Basic Badges', 'Ads'],
+    buttonText: 'Sign up for free',
+    buttonVariant: 'outlined',
+    linkTo: '/register',
+  },
+  {
+    title: 'Plus',
+    subheader: 'Most popular',
+    price: '4.99',
+    description: [
+      'Simulated Trading',
+      'Exclusive Games',
+      'Exclusive Badges',
+      'Ad-free',
+      '5% Coaching Discount',
+    ],
+    buttonText: 'Get started',
+    buttonVariant: 'contained',
+    linkTo: '/register',
+  },
+  {
+    title: 'Enterprise',
+    price: '50',
+    description: [
+      'Simulated Trading',
+      'Exclusive Games & Badges',
+      'Ad-free',
+      'Multiple accounts',
+      'Team management',
+      'Phone & email support',
+    ],
+    buttonText: 'Contact us',
+    buttonVariant: 'outlined',
+    linkTo: '/contact',
+  },
+]
 
 const Pricing = () => {
     return (
