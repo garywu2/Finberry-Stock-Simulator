@@ -13,7 +13,7 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Paper
+  Paper,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useContext, useState, useEffect } from "react";
@@ -24,50 +24,29 @@ import Pricing from "../../components/Pricing";
 import UserContext from "../../context/user";
 import IPad from "../../images/photos/ipad-mini.png";
 
+interface StockData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+}
+
 const HomePage = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
+  const [stockData, setStockData] = useState<StockData[]>([]);
 
-  const [stockData, setStockData] = useState<any>();
-  var dailyStockData = {
-    "values": [
-      {
-        "symbol": "BSET",
-        "name": "Bassett Furniture Industries Inc",
-        "exchange": "NASDAQ",
-        "mic_code": "XNAS",
-        "datetime": "2022-01-31 09:34:00",
-        "last": 17.25,
-        "high": 17.35,
-        "low": 15.90999,
-        "volume": 108297,
-        "change": 3.31,
-        "percent_change": 23.74462
-      },
-      {
-        "symbol": "TWKS",
-        "name": "Thoughtworks Holding, Inc.",
-        "exchange": "NASDAQ",
-        "mic_code": "XNAS",
-        "datetime": "2022-01-31 09:34:40",
-        "last": 20.09,
-        "high": 19.62999,
-        "low": 18.29999,
-        "volume": 392376,
-        "change": 3.98,
-        "percent_change": 20.84861
-      }
-    ]
-  };
-
-  // axios
-  //   .get(
-  //     `https://api.twelvedata.com/market_movers/stocks?apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}`
-  //   )
-  //   .then((response) => {
-  //     dailyStockData = response.data;
-  //     setStockData(response.data);
-  //   });
+  useEffect(() => {
+    axios
+      .get(
+        `https://api.twelvedata.com/market_movers/stocks?apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}&outputsize=10`
+      )
+      .then((res) => {
+        setStockData(res.data.values);
+      }).catch(error => {
+        console.log(error);
+      });
+  }, []);
 
   return (
     <div>
@@ -205,18 +184,18 @@ const HomePage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {dailyStockData.values.map((stock: any) => (
+                  {stockData.map((stock: any) => (
                     <TableRow
-                      key={stock.name}
+                      key={stock?.name}
                       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                     >
                       <TableCell component="th" scope="row">
-                        {stock.symbol}
+                        {stock?.symbol}
                       </TableCell>
-                      <TableCell>{stock.symbol}</TableCell>
-                      <TableCell>{stock.name}</TableCell>
-                      <TableCell align="right">${stock.last}</TableCell>
-                      <TableCell align="right">%{stock.change}</TableCell>
+                      <TableCell>{stock?.symbol}</TableCell>
+                      <TableCell>{stock?.name}</TableCell>
+                      <TableCell align="right">${stock?.last}</TableCell>
+                      <TableCell align="right">%{stock?.change}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
