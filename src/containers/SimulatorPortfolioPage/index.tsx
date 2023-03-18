@@ -213,15 +213,22 @@ const SimulatorPortfolioPage = () => {
     }
 
     const handleEnrollSubmit = (event: any) => {
-        axios({
-            method: 'post',
-            url: route + 'game/simulator/' + currSimId,
-            data: {
-                "email": String(user.email)
+        axios.get(route + 'game/simulator').then((response) => {
+            for(var i = 0; i < response.data.length; i++) {
+                if(selectedSimulator == response.data[i].title) {
+                    axios({
+                        method: 'post',
+                        url: route + 'game/simulator/' + response.data[i]._id,
+                        data: {
+                            "email": String(user.email)
+                        }
+                    }).then((e: any) => {
+                        window.location.reload();
+                    });
+                }
             }
-        }).then((e: any) => {
-            window.location.reload();
         });
+        
     }
 
     function preventDefault(event: React.MouseEvent) {
