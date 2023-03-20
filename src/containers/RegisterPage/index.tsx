@@ -7,6 +7,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import FirebaseContext from "../../context/firebase";
 import UserContext from "../../context/user";
 
+const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/";
+
 const RegisterPage = () => {
   const { auth } = useContext(FirebaseContext);
   const { user } = useContext(UserContext);
@@ -46,7 +48,7 @@ const RegisterPage = () => {
       )
         .then((result: any) => {
           axios
-            .post("http://localhost:5000/account/user", {
+            .post(route + "account/user", {
               firstName: signupState.firstName,
               lastName: signupState.lastName,
               email: signupState.email,

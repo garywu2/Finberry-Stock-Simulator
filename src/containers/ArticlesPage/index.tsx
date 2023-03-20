@@ -1,11 +1,13 @@
-import React from 'react'
-import axios from 'axios'
+import React from 'react';
+import axios from 'axios';
+
+const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/";
 
 const ArticlesPage = () => {
     const [items, setItems] = React.useState<any[]>([]);
 
     React.useEffect(() => {
-      axios.get('http://localhost:5000/Educational').then((response) => {
+      axios.get(route + 'Educational').then((response) => {
         setItems(response.data);
       });
     }, []);
