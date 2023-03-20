@@ -846,9 +846,6 @@ router.post("/coaching/:coachingProfileID", async (req, res) => {
         // Current time at the time of the request
         let currentTime = Date.now();
 
-        // Then check if the coach already have this user. If not create it, else check if the coach had blocked the user.
-        let isBlocked = false;
-
         // For CoachingClient (On Coach's CoachingProfile side)
         let coachingClient = await CoachingClient.findOne({ user: userID, ownerCoachingProfile: coastingProfileID });
         if (!coachingClient) {
@@ -875,6 +872,9 @@ router.post("/coaching/:coachingProfileID", async (req, res) => {
                 return res.status(400).json({ msg: "Failed to create an CoachingClient (On Coach's CoachingProfile side): " + e.message });
             }
         }
+
+        // Then check if the coach already have this user. If not create it, else check if the coach had blocked the user.
+        let isBlocked = coachingClient.blocked;
 
         if (isBlocked == true) {
             return res.status(400).json({ msg: "Coach has blocked the client. Cannot proceed further." });
@@ -1443,7 +1443,7 @@ async function deepDeleteChatMessage(toBeRemovedEntryID) {
     // Must remove the entry from coachingSession as well.
     const coachingSessionID = chatMessageRemoved.coachingSession;
 
-    try { // For CoachingClient
+    try { // For CoachingSession
         const entry = await CoachingSession.findById(coachingSessionID);
         if (!entry) {
             return;

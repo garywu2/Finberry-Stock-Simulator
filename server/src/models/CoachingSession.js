@@ -50,6 +50,7 @@ const coachingSessionSchema = new mongoose.Schema({
         // 6 - In progress session cancelled by user.
         type: Number,
         required: true,
+        default: 0,
     },
     agreedPayment: { 
         type: Number,
