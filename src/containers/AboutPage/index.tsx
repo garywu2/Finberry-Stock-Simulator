@@ -8,10 +8,15 @@ import {
   CardMedia,
 } from '@mui/material'
 import TeamPhoto from '../../images/photos/team-photo.jpg'
-
+import DanielPhoto from '../../images/photos/daniel-photo.jpg'
+import HaseebPhoto from '../../images/photos/haseeb-photo.jpg'
+import GaryPhoto from '../../images/photos/gary-photo.jpg'
+import TariqPhoto from '../../images/photos/tariq-photo.jpg'
+import BrookePhoto from '../../images/photos/brooke-photo.jpg'
 interface Bio {
   name: string
   description: string
+  photo: string
   title: string
 }
 
@@ -19,30 +24,35 @@ const bios: Bio[] = [
   {
     name: 'Haseeb Khan',
     title: 'Software Engineer',
+    photo: HaseebPhoto,
     description:
       'Hello! I enjoy travelling, photography, bouldering, and spontaneous adventures with friends and family. The potential for creating entrepreneurial products and solutions excites me greatly.',
   },
   {
     name: 'Gary Wu',
     title: 'Software Engineer',
+    photo: GaryPhoto,
     description:
       "Hey there! I'm Gary, I have a lot of experience in back-end development and infrastructure. I've worked with React, Express, and various AWS platforms in internships and projects",
   },
   {
     name: 'Brooke Mitchell',
     title: 'Electrical Engineer',
+    photo: BrookePhoto,
     description:
       "I'm Brooke, a creative individual who's had a passion for entrepreneurship since childhood. Finberry helps me refine my investment skills and compete with my fellow founders.",
   },
   {
     name: 'Pin Hong Long',
     title: 'Software Engineer',
+    photo: DanielPhoto,
     description:
       "Hi, I'm Pin Hong Long, but you can call me Daniel. I've always been interested in computers, programming, and technology-related areas such as video games, apps, and websites.",
   },
   {
     name: 'Muhammad Tariq',
     title: 'Software Engineer',
+    photo: TariqPhoto,
     description:
       "I'm Muhammad, passionate about tech, crypto, and fintech. I believe in entrepreneurship, meaningful ideas, and love playing competitive games, traveling, and spending time with loved ones.",
   },
@@ -136,7 +146,7 @@ const AboutPage = () => {
                     <CardContent sx={{ flexGrow: 1 }}>
                       <CardMedia
                         component='img'
-                        image='https://source.unsplash.com/random'
+                        src={bio.photo}
                         alt='random'
                         sx={{
                           height: '15rem',
