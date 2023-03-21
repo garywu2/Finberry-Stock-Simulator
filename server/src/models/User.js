@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
         required: false,
         default: "", // Image link: OUR DB like league avatar
     },
-    theme: {
+    theme: { 
         type: Number,
         required: true,
         default: 0, // Number coded: 0 = default, etc
@@ -94,7 +94,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: []
     },
-    badges: {
+    badges: { // Not implemented yet
         type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "UserBadges" }],
         required: true,
         default: []
@@ -104,7 +104,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: []
     },
-    premiumPaymentHistory: {
+    premiumPaymentHistory: { // Not implemented yet
         type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PremiumPaymentHistory" }],
         required: true,
         default: []

@@ -5,15 +5,21 @@ const paymentHistorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    paymentMethod: {
+        type: String,
+        required: true,
+    },
     payeeID: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
     },
     payerID: {
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "User" }],
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
     },
-    trasnferAmount: {
+    transferAmount: {
         type: Number,
         required: true,
     },

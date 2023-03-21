@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+// Notice here that it doesnt care about the coachingProfile but the
+// coach itself.
 const coachingCoachSchema = new mongoose.Schema({
     ownerUser: {
         type: mongoose.SchemaTypes.ObjectID,
@@ -11,6 +13,10 @@ const coachingCoachSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    note: {
+        type: String,
+        required: false,
+    },
     firstInteraction: { // First time the client tried to request an session. (Coach does not need to accept)
         type: Date,
         required: true,
@@ -19,10 +25,7 @@ const coachingCoachSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
-    note: {
-        type: String,
-        required: false,
-    },
+    
     coachingSessions: {
         type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "CoachingSession" }],
         required: true,

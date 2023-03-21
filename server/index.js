@@ -1,6 +1,7 @@
 const express         =   require("express"),
       mongoose        =   require("mongoose");
 
+require("./src/models/PaymentHistory");
 require("./src/models/ChatMessage");
 require("./src/models/CoachingCoach");
 require("./src/models/CoachingClient");

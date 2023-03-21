@@ -17,8 +17,34 @@ const   User                =   mongoose.model("User"),
         CoachingClient      =   mongoose.model("CoachingClient"),
         CoachingCoach       =   mongoose.model("CoachingCoach"),
         CoachingSession     =   mongoose.model("CoachingSession"),
-        ChatMessage         =   mongoose.model("ChatMessage");
+        ChatMessage         =   mongoose.model("ChatMessage"),
+        PaymentHistory      =   mongoose.model("PaymentHistory");
 
+// Super helpful parse param function
+// Returns a json file of properly formatted parameters
+function parseRequestParams(reqParams, desiredSchema) {
+    let params = {}
+    if (Object.keys(reqParams).length != 0) {
+        const desiredAttrs = Object.keys(desiredSchema.schema.paths);
+        desiredAttrs.forEach((key) => {
+            if (reqParams[key]) {
+                let originalValue = reqParams[key]
+                let numericalValue = Number(originalValue);
+                
+                if (numericalValue) {
+                    params[key] = numericalValue;
+                }
+                else {
+                    params[key] = originalValue;
+                }
+            }
+        });
+    }
+
+    return params;
+}
+
+        
 //// USER and PROFILE (Not coaching)
 
 // POST - User sign up - create a new generic user (No coaching profile)
@@ -319,11 +345,6 @@ router.delete("/user", async (req, res) => {
   });
 
 //// Coaches (User - COACHING PROFILE)
-
-router.post("/coaching/newClient", async (req, res) => {
-
-});
-
 // POST - User sign up - create a new generic user (No coaching profile)
 router.post("/coaching", async (req, res) => {
     if (!req.body.email) {
@@ -439,10 +460,6 @@ router.get("/coaching/hidden", async (req, res) => {
 // Get all Terminated coaching profiles
 router.get("/coaching/terminated", async (req, res) => {
     try {
-        // const coachingProfileDisapproved = await CoachingProfile.find({ status: 3 }); // How can you be so inefficient.
-        // const coachingProfileDeactivated = await CoachingProfile.find({ status: 4 });
-        // const coachingProfileModOrAdmin = await CoachingProfile.find({ status: 5 });
-        // const allCoachingProfiles = {...coachingProfileDisapproved, ...coachingProfileDeactivated, ...coachingProfileModOrAdmin };
         const allCoachingProfiles = await CoachingProfile.find({ status: 3, status: 4, status: 5 });
         return res.json(allCoachingProfiles);
     } catch (e) {
@@ -520,10 +537,7 @@ async function deepDeleteCoachingProfile(coaching_profile_id) {
         if (index > -1) { // only splice array when item is found
             user.coachingProfiles.splice(index, 1); // 2nd parameter means remove one item only
         }
-        // console.log(index); // Investigating bug
-        // console.log(user.coachingProfiles); // Investigating bug
-
-        // user.markModified("coachingProfiles"); // Didnt seem to do anything. But want to make this work somehow
+        
         await user.save();
     } catch (e) {
     }
@@ -632,11 +646,11 @@ router.post("/review", async (req, res) => {
     }
 });
 
-
-// GET all Reviews
+// GET Reviews based on parameters
 router.get("/review", async (req, res) => {
     try {
-        const reviews = await Review.find();
+        let reviews = await Review.find(parseRequestParams(req.query, Review));
+
         return res.json(reviews);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
@@ -746,7 +760,7 @@ router.delete("/review/:reviewID", async (req, res) => {
 
         return res.json({ msg: "Review successfully deleted" });
 
-      } catch (e) {
+    } catch (e) {
         return res.status(400).json({ msg: "Review deletion failed: " + e.message });
     }
 });
@@ -768,71 +782,792 @@ router.delete("/review", async (req, res) => {
     }
 });
 
-router.get("/test", async (req, res) => {
-    console.log("hi");
-    return res.json({ msg: "Heyyyyy" });
+
+
+/// User applies for a session with a coach, specificially through a coaching profile.
+// Enroll an user to a coaching profile (applying for a session). - Basically creates an CoachingSession Object
+router.post("/coaching/:coachingProfileID", async (req, res) => {
+    if (!req.params.coachingProfileID) {
+        return res.status(400).json({ msg: "coachingProfileID is missing" });
+    }
+    
+    if (!req.body.email) {
+        return res.status(400).json({ msg: "User Email is missing" });
+    }
+
+    // First check if they had any active sessions
+    // Then check if the coach already have this user. If not create it, else check if the coach had blocked the user.
+    // Create a new pending session for an user and the coach. (Coach at this point have not yet accepted)
+    try {
+        // First check if they had any active sessions
+        const coachingProfile = await CoachingProfile.findById(req.params.coachingProfileID);
+        if (!coachingProfile) {
+            return res.status(400).json({ msg: "Coaching Profile with provided ID not found" });
+        }
+
+        if (coachingProfile.status != 1) {
+            return res.status(400).json({ msg: "The requested coaching profile is not active", coachingProfile: coachingProfile });
+        }
+
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+          return res.status(400).json({ msg: "User with provided email not found" });
+        }
+
+        const coastingProfileID = coachingProfile._id;
+        const coachID = coachingProfile.user;
+        const userID = user._id;
+
+        // For a coaching session, we need to check if session is ACTIVE, and status of the coaching profile is 1
+        const coachingSessions = await CoachingSession.find({ coach: coachID, client: userID, coachingProfile: coastingProfileID }).populate(
+            {
+                path: "coachingProfile",
+                select: "status",
+            }
+        );
+        
+        // Finally time to check if there is any active session.
+        let hasValidActiveOrPendingCoachingSession = false;
+        if (coachingSessions.length != 0) {
+            // Means there can potentially be an active coaching session with the coaching profile
+            coachingSessions.forEach((coachingSession) => {
+                // If coaching session is still active or pending and also the coaching profile is also active
+                if ((coachingSession.status === 0 || coachingSession.status === 1) && coachingSession.coachingProfile.status === 1) {
+                    hasValidActiveOrPendingCoachingSession = true;
+                    return;
+                }
+            });
+        }
+
+        if (hasValidActiveOrPendingCoachingSession) {
+            return res.status(400).json({ msg: "This user already have an active or pending coaching session with the coach and the coaching profile." });
+        }
+
+        // Current time at the time of the request
+        let currentTime = Date.now();
+
+        // For CoachingClient (On Coach's CoachingProfile side)
+        let coachingClient = await CoachingClient.findOne({ user: userID, ownerCoachingProfile: coastingProfileID });
+        if (!coachingClient) {
+            // Create a CoachingClient profile
+            try {
+                let newCoachingClient = {
+                    ownerCoachingProfile: coastingProfileID,
+                    user: userID,
+                    note: "",
+                    // approvedStatus: false,
+                    blocked: false,
+                    firstInteraction: currentTime,
+                    latestSessionInteraction: currentTime,
+                };
+
+                const dbCoachingClient = new CoachingClient(newCoachingClient);
+                await dbCoachingClient.save();
+
+                coachingProfile.coachingClients.push(dbCoachingClient);
+                await coachingProfile.save();
+
+                coachingClient = dbCoachingClient;
+            } catch (e) {
+                return res.status(400).json({ msg: "Failed to create an CoachingClient (On Coach's CoachingProfile side): " + e.message });
+            }
+        }
+
+        // Then check if the coach already have this user. If not create it, else check if the coach had blocked the user.
+        let isBlocked = coachingClient.blocked;
+
+        if (isBlocked == true) {
+            return res.status(400).json({ msg: "Coach has blocked the client. Cannot proceed further." });
+        }
+
+        // For CoachingCoach (On Client's side)
+        let coachingCoach = await CoachingCoach.findOne({ user: userID, coach: coachID });
+        if (!coachingCoach) {
+            // Create a CoachingClient profile
+            try {
+                let newCoachingCoach = {
+                    ownerUser: userID,
+                    coach: coachID,
+                    note: "",
+                    firstInteraction: currentTime,
+                    latestSessionInteraction: currentTime,
+                };
+
+                const dbCoachingCoach = new CoachingCoach(newCoachingCoach);
+                await dbCoachingCoach.save();
+
+                user.coachingCoachs.push(dbCoachingCoach);
+                await user.save();
+
+                coachingCoach = dbCoachingCoach;
+            } catch (e) {
+                return res.status(400).json({ msg: "Failed to create an CoachingClient (On Coach's CoachingProfile side): " + e.message });
+            }
+        }
+
+
+        // Create a new pending session for an user and the coach. (Coach at this point have not yet accepted)
+        let coachingSession;
+        try {
+            let newCoachingSession = {
+                coachingCoach: coachingCoach._id,
+                coachingClient: coachingClient._id,
+                coachingProfile: coastingProfileID,
+                coach: coachID,
+                client: userID,
+                requestedTime: currentTime,
+                status: 0,
+                agreedPayment: coachingProfile.price,
+                clientRequestNote: req.body.clientRequestNote,
+            };
+
+            const dbCoachingSession = new CoachingSession(newCoachingSession);
+            await dbCoachingSession.save();
+
+            coachingClient.coachingSessions.push(dbCoachingSession);
+            await coachingClient.save();
+
+            coachingCoach.coachingSessions.push(dbCoachingSession);
+            await coachingCoach.save();
+
+            coachingSession = dbCoachingSession;
+        } catch (e) {
+            return res.status(400).json({ msg: "Failed to create an CoachingClient (On Coach's CoachingProfile side): " + e.message });
+        }
+
+        res.json({ coachingSession: coachingSession, coachingCoach: coachingCoach, coachingClient: coachingClient });
+      } catch (e) {
+        return res.status(400).json({ msg: "Entrolling user to simulator failed: " + e.message });
+    }
 });
 
-// // WIP
-// /// User applies for a session with a coach, specificially through a coaching profile.
-// // Enroll an user to a coaching profile (applying for a session). - Basically creates an CoachingSession Object
-// router.post("/coaching/:coachingProfileID", async (req, res) => {
-//     if (!req.params.coachingProfileID) {
-//         return res.status(400).json({ msg: "coachingProfileID is missing" });
-//     }
-    
-//     if (!req.body.email) {
-//         return res.status(400).json({ msg: "User Email is missing" });
-//     }
+// POST - coaching sessions. (Completions, etc) (Handles logic) - Might be transalted into put request - but want to do it seperately as
+// We have other effect not just edit CoachingSession.
+router.post("/coachingSession/:coachingSessionID", async (req, res) => {
+    // Other status:
+    // 0 - Pending (Requested), - Initial status
+    // 1 - Active,
 
-//     try {
-//         const simulator = await Simulator.findById(req.params.simulatorID).populate("simulatorEnrollments");
-//         if (!simulator) {
-//             return res.status(400).json({ msg: "Simulator with provided ID not found" });
-//         }
+    // Session completion, possible status:
+    // 2 - Session sucessfully completed (Also made payment if agreed price is not 0),
+    // 3 - Session Declined by coach and never became active,
+    // 4 - Session Cancelled by User before active,
+    // 5 - In progress session cancelled by coach.
+    // 6 - In progress session cancelled by user.
 
-//         const user = await User.findOne({ email: req.body.email });
-//         if (!user) {
-//           return res.status(400).json({ msg: "User with provided email not found" });
-//         }
+    if (!req.params.coachingSessionID) {
+        return res.status(400).json({ msg: "coachingSessionID is missing" });
+    }
 
-//         // 1. Go through profile, search the user profile to see if they are already participating in the simulator. 
-//         // (Optional, also check the participating user from Simulator if it already exist there) - Might need to be done for everything as well
-//         // Not implemented optional.
-//         // if (false) { // For debug only
-//         if (simulator.simulatorEnrollments.some(item => item.user.equals(user._id))) { // Already exists
-//             return res.status(400).json({ msg: "User already enrolled in simulator" });
-//         } else { // Not exists, so we add it to simulator
+    let currentTime = Date.now();
 
-//             // Start creation of empty ParticipatingUser
-//             let newSimulatorEnrollments = {
-//                 user: user._id,
-//                 simulator: simulator._id,
-//                 balance: simulator.userStartFund,
-//                 joinDate: Date.now()
-//             };
+    let newAttrs = req.body;
 
-//             const simulatorEnrollment = new SimulatorEnrollment(newSimulatorEnrollments);
-//             await simulatorEnrollment.save();
-//             try {
-//                 // Save simulator and user with change
-//                 simulator.simulatorEnrollments.push(simulatorEnrollment);
-//                 await simulator.save();
+    try {
+        const coachingSession = await CoachingSession.findById(req.params.coachingSessionID);
 
-//                 user.simulatorEnrollments.push(simulatorEnrollment);
-//                 await user.save();
+        if (!coachingSession) {
+            return res.status(400).json({ msg: "Coaching Sessions with provided ID not found" });
+        }
 
-//                 return res.json(simulatorEnrollment);
-//             } catch (e) {
-//                 return res.status(400).json({ msg: "Failed to save newly created simulatorEnrollment user in the simulator:" + e.message });
-//             }
-//         }
-//       } catch (e) {
-//         return res.status(400).json({ msg: "Entrolling user to simulator failed: " + e.message });
-//     }
-// });
+        if (newAttrs.status === coachingSession.status) {
+            return res.status(400).json({ msg: "Cannot switch to the same status." });
+        }
 
-// CoachingClient      =   require("../models/coachingClient"),
-// CoachingCoach       =   require("../models/coachingCoach"),
-// CoachingSession     =   require("../models/coachingSession"),
-// ChatMessage         =   require("../models/chatMessage");
+        if (coachingSession.status === 0) {
+            // Currently pending, only possible switch are to 1 (active), 3 - Session declined by coach, 4 - Session Request withdrawn by user
+            if (newAttrs.status === 1) {
+                coachingSession.autoTerminationTime = newAttrs.autoTerminationTime;
+                coachingSession.startTime = currentTime;
+            } else if (newAttrs.status === 3 || newAttrs.status === 4) {
+                if (newAttrs.status === 3) {
+                    coachingSession.sessionTerminationReason = "Session Request Declined by the coach.";
+                } else {
+                    coachingSession.sessionTerminationReason = "Session Request Withdrawn by the user.";
+                }
+
+                if (newAttrs.sessionTerminationReason) { // Overritten session termination reason.
+                    coachingSession.sessionTerminationReason = newAttrs.sessionTerminationReason;
+                }
+
+                coachingSession.endTime = currentTime;
+            } else {
+                return res.status(400).json({ msg: "Attempting to switch from pending request to an invalid status." });
+            }
+        }
+        else if (coachingSession.status === 1) { 
+            // Currently active, only possible switch are to 
+            // 2 - completed, 5 - In progress session cancelled by coach,
+            // 6 - In progress session cancelled by user. (Might need to be reviewed to ensure non-malicious cancelling)
+            if (newAttrs.status === 2) {
+                if (newAttrs.payment) { // If user included an payment, we can make the payment history and also add it to this completed coaching session.
+
+                    let newPaymentHistory = {
+                        referenceNumber: newAttrs.payment.referenceNumber,
+                        paymentMethod: newAttrs.payment.paymentMethod,
+                        payeeID: coachingSession.coach,
+                        payerID: coachingSession.client,
+                        transferAmount: newAttrs.payment.transferAmount,
+                        transactionDate: newAttrs.payment.transactionDate,
+                    };
+        
+                    const dbPaymentHistory = new PaymentHistory(newPaymentHistory);
+
+                    await dbPaymentHistory.save();
+
+                    coachingSession.paymentHistory = dbPaymentHistory;
+
+                    coachingSession.sessionTerminationReason = "Session Completed, and payment history recorded.";
+                }
+
+                coachingSession.sessionTerminationReason = "Session Completed, but no payment history recorded.";
+            } else if (newAttrs.status === 5) {
+                coachingSession.sessionTerminationReason = "This Session was in-progress but terminated by the coach.";
+            } else if (newAttrs.status === 6) {
+                coachingSession.sessionTerminationReason = "This Session was in-progress but terminated by the user.";
+            } else {
+                return res.status(400).json({ msg: "Attempting to switch from active request to an invalid status." });
+            }
+
+            if (newAttrs.sessionTerminationReason) { // Overritten session termination reason.
+                coachingSession.sessionTerminationReason = newAttrs.sessionTerminationReason;
+            }
+            
+            coachingSession.endTime = currentTime;
+        } else {
+            return res.status(400).json({ msg: "The coaching profile is not currently active or pending, status switch not valid." });
+        }
+
+        coachingSession.status = newAttrs.status;
+
+        await coachingSession.save();
+        
+        // Update coaching client and coaching user to inform the latest client interaction - Do it if it exist, doesnt matter if it doesn't
+        // (It should always exist unless something went wrong with system) For CoachingClient (On Coach's CoachingProfile side)
+        let coachingClient = await CoachingClient.findById(coachingSession.coachingClient);
+        if (coachingClient) {
+            // Create a CoachingClient profile
+            try {
+                coachingClient.latestSessionInteraction = currentTime;
+                await coachingClient.save();
+            } catch {
+            }
+        }
+
+        // For CoachingCoach (On Client's side)
+        let coachingCoach = await CoachingCoach.findById(coachingSession.coachingCoach);
+        if (coachingCoach) {
+            try {
+                coachingCoach.latestSessionInteraction = currentTime;
+                await coachingCoach.save();
+            } catch {
+            }
+        }
+
+        res.json(coachingSession);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// GET - coaching sessions based on parameters
+router.get("/coachingSession", async (req, res) => {
+    try {
+        let coachingSessions = await CoachingSession.find(parseRequestParams(req.query, CoachingSession));
+
+        return res.json(coachingSessions);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// PUT - coaching sessions.
+router.put("/coachingSession/:entryID", async (req, res) => {
+    const entryID = req.params.entryID;
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+
+    if (!entryID) {
+        return res.status(400).json({ msg: "ID of Coaching Sessions is missing" });
+    }
+
+    try {
+        const dbEntry = await CoachingSession.findById(entryID);
+
+        if (!dbEntry) {
+            return res.status(400).json({ msg: "Coaching Sessions with provided ID not found" });
+        }
+
+        attrKeys.forEach((key) => {
+            if (!['_id', 'paymentHistory', 'chatMessages'].includes(key)) {
+                dbEntry[key] = newAttrs[key];
+            }
+        });
+
+        await dbEntry.save();
+        res.json(dbEntry);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// Deep delete coaching sessions
+async function deepDeleteCoachingSession(toBeRemovedEntryID) {
+    let coachingSessionRemoved = await CoachingSession.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Must remove the entry from CoachingClient and CoachingCoach as well.
+    const coachingClientID = coachingSessionRemoved.coachingClient;
+    const coachingCoachID = coachingSessionRemoved.coachingCoach;
+
+    try { // For CoachingClient
+        const entry = await CoachingClient.findById(coachingClientID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.coachingSessions.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.coachingSessions.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+
+    try { // For CoachingCoach
+        const entry = await CoachingCoach.findById(coachingCoachID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.coachingSessions.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.coachingSessions.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+}
+
+// DELETE - coaching sessions completely (Delete coaching profile)
+router.delete("/coachingSession/:entryID", async (req, res) => {
+    if (!req.params.entryID) {
+        return res.status(400).json({ msg: "coachingSession ID is missing" });
+    }
+
+    try {
+        const entry = await CoachingSession.findById(req.params.entryID);
+        if (!entry) {
+          return res.status(400).json({ msg: "coachingSession with the provided ID not found" });
+        }
+
+        await deepDeleteCoachingSession(entry._id);
+
+        return res.json({ msg: "coachingSession successfully deleted" });
+
+      } catch (e) {
+        return res.status(400).json({ msg: "coachingSession deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL CoachingSession (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
+router.delete("/coachingSession", async (req, res) => {
+    try {
+        let message = await CoachingSession.deleteMany();
+ 
+        return res.json({ msg: "ALL CoachingSessions successfully deleted (Shallow)", reciept: message });
+  
+      } catch (e) {
+        return res.status(400).json({ msg: "CoachingSessions deletions failed: " + e.message });
+    }
+});
+
+
+
+// Coaching Clients
+// GET - Coaching Clients based on parameters
+router.get("/CoachingClient", async (req, res) => {
+    try {
+        let coachingClients = await CoachingClient.find(parseRequestParams(req.query, CoachingClient));
+
+        return res.json(coachingClients);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// PUT - Coaching Clients.
+router.put("/CoachingClient/:entryID", async (req, res) => {
+    const entryID = req.params.entryID;
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+
+    if (!entryID) {
+        return res.status(400).json({ msg: "ID of Coaching Clients is missing" });
+    }
+
+    try {
+        const dbEntry = await CoachingClient.findById(entryID);
+
+        if (!dbEntry) {
+            return res.status(400).json({ msg: "Coaching Clients with provided ID not found" });
+        }
+
+        attrKeys.forEach((key) => {
+            if (!['_id', 'coachingSessions'].includes(key)) {
+                dbEntry[key] = newAttrs[key];
+            }
+        });
+
+        await dbEntry.save();
+        res.json(dbEntry);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE - Coaching Clients (Shallow)
+router.delete("/CoachingClient/:entryID", async (req, res) => {
+    if (!req.params.entryID) {
+        return res.status(400).json({ msg: "Coaching Client ID is missing" });
+    }
+
+    try {
+        const entry = await CoachingClient.findByIdAndDelete(req.params.entryID);
+
+        return res.json(entry);
+
+      } catch (e) {
+        return res.status(400).json({ msg: "Coaching Client deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL Coaching Clients (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
+router.delete("/CoachingClient", async (req, res) => {
+    try {
+        let message = await CoachingClient.deleteMany();
+ 
+        return res.json({ msg: "ALL CoachingClient successfully deleted (Shallow)", reciept: message });
+  
+      } catch (e) {
+        return res.status(400).json({ msg: "CoachingClient deletions failed: " + e.message });
+    }
+});
+
+
+
+// Coaching Coaches
+// GET - Coaching Coaches based on parameters
+router.get("/CoachingCoach", async (req, res) => {
+    try {
+        let coachingCoachs = await CoachingCoach.find(parseRequestParams(req.query, CoachingCoach));
+
+        return res.json(coachingCoachs);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// PUT - Coaching Coaches.
+router.put("/CoachingCoach/:entryID", async (req, res) => {
+    const entryID = req.params.entryID;
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+
+    if (!entryID) {
+        return res.status(400).json({ msg: "ID of Coaching Coache is missing" });
+    }
+
+    try {
+        const dbEntry = await CoachingCoach.findById(entryID);
+
+        if (!dbEntry) {
+            return res.status(400).json({ msg: "Coaching Coache with provided ID not found" });
+        }
+
+        attrKeys.forEach((key) => {
+            if (!['_id', 'coachingSessions'].includes(key)) {
+                dbEntry[key] = newAttrs[key];
+            }
+        });
+
+        await dbEntry.save();
+        res.json(dbEntry);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE - Coaching Coaches (Shallow)
+router.delete("/CoachingCoach/:entryID", async (req, res) => {
+    if (!req.params.entryID) {
+        return res.status(400).json({ msg: "Coaching Coache ID is missing" });
+    }
+
+    try {
+        const entry = await CoachingCoach.findByIdAndDelete(req.params.entryID);
+
+        return res.json(entry);
+
+      } catch (e) {
+        return res.status(400).json({ msg: "Coaching Coache deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL Coaching Coaches (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
+router.delete("/CoachingCoach", async (req, res) => {
+    try {
+        let message = await CoachingCoach.deleteMany();
+ 
+        return res.json({ msg: "ALL CoachingCoach successfully deleted (Shallow)", reciept: message });
+  
+      } catch (e) {
+        return res.status(400).json({ msg: "CoachingCoachs deletions failed: " + e.message });
+    }
+});
+
+
+
+// Chat Message
+// POST - Post a new chat message
+router.post("/ChatMessage", async (req, res) => {
+    if (!req.body.email) {
+        return res.status(400).json({ msg: "Email is missing" });
+    }
+
+    if (!req.body.coachingSession) {
+        return res.status(400).json({ msg: "CoachingSession ID is missing" });
+    }
+
+    if (
+        !req.body.message
+    ) {
+        return res.status(400).json({ msg: "Chat Message is missing one or more required field(s)" });
+    }
+
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+            return res.status(400).json({ msg: "The User with provided email not found" });
+        }
+
+        const coachingSession = await CoachingSession.findById(req.body.coachingSession);
+        if (!coachingSession) {
+            return res.status(400).json({ msg: "The desired coachingSession not found" });
+        }
+
+        let userID = user._id;
+        let coachingSessionID =  coachingSession._id;
+        
+        if (!userID.equals(coachingSession.coach) && !userID.equals(coachingSession.client)) {
+            return res.status(400).json({ msg: "The user with the email are neither the client nor coach of the coaching session!" });
+        }
+
+        // Start New Chat Message
+        let newChatMessage = {
+            coachingSession: coachingSessionID,
+            user: userID,
+            message: req.body.message,
+            timeSend: Date.now(),
+        };
+
+        try {
+            const chatMessage = new ChatMessage(newChatMessage);
+
+            await chatMessage.save();
+
+            try {
+                // Save coaching Session with the change
+                coachingSession.chatMessages.push(chatMessage);
+                await coachingSession.save();
+
+                return res.json(chatMessage);
+            } catch (e) {
+                return res.status(400).json({ msg: "Failed to save chat message into coaching session." + e.message });
+            }
+        } catch (e) {
+          return res.status(400).json({ msg: "Failed to create chat message:" + e.message });
+        }
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+
+// GET - Chat Message based on parameters
+router.get("/ChatMessage", async (req, res) => {
+    try {
+        let chatMessages = await ChatMessage.find(parseRequestParams(req.query, ChatMessage));
+
+        return res.json(chatMessages);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// PUT - Chat Message.
+router.put("/ChatMessage/:entryID", async (req, res) => {
+    const entryID = req.params.entryID;
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+
+    if (!entryID) {
+        return res.status(400).json({ msg: "ID of Chat Message is missing" });
+    }
+
+    try {
+        const dbEntry = await ChatMessage.findById(entryID);
+
+        if (!dbEntry) {
+            return res.status(400).json({ msg: "Chat Message with provided ID not found" });
+        }
+
+        attrKeys.forEach((key) => {
+            if (!['_id'].includes(key)) {
+                dbEntry[key] = newAttrs[key];
+            }
+        });
+
+        await dbEntry.save();
+        res.json(dbEntry);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+
+
+// Deep delete chat Message
+async function deepDeleteChatMessage(toBeRemovedEntryID) {
+    let chatMessageRemoved = await ChatMessage.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Must remove the entry from coachingSession as well.
+    const coachingSessionID = chatMessageRemoved.coachingSession;
+
+    try { // For CoachingSession
+        const entry = await CoachingSession.findById(coachingSessionID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.chatMessages.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.chatMessages.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+}
+
+// DELETE - Chat Message (Deep Delete)
+router.delete("/ChatMessage/:entryID", async (req, res) => {
+    if (!req.params.entryID) {
+        return res.status(400).json({ msg: "Chat Message ID is missing" });
+    }
+
+    try {
+        const entry = await ChatMessage.findById(req.params.entryID);
+        if (!entry) {
+          return res.status(400).json({ msg: "Chat Message with the provided ID not found" });
+        }
+
+        await deepDeleteChatMessage(entry._id);
+
+        return res.json({ msg: "Chat Message successfully deleted" });
+      } catch (e) {
+        return res.status(400).json({ msg: "Chat Message deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL Chat Message (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
+router.delete("/ChatMessage", async (req, res) => {
+    try {
+        let message = await ChatMessage.deleteMany();
+ 
+        return res.json({ msg: "ALL ChatMessage successfully deleted (Shallow)", reciept: message });
+  
+      } catch (e) {
+        return res.status(400).json({ msg: "ChatMessages deletions failed: " + e.message });
+    }
+});
+
+// Payment history
+// GET - Payment history based on parameters
+router.get("/PaymentHistory", async (req, res) => {
+    try {
+        let paymentHistories = await PaymentHistory.find(parseRequestParams(req.query, PaymentHistory));
+
+        return res.json(paymentHistories);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// PUT - Payment history. - We should like
+router.put("/PaymentHistory/:entryID", async (req, res) => {
+    const entryID = req.params.entryID;
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+
+    if (!entryID) {
+        return res.status(400).json({ msg: "ID of Payment history is missing" });
+    }
+
+    try {
+        const dbEntry = await PaymentHistory.findById(entryID);
+
+        if (!dbEntry) {
+            return res.status(400).json({ msg: "Payment history with provided ID not found" });
+        }
+
+        attrKeys.forEach((key) => {
+            if (!['_id'].includes(key)) {
+                dbEntry[key] = newAttrs[key];
+            }
+        });
+
+        await dbEntry.save();
+        res.json(dbEntry);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+
+// Deep delete Payment History
+async function deepDeletePaymentHistory(toBeRemovedEntryID) {
+    let chatMessageRemoved = await PaymentHistory.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Maybe we should not be removing the reference from coaching session 
+}
+
+// DELETE - Payment History (Shallow) - DEBUG FUNCTION SHOULD NOT BE USED, WE DO NOT WANT TO ERASE RECORDS
+router.delete("/PaymentHistory/:entryID", async (req, res) => {
+    if (!req.params.entryID) {
+        return res.status(400).json({ msg: "Payment History ID is missing" });
+    }
+
+    try {
+        const entry = await PaymentHistory.findById(req.params.entryID);
+        if (!entry) {
+          return res.status(400).json({ msg: "Payment History with the provided ID not found" });
+        }
+
+        await deepDeletePaymentHistory(entry._id);
+
+        return res.json({ msg: "Payment History successfully deleted" });
+      } catch (e) {
+        return res.status(400).json({ msg: "Payment History deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL Payment History (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
+router.delete("/PaymentHistory", async (req, res) => {
+    try {
+        let message = await PaymentHistory.deleteMany();
+ 
+        return res.json({ msg: "ALL Payment History successfully deleted (Shallow)", reciept: message });
+  
+      } catch (e) {
+        return res.status(400).json({ msg: "Payment Histories deletions failed: " + e.message });
+    }
+});

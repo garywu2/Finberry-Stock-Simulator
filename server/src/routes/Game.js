@@ -498,6 +498,11 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
 
             // Save the simulatedEnrollemnt
             await simulatorEnrollment.save();
+
+            // Case - if the desired holding no longer have any quantity, we remove said holding
+            if (desiredHolding.quantity == 0) {
+                await deepDeleteHolding(desiredHolding._id); // Doesnt seem to fully work, seem to leave residue when performed here. (Need further investigation)
+            }
         }  
         else {
             return res.status(400).json({ msg: "Unknown or un-implemented transactionType.", transactionType: newTradeTransaction.transactionType });
@@ -588,6 +593,49 @@ router.get("/holding/:simulatorID/:email", async (req, res) => {
         return res.json(simulatorEnrollment.holdings);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
+    }
+});
+
+
+// Deep delete Holding
+async function deepDeleteHolding(toBeRemovedEntryID) {
+    let chatHoldingRemoved = await Holding.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Must remove the entry from simulatorEnrollment as well.
+    const simulatorEnrollmentID = chatHoldingRemoved.simulatorEnrollment;
+
+    try { // For CoachingClient
+        const entry = await SimulatorEnrollment.findById(simulatorEnrollmentID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.holdings.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.chatMessages.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+}
+
+// DELETE - Holding (Deep Delete)
+router.delete("/holding/:entryID", async (req, res) => {
+    if (!req.params.entryID) {
+        return res.status(400).json({ msg: "Holding ID is missing" });
+    }
+
+    try {
+        const entry = await Holding.findById(req.params.entryID);
+        if (!entry) {
+          return res.status(400).json({ msg: "Holding with the provided ID not found" });
+        }
+
+        await deepDeleteHolding(entry._id);
+
+        return res.json({ msg: "Holding successfully deleted" });
+      } catch (e) {
+        return res.status(400).json({ msg: "Holding deletion failed: " + e.message });
     }
 });
 
