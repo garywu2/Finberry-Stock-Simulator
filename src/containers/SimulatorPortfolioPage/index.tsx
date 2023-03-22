@@ -331,8 +331,9 @@ const SimulatorPortfolioPage = () => {
                 }}
               >
                 <Title>
-                  Welcome to your simulator portfolio, {userItem.username}{' '}
-                  {userItem.lastName}
+                  {userItem
+                    ? `Welcome to your simulator portfolio, ${userItem.username} ${userItem.lastName}!`
+                    : `Welcome to your simulator portfolio!`}
                 </Title>
               </Paper>
             </Grid>
@@ -368,14 +369,6 @@ const SimulatorPortfolioPage = () => {
           </Grid>
         </Container>
       </Container>
-      {userItem ? (
-        <h1>
-          Welcome to your Simulator Profile, {userItem.firstName}{' '}
-          {userItem.lastName}
-        </h1>
-      ) : (
-        <h1>error reading your name</h1>
-      )}
 
       {simulators.length > 0 && (
         <div>
