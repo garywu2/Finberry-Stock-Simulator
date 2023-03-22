@@ -75,6 +75,7 @@ function App() {
               <Route path="/FAQ" element={<FaqPage />} />
               <Route path="/Contact" element={<ContactPage />} />
               <Route path="/About" element={<AboutPage />} />
+              <Route path="*" element={<NotFoundPage />}/>
             </Routes>
             <Footer />
           </div>
