@@ -23,7 +23,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "concurrently \"react-scripts start\" \"cd server && npm run dev-server\"",
+    "start": "concurrently \"react-scripts start\" \"cd server && npm run dev-server-devlopment\"",
     "startClient": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

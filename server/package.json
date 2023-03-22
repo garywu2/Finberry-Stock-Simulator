@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "populate": "nodemon src/populateModels.js",
-    "dev-server": "node ./"
+    "dev-server": "node ./",
+    "dev-server-devlopment": "nodemon ./"
   },
   "keywords": [],
   "author": "",
