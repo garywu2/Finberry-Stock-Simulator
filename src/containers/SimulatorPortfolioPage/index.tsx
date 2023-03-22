@@ -64,6 +64,7 @@ const SimulatorPortfolioPage = () => {
     { name: "MSFT", company: "Microsoft" },
     { name: "GOOG", company: "Google" },
   ];
+  
 
   const filteredStockData = mockStockData.filter((item) =>
     item.name.toLowerCase().includes(stockSearchTerm.toLowerCase())
@@ -358,7 +359,7 @@ const SimulatorPortfolioPage = () => {
                     sx={{
                       backgroundColor: "secondary.main",
                       color: "white",
-                      marginY: "1rem",
+                      mt: "1rem",
                       "&:hover": {
                         backgroundColor: "secondary.dark",
                       },
@@ -369,9 +370,7 @@ const SimulatorPortfolioPage = () => {
                   >
                     Enroll Now
                   </Button>
-                ) : (
-                  <p></p>
-                )}
+                ) : (<></>)}
               </Paper>
             </Grid>
             <Grid item xs={12} md={8} lg={9}>
@@ -400,52 +399,12 @@ const SimulatorPortfolioPage = () => {
             </Grid>
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                <Orders />
+              {selectedSimulator && simulatorExists ? (<Orders data={rows}/>) : <Orders data={undefined}/>}
               </Paper>
             </Grid>
           </Grid>
         </Container>
       </Container>
-
-      {simulators.length > 0 && (
-        <div>
-          <label htmlFor='sim-results'>Simulator: </label>
-          <select
-            id='sim-results'
-            value={selectedSimulator || ''}
-            onChange={handleSimulatorChange}
-          >
-            <option value='' disabled hidden>
-              Select a simulator
-            </option>
-            {simulators.map((item) => (
-              <option>{item}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {selectedSimulator && !simulatorExists ? (
-        <Button
-          size='small'
-          sx={{
-            backgroundColor: 'secondary.main',
-            color: 'white',
-            marginY: '1rem',
-            '&:hover': {
-              backgroundColor: 'secondary.dark',
-            },
-          }}
-          onClick={handleEnrollSubmit}
-          component={Link}
-          to='/SimulatorPortfolio'
-        >
-          Enroll Now
-        </Button>
-      ) : (
-        <p></p>
-      )}
-
       {selectedSimulator && simulatorExists ? (
         <p>
           Your account balance:{" "}
@@ -587,50 +546,6 @@ const SimulatorPortfolioPage = () => {
             Sell {chartItems.meta.symbol}
           </Button>
         </Container>
-      ) : (
-        <p></p>
-      )}
-
-      {selectedSimulator && simulatorExists ? (
-        <TableContainer>
-          <Title>Recent Orders</Title>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Action</TableCell>
-                <TableCell>Symbol</TableCell>
-                <TableCell>Exchange</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell align="right">Trade Amount</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.date}</TableCell>
-                  <TableCell>{row.action}</TableCell>
-                  <TableCell>{row.symbol}</TableCell>
-                  <TableCell>{row.exchange}</TableCell>
-                  <TableCell>{`$${row.price}`}</TableCell>
-                  <TableCell>{row.quantity}</TableCell>
-                  <TableCell align="right">{`$${
-                    row.price * row.quantity
-                  }`}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <Link
-            color="primary"
-            to={"/"}
-            style={{ margin: "2rem 0" }}
-            onClick={preventDefault}
-          >
-            See more orders
-          </Link>
-        </TableContainer>
       ) : (
         <p></p>
       )}

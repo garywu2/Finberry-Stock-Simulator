@@ -8,56 +8,11 @@ import TableRow from '@mui/material/TableRow';
 import Title from '../Title';
 import { TableContainer } from '@mui/material';
 
-function createData(
-    id: number,
-    date: string,
-    action: string,
-    symbol: string,
-    price: number,
-    quantity: number,
-) {
-    return { id, date, action, symbol, price, quantity };
-}
-
-const rows = [
-    createData(
-        0,
-        'Jan 27, 2023',
-        'Buy',
-        'TSLA',
-        124.14,
-        12,
-    ),
-    createData(
-        1,
-        'Feb 14, 2023',
-        'Buy',
-        'AMZN',
-        324.21,
-        5,
-    ),
-    createData(
-        2,
-        'Feb 16, 2023',
-        'Buy',
-        'AAPL',
-        142.66,
-        8),
-    createData(
-        3,
-        'Feb 24, 2023',
-        'Sell',
-        'META',
-        172.04,
-        16,
-    ),
-];
-
 function preventDefault(event: React.MouseEvent) {
     event.preventDefault();
 }
 
-export default function Orders() {
+export default function Orders(data: any | undefined) {
     return (
         <TableContainer>
             <Title>Recent Orders</Title>
@@ -73,14 +28,14 @@ export default function Orders() {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {rows.map((row) => (
+                    {data?.data?.slice(0).reverse().map((row: any) => (
                         <TableRow key={row.id}>
-                            <TableCell>{row.date}</TableCell>
+                            <TableCell>{row.date.substring(0, row.date.indexOf('T'))}</TableCell>
                             <TableCell>{row.action}</TableCell>
                             <TableCell>{row.symbol}</TableCell>
-                            <TableCell>{`$${row.price}`}</TableCell>
+                            <TableCell>{`$${row.price.toFixed(2)}`}</TableCell>
                             <TableCell>{row.quantity}</TableCell>
-                            <TableCell align="right">{`$${row.price * row.quantity}`}</TableCell>
+                            <TableCell align="right">{`$${(row.price * row.quantity).toLocaleString(undefined, {maximumFractionDigits:2})}`}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
