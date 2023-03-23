@@ -10,6 +10,8 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
@@ -64,7 +66,6 @@ const SimulatorPortfolioPage = () => {
     { name: "MSFT", company: "Microsoft" },
     { name: "GOOG", company: "Google" },
   ];
-  
 
   const filteredStockData = mockStockData.filter((item) =>
     item.name.toLowerCase().includes(stockSearchTerm.toLowerCase())
@@ -298,9 +299,11 @@ const SimulatorPortfolioPage = () => {
     });
   };
 
-  function preventDefault(event: React.MouseEvent) {
-    event.preventDefault();
-  }
+  const [tab, setTab] = React.useState("buy");
+
+  const handleChange = (event: React.SyntheticEvent, newTab: string) => {
+    setTab(newTab);
+  };
 
   return (
     <div>
@@ -370,7 +373,9 @@ const SimulatorPortfolioPage = () => {
                   >
                     Enroll Now
                   </Button>
-                ) : (<></>)}
+                ) : (
+                  <></>
+                )}
               </Paper>
             </Grid>
             <Grid item xs={12} md={8} lg={9}>
@@ -399,11 +404,176 @@ const SimulatorPortfolioPage = () => {
             </Grid>
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-              {selectedSimulator && simulatorExists ? (<Orders data={rows}/>) : <Orders data={undefined}/>}
+                {selectedSimulator && simulatorExists ? (
+                  <Orders data={rows} />
+                ) : (
+                  <Orders data={undefined} />
+                )}
               </Paper>
             </Grid>
           </Grid>
         </Container>
+      </Container>
+      <Container
+        sx={{
+          backgroundColor: "white",
+          minHeight: "100vh",
+          minWidth: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: "1rem",
+          marginBottom: "1rem",
+          padding: "2rem",
+        }}
+      >
+        <Grid
+          container
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Grid
+            xs={12}
+            lg={6}
+            sx={{
+              padding: {
+                lg: "2rem",
+                md: "5rem 10rem",
+                sm: "5rem 7rem",
+                xs: "0rem",
+              },
+            }}
+          >
+            <Box sx={{ width: "100%" }}>
+              <Tabs
+                value={tab}
+                onChange={handleChange}
+                textColor="secondary"
+                indicatorColor="secondary"
+                aria-label="secondary tabs"
+              >
+                <Tab value="buy" label="Buy" />
+                <Tab value="sell" label="Sell" />
+              </Tabs>
+            </Box>
+            <Typography
+              component="div"
+              variant="h3"
+              align="left"
+              fontWeight={400}
+              sx={{ color: "text.primary", marginBottom: "1rem" }}
+            >
+              <Box fontWeight="fontWeightBold" display="inline">
+                Simulate a stock trade.
+              </Box>
+            </Typography>
+            <Button
+              size="large"
+              sx={{
+                backgroundColor: "secondary.main",
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "secondary.dark",
+                },
+              }}
+              component={Link}
+              to="/register"
+            >
+              <b>Explore Now</b>
+            </Button>
+          </Grid>
+          {selectedSimulator && simulatorExists && chartData.length > 0 ? (
+            <Grid
+              xs={12}
+              lg={6}
+              sx={{ paddingTop: { xs: "2rem", lg: "0rem" } }}
+            >
+              <Typography variant="h3" align="center" fontWeight={400}>
+                The price of ${chartItems.meta.symbol} since {chartData[0].date}
+              </Typography>
+              <Grid item xs={12} md={8} lg={9}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    height: 240,
+                  }}
+                >
+                  <Chart data={chartData} />
+                </Paper>
+              </Grid>
+              <Typography variant="h4" align="center" fontWeight={50}>
+                Place an order:
+              </Typography>
+
+              <TextField
+                required
+                id="buy-input"
+                label="Enter shares"
+                variant="outlined"
+                type="number"
+                InputProps={{
+                  inputProps: {
+                    max: 100,
+                    min: 1,
+                  },
+                }}
+                value={buyQuantity}
+                onChange={handleBuyInputChange}
+              />
+              <Button
+                size="small"
+                sx={{
+                  backgroundColor: "secondary.main",
+                  color: "white",
+                  marginY: "1rem",
+                  "&:hover": {
+                    backgroundColor: "secondary.dark",
+                  },
+                }}
+                onClick={handleBuyInputSubmit}
+              >
+                Buy {chartItems.meta.symbol}
+              </Button>
+
+              <TextField
+                required
+                id="sell-input"
+                label="Enter shares"
+                variant="outlined"
+                type="number"
+                InputProps={{
+                  inputProps: {
+                    max: 100,
+                    min: 1,
+                  },
+                }}
+                value={sellQuantity}
+                onChange={handleSellInputChange}
+              />
+              <Button
+                size="small"
+                sx={{
+                  backgroundColor: "secondary.main",
+                  color: "white",
+                  marginY: "1rem",
+                  "&:hover": {
+                    backgroundColor: "secondary.dark",
+                  },
+                }}
+                onClick={handleSellInputSubmit}
+              >
+                Sell {chartItems.meta.symbol}
+              </Button>
+            </Grid>
+          ) : (
+            <></>
+          )}
+        </Grid>
       </Container>
       {selectedSimulator && simulatorExists ? (
         <p>
@@ -460,92 +630,7 @@ const SimulatorPortfolioPage = () => {
             marginTop: "1rem",
             marginBottom: "1rem",
           }}
-        >
-          <Typography variant="h3" align="center" fontWeight={400}>
-            The price of ${chartItems.meta.symbol} since {chartData[0].date}
-          </Typography>
-          <Paper
-            sx={{
-              p: 2,
-              display: "flex",
-              flexDirection: "column",
-              height: 240,
-              width: 1200,
-              backgroundColor: "white",
-              minHeight: "100vh",
-              minWidth: "100%",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: "1rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <Chart data={chartData} />
-          </Paper>
-          <Typography variant="h4" align="center" fontWeight={50}>
-            Place an order:
-          </Typography>
-
-          <TextField
-            required
-            id="buy-input"
-            label="Enter shares"
-            variant="outlined"
-            type="number"
-            InputProps={{
-              inputProps: {
-                max: 100,
-                min: 1,
-              },
-            }}
-            value={buyQuantity}
-            onChange={handleBuyInputChange}
-          />
-          <Button
-            size="small"
-            sx={{
-              backgroundColor: "secondary.main",
-              color: "white",
-              marginY: "1rem",
-              "&:hover": {
-                backgroundColor: "secondary.dark",
-              },
-            }}
-            onClick={handleBuyInputSubmit}
-          >
-            Buy {chartItems.meta.symbol}
-          </Button>
-
-          <TextField
-            required
-            id="sell-input"
-            label="Enter shares"
-            variant="outlined"
-            type="number"
-            InputProps={{
-              inputProps: {
-                max: 100,
-                min: 1,
-              },
-            }}
-            value={sellQuantity}
-            onChange={handleSellInputChange}
-          />
-          <Button
-            size="small"
-            sx={{
-              backgroundColor: "secondary.main",
-              color: "white",
-              marginY: "1rem",
-              "&:hover": {
-                backgroundColor: "secondary.dark",
-              },
-            }}
-            onClick={handleSellInputSubmit}
-          >
-            Sell {chartItems.meta.symbol}
-          </Button>
-        </Container>
+        ></Container>
       ) : (
         <p></p>
       )}
