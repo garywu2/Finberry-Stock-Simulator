@@ -95,6 +95,7 @@ const SimulatorPortfolioPage = () => {
         if (sim === userItem.simulatorEnrollments[i].simulator.title) {
           simulatorExists = true
           simIndex = i
+          break
         } else {
           simulatorExists = false
           simIndex = 0
@@ -402,8 +403,6 @@ const SimulatorPortfolioPage = () => {
             minHeight: '100vh',
             minWidth: '100%',
             display: 'flex',
-            // alignItems: 'center',
-            // justifyContent: 'center',
             marginTop: '1rem',
             marginBottom: '1rem',
             padding: '2rem',
@@ -413,8 +412,6 @@ const SimulatorPortfolioPage = () => {
             container
             sx={{
               display: 'flex',
-              // alignItems: 'center',
-              // justifyContent: 'center',
             }}
           >
             <Grid
@@ -433,7 +430,9 @@ const SimulatorPortfolioPage = () => {
                 fontWeight={400}
                 sx={{ color: 'text.primary', marginBottom: '1rem' }}
               >
-                <Box display='inline'>Simulate a stock trade.</Box>
+                <Typography variant='h4' align='left' fontWeight={50}>
+                  Simulate a trade.
+                </Typography>
               </Typography>
               <Box sx={{ width: '100%' }}>
                 <TabContext value={tab}>
@@ -450,10 +449,6 @@ const SimulatorPortfolioPage = () => {
                     </TabList>
                   </Box>
                   <TabPanel value='buy'>
-                    <Typography variant='h4' align='center' fontWeight={50}>
-                      Place an order:
-                    </Typography>
-
                     <TextField
                       required
                       id='buy-input'
@@ -481,7 +476,7 @@ const SimulatorPortfolioPage = () => {
                       }}
                       onClick={handleBuyInputSubmit}
                     >
-                      Buy {chartItems.meta.symbol}
+                      Buy
                     </Button>
                   </TabPanel>
                   <TabPanel value='sell'>
@@ -501,7 +496,7 @@ const SimulatorPortfolioPage = () => {
                       onChange={handleSellInputChange}
                     />
                     <Button
-                      size='small'
+                      size='large'
                       sx={{
                         backgroundColor: 'secondary.main',
                         color: 'white',
@@ -512,7 +507,7 @@ const SimulatorPortfolioPage = () => {
                       }}
                       onClick={handleSellInputSubmit}
                     >
-                      Sell {chartItems.meta.symbol}
+                      Sell
                     </Button>
                   </TabPanel>
                 </TabContext>
