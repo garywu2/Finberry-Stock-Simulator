@@ -470,19 +470,70 @@ const SimulatorPortfolioPage = () => {
                       <Tab label='Sell' value='sell' />
                     </TabList>
                   </Box>
-                  <TabPanel value='buy'>Item One</TabPanel>
-                  <TabPanel value='sell'>
+                  <TabPanel value='buy'>
+                    <Typography variant='h4' align='center' fontWeight={50}>
+                      Place an order:
+                    </Typography>
+
+                    <TextField
+                      required
+                      id='buy-input'
+                      label='Enter shares'
+                      variant='outlined'
+                      type='number'
+                      InputProps={{
+                        inputProps: {
+                          max: 100,
+                          min: 1,
+                        },
+                      }}
+                      value={buyQuantity}
+                      onChange={handleBuyInputChange}
+                    />
                     <Button
-                      size='large'
+                      size='small'
                       sx={{
                         backgroundColor: 'secondary.main',
                         color: 'white',
+                        marginY: '1rem',
                         '&:hover': {
                           backgroundColor: 'secondary.dark',
                         },
                       }}
+                      onClick={handleBuyInputSubmit}
                     >
-                      <b>Explore Now</b>
+                      Buy {chartItems.meta.symbol}
+                    </Button>
+                  </TabPanel>
+                  <TabPanel value='sell'>
+                    <TextField
+                      required
+                      id='sell-input'
+                      label='Enter shares'
+                      variant='outlined'
+                      type='number'
+                      InputProps={{
+                        inputProps: {
+                          max: 100,
+                          min: 1,
+                        },
+                      }}
+                      value={sellQuantity}
+                      onChange={handleSellInputChange}
+                    />
+                    <Button
+                      size='small'
+                      sx={{
+                        backgroundColor: 'secondary.main',
+                        color: 'white',
+                        marginY: '1rem',
+                        '&:hover': {
+                          backgroundColor: 'secondary.dark',
+                        },
+                      }}
+                      onClick={handleSellInputSubmit}
+                    >
+                      Sell {chartItems.meta.symbol}
                     </Button>
                   </TabPanel>
                 </TabContext>
@@ -511,69 +562,6 @@ const SimulatorPortfolioPage = () => {
                     <Chart data={chartData} />
                   </Paper>
                 </Grid>
-                <Typography variant='h4' align='center' fontWeight={50}>
-                  Place an order:
-                </Typography>
-
-                <TextField
-                  required
-                  id='buy-input'
-                  label='Enter shares'
-                  variant='outlined'
-                  type='number'
-                  InputProps={{
-                    inputProps: {
-                      max: 100,
-                      min: 1,
-                    },
-                  }}
-                  value={buyQuantity}
-                  onChange={handleBuyInputChange}
-                />
-                <Button
-                  size='small'
-                  sx={{
-                    backgroundColor: 'secondary.main',
-                    color: 'white',
-                    marginY: '1rem',
-                    '&:hover': {
-                      backgroundColor: 'secondary.dark',
-                    },
-                  }}
-                  onClick={handleBuyInputSubmit}
-                >
-                  Buy {chartItems.meta.symbol}
-                </Button>
-
-                <TextField
-                  required
-                  id='sell-input'
-                  label='Enter shares'
-                  variant='outlined'
-                  type='number'
-                  InputProps={{
-                    inputProps: {
-                      max: 100,
-                      min: 1,
-                    },
-                  }}
-                  value={sellQuantity}
-                  onChange={handleSellInputChange}
-                />
-                <Button
-                  size='small'
-                  sx={{
-                    backgroundColor: 'secondary.main',
-                    color: 'white',
-                    marginY: '1rem',
-                    '&:hover': {
-                      backgroundColor: 'secondary.dark',
-                    },
-                  }}
-                  onClick={handleSellInputSubmit}
-                >
-                  Sell {chartItems.meta.symbol}
-                </Button>
               </Grid>
             ) : (
               <></>
