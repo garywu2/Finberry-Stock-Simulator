@@ -360,7 +360,7 @@ const SimulatorPortfolioPage = () => {
                 )}
               </Paper>
             </Grid>
-            <Grid item xs={12} md={8} lg={9}>
+            <Grid item xs={12} md={6} lg={8}>
               <Paper
                 sx={{
                   p: 2,
@@ -372,7 +372,7 @@ const SimulatorPortfolioPage = () => {
                 <Chart data={chartData} />
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} md={3} lg={2}>
               <Paper
                 sx={{
                   p: 2,
@@ -381,7 +381,33 @@ const SimulatorPortfolioPage = () => {
                   height: 240,
                 }}
               >
-                <Balance />
+                <Balance
+                  title='Buying Power'
+                  amount={
+                    selectedSimulator && simulatorExists
+                      ? userItem.simulatorEnrollments[simIndex].balance
+                      : 0
+                  }
+                />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={3} lg={2}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 240,
+                }}
+              >
+                <Balance
+                  title='Portfolio Value'
+                  amount={
+                    selectedSimulator && simulatorExists
+                      ? userItem.simulatorEnrollments[simIndex].balance
+                      : 0
+                  }
+                />
               </Paper>
             </Grid>
             <Grid item xs={12}>
