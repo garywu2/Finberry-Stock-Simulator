@@ -600,35 +600,64 @@ const SimulatorPortfolioPage = () => {
                     </Grid>
                   </TabPanel>
                   <TabPanel value='sell'>
-                    <TextField
-                      required
-                      id='sell-input'
-                      label='Enter shares'
-                      variant='outlined'
-                      type='number'
-                      InputProps={{
-                        inputProps: {
-                          max: 100,
-                          min: 1,
-                        },
-                      }}
-                      value={sellQuantity}
-                      onChange={handleSellInputChange}
-                    />
-                    <Button
-                      size='large'
-                      sx={{
-                        backgroundColor: 'secondary.main',
-                        color: 'white',
-                        marginY: '1rem',
-                        '&:hover': {
-                          backgroundColor: 'secondary.dark',
-                        },
-                      }}
-                      onClick={handleSellInputSubmit}
-                    >
-                      Sell
-                    </Button>
+                    <Grid container>
+                      <Grid
+                        lg={6}
+                        xs={12}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                      >
+                        <TextField
+                          required
+                          id='buy-input'
+                          name='stock'
+                          label='Stock Name'
+                          type='text'
+                          margin='normal'
+                          sx={{
+                            width: '100%',
+                          }}
+                          color='primary'
+                        />
+                        <TextField
+                          required
+                          id='sell-input'
+                          name='quantity'
+                          label='Quantity'
+                          type='number'
+                          value={sellQuantity}
+                          onChange={handleSellInputChange}
+                          margin='normal'
+                          sx={{
+                            width: '100%',
+                          }}
+                          InputProps={{
+                            inputProps: {
+                              max: 100,
+                              min: 1,
+                            },
+                          }}
+                          color='primary'
+                        />
+                        <Button
+                          size='medium'
+                          fullWidth
+                          sx={{
+                            backgroundColor: 'secondary.main',
+                            color: 'white',
+                            marginY: '1rem',
+                            '&:hover': {
+                              backgroundColor: 'secondary.dark',
+                            },
+                          }}
+                          onClick={handleSellInputSubmit}
+                        >
+                          Sell
+                        </Button>
+                      </Grid>
+                    </Grid>
                   </TabPanel>
                 </TabContext>
               </Box>
@@ -664,14 +693,6 @@ const SimulatorPortfolioPage = () => {
         </Container>
       ) : (
         <></>
-      )}
-      {selectedSimulator && simulatorExists ? (
-        <p>
-          Your account balance:{' '}
-          {userItem.simulatorEnrollments[simIndex].balance}
-        </p>
-      ) : (
-        <p></p>
       )}
 
       {selectedSimulator && simulatorExists ? (
