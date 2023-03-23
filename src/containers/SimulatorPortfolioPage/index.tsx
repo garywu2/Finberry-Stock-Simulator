@@ -16,6 +16,7 @@ import axios from 'axios'
 import Title from '../../components/Title'
 import Chart from '../../components/Chart'
 import Balance from '../../components/Balance'
+import Holdings from '../../components/Holdings'
 import Orders from '../../components/Orders'
 import UserContext from '../../context/user'
 
@@ -28,6 +29,7 @@ var simulatorExists = false
 var simIndex = 0
 var rows: any[] = []
 var chartData: any[] = []
+var holdingsRows: any[] = []
 
 const SimulatorPortfolioPage = () => {
   const { user } = useContext(UserContext)
@@ -36,6 +38,7 @@ const SimulatorPortfolioPage = () => {
   const [chartItems, setChartItems] = React.useState<any>()
   const [realTimePrice, setRealTimePrice] = React.useState<any>()
   const [tradeHistoryItems, setTradeHistoryItems] = React.useState<any>()
+  const [holdingsItems, setHoldingsItems] = React.useState<any>()
   const [stockSearchTerm, setStockSearchTerm] = useState('')
   const [buyQuantity, setBuyQuantity] = useState(0)
   const [sellQuantity, setSellQuantity] = useState(0)
@@ -82,6 +85,20 @@ const SimulatorPortfolioPage = () => {
     }
   }
 
+  function updateHoldingsRows(data: any) {
+    holdingsRows = []
+    for (var i = 0; i < data.length; i++) {
+      holdingsRows.push({
+        id: data[i]._id,
+        symbol: data[i].symbol,
+        // name: data[i].name,
+        price: data[i].price,
+        quantity: data[i].quantity,
+        exchange: data[i].index,
+      })
+    }
+  }
+
   const handleSimulatorChange = (event: any) => {
     var sim = String(event.target.value)
     setSelectedSimulator(event.target.value)
@@ -115,6 +132,21 @@ const SimulatorPortfolioPage = () => {
         .then((response) => {
           setTradeHistoryItems(response.data)
           updateRows(response.data)
+        })
+    }
+
+    if (simulatorExists) {
+      axios
+        .get(
+          route +
+            'game/holding/' +
+            userItem.simulatorEnrollments[simIndex].simulator._id +
+            '/' +
+            String(user.email)
+        )
+        .then((response) => {
+          setHoldingsItems(response.data)
+          updateHoldingsRows(response.data)
         })
     }
   }
@@ -216,6 +248,18 @@ const SimulatorPortfolioPage = () => {
                 setTradeHistoryItems(response.data)
                 updateRows(response.data)
               })
+            axios
+              .get(
+                route +
+                  'game/holding/' +
+                  userItem.simulatorEnrollments[simIndex].simulator._id +
+                  '/' +
+                  String(user.email)
+              )
+              .then((response) => {
+                setHoldingsItems(response.data)
+                updateHoldingsRows(response.data)
+              })
           })
       })
     }
@@ -256,6 +300,18 @@ const SimulatorPortfolioPage = () => {
               .then((response) => {
                 setTradeHistoryItems(response.data)
                 updateRows(response.data)
+              })
+            axios
+              .get(
+                route +
+                  'game/holding/' +
+                  userItem.simulatorEnrollments[simIndex].simulator._id +
+                  '/' +
+                  String(user.email)
+              )
+              .then((response) => {
+                setHoldingsItems(response.data)
+                updateHoldingsRows(response.data)
               })
           })
       })
@@ -413,6 +469,15 @@ const SimulatorPortfolioPage = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 {selectedSimulator && simulatorExists ? (
+                  <Holdings data={holdingsRows} />
+                ) : (
+                  <Holdings data={undefined} />
+                )}
+              </Paper>
+            </Grid>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                {selectedSimulator && simulatorExists ? (
                   <Orders data={rows} />
                 ) : (
                   <Orders data={undefined} />
@@ -475,35 +540,64 @@ const SimulatorPortfolioPage = () => {
                     </TabList>
                   </Box>
                   <TabPanel value='buy'>
-                    <TextField
-                      required
-                      id='buy-input'
-                      label='Enter shares'
-                      variant='outlined'
-                      type='number'
-                      InputProps={{
-                        inputProps: {
-                          max: 100,
-                          min: 1,
-                        },
-                      }}
-                      value={buyQuantity}
-                      onChange={handleBuyInputChange}
-                    />
-                    <Button
-                      size='small'
-                      sx={{
-                        backgroundColor: 'secondary.main',
-                        color: 'white',
-                        marginY: '1rem',
-                        '&:hover': {
-                          backgroundColor: 'secondary.dark',
-                        },
-                      }}
-                      onClick={handleBuyInputSubmit}
-                    >
-                      Buy
-                    </Button>
+                    <Grid container>
+                      <Grid
+                        lg={6}
+                        xs={12}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                      >
+                        <TextField
+                          required
+                          id='buy-input'
+                          name='stock'
+                          label='Stock Name'
+                          type='text'
+                          margin='normal'
+                          sx={{
+                            width: '100%',
+                          }}
+                          color='primary'
+                        />
+                        <TextField
+                          required
+                          id='buy-input'
+                          name='quantity'
+                          label='Quantity'
+                          type='number'
+                          value={buyQuantity}
+                          onChange={handleBuyInputChange}
+                          margin='normal'
+                          sx={{
+                            width: '100%',
+                          }}
+                          InputProps={{
+                            inputProps: {
+                              max: 100,
+                              min: 1,
+                            },
+                          }}
+                          color='primary'
+                        />
+                        <Button
+                          size='medium'
+                          fullWidth
+                          sx={{
+                            backgroundColor: 'secondary.main',
+                            color: 'white',
+                            marginY: '1rem',
+                            '&:hover': {
+                              backgroundColor: 'secondary.dark',
+                            },
+                          }}
+                          onClick={handleBuyInputSubmit}
+                        >
+                          Buy
+                        </Button>
+                      </Grid>
+                    </Grid>
                   </TabPanel>
                   <TabPanel value='sell'>
                     <TextField
@@ -609,24 +703,6 @@ const SimulatorPortfolioPage = () => {
             </div>
           )}
         </div>
-      ) : (
-        <p></p>
-      )}
-
-      {selectedSimulator && simulatorExists && chartData.length > 0 ? (
-        <Container
-          sx={{
-            backgroundColor: 'white',
-            minHeight: '100vh',
-            minWidth: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: '1rem',
-            marginBottom: '1rem',
-          }}
-        ></Container>
       ) : (
         <p></p>
       )}
