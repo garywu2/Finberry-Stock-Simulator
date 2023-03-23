@@ -4,38 +4,20 @@ import {
   Container,
   Grid,
   Paper,
-  MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Tab,
-  Tabs,
   TextField,
   Typography,
 } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
-import Title from '../../components/Title'
-import { TableContainer } from '@mui/material'
 import { Link } from 'react-router-dom'
 import React, { useContext, useState } from 'react'
 import axios from 'axios'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts'
-import UserContext from '../../context/user'
-import { Navigate, useNavigate } from 'react-router-dom'
 
+import Title from '../../components/Title'
 import Chart from '../../components/Chart'
 import Balance from '../../components/Balance'
 import Orders from '../../components/Orders'
+import UserContext from '../../context/user'
 
 const route =
   process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
@@ -46,7 +28,6 @@ var simulatorExists = false
 var simIndex = 0
 var rows: any[] = []
 var chartData: any[] = []
-var currSimId = 0
 
 const SimulatorPortfolioPage = () => {
   const { user } = useContext(UserContext)
@@ -84,7 +65,7 @@ const SimulatorPortfolioPage = () => {
     var trueAction = ''
     rows = []
     for (var i = 0; i < data.length; i++) {
-      if (data[i].transactionType == 1) {
+      if (data[i].transactionType === 1) {
         trueAction = 'Buy'
       } else {
         trueAction = 'Sell'
@@ -111,14 +92,12 @@ const SimulatorPortfolioPage = () => {
       userItem.simulatorEnrollments.length > 0
     ) {
       for (var i = 0; i < userItem.simulatorEnrollments.length; i += 1) {
-        if (sim == userItem.simulatorEnrollments[i].simulator.title) {
+        if (sim === userItem.simulatorEnrollments[i].simulator.title) {
           simulatorExists = true
           simIndex = i
-          currSimId = userItem.simulatorEnrollments[i].simulator._id
         } else {
           simulatorExists = false
           simIndex = 0
-          currSimId = 0
         }
       }
     }
@@ -285,7 +264,7 @@ const SimulatorPortfolioPage = () => {
   const handleEnrollSubmit = (event: any) => {
     axios.get(route + 'game/simulator').then((response) => {
       for (var i = 0; i < response.data.length; i++) {
-        if (selectedSimulator == response.data[i].title) {
+        if (selectedSimulator === response.data[i].title) {
           axios({
             method: 'post',
             url: route + 'game/simulator/' + response.data[i]._id,
