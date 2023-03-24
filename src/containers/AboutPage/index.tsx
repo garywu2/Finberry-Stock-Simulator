@@ -1,95 +1,181 @@
 import {
-    Box,
-    Container,
-    Grid,
-    Typography,
-    Card,
-    CardContent,
-    CardMedia
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Card,
+  CardContent,
+  CardMedia,
 } from '@mui/material'
-
+import TeamPhoto from '../../images/photos/team-photo.jpg'
+import DanielPhoto from '../../images/photos/daniel-photo.jpg'
+import HaseebPhoto from '../../images/photos/haseeb-photo.jpg'
+import GaryPhoto from '../../images/photos/gary-photo.jpg'
+import TariqPhoto from '../../images/photos/tariq-photo.jpg'
+import BrookePhoto from '../../images/photos/brooke-photo.jpg'
 interface Bio {
-    name: string;
-    description: string;
+  name: string
+  description: string
+  photo: string
+  title: string
 }
 
 const bios: Bio[] = [
-    { name: 'Haseeb Khan', description: 'Hello! I enjoy travelling, photography, bouldering, and spontaneous adventures with friends and family. The potential for creating entrepreneurial products and solutions excites me greatly.' },
-    { name: 'Brooke Mitchell', description: 'Hi, I\'m Brooke. Ever since I was a kid running my own lemonade stands, I have been fascinated with the idea of entrepreneurial work and self-employment. I am a creative individual and I believe this helps me come up with innovative business ideas and creative solutions to potential problems. I love using Finberry to refine my investment skills and to compete against my fellow founders!' },
-    { name: 'Gary Wu', description: 'I am in my fourth year of a Software Engineering degree. Through previous internship experiences and projects, I’ve had experience with back-end development and the infrastructure side of the application. The primary languages I worked with include React, Express and a variety of different AWS infrastructures.' },
-    { name: 'Pin Hong Long', description: 'Hello I am Pin Hong Long, or simply Daniel. I have been fascinated with technology from very early on, this led to my early interest in computers and programming. This is evident by my strong interest in anything technology-related like video games, applications, and websites. With my interest in those fields, I believe it will be very helpful for Finberry.' },
-    { name: 'Muhammad Tariq', description: 'Hi I’m Muhammad Hassan Tariq. I have always been fascinated with computers and different technologies and recently crypto and fintech which led to the idea of our capstone project. I have also always believed in the entrepreneurial spirit and taking meaningful ideas to truly impact the world. Outside of school or work I like playing competitive games whether that be video games, sports, or board games and I also like travelling and spending time with friends and family.' }
-];
+  {
+    name: 'Haseeb Khan',
+    title: 'Software Engineer',
+    photo: HaseebPhoto,
+    description:
+      'Hello! I enjoy travelling, photography, bouldering, and spontaneous adventures with friends and family. The potential for creating entrepreneurial products and solutions excites me greatly.',
+  },
+  {
+    name: 'Gary Wu',
+    title: 'Software Engineer',
+    photo: GaryPhoto,
+    description:
+      "Hey there! I'm Gary, I have a lot of experience in back-end development and infrastructure. I've worked with React, Express, and various AWS platforms in internships and projects",
+  },
+  {
+    name: 'Brooke Mitchell',
+    title: 'Electrical Engineer',
+    photo: BrookePhoto,
+    description:
+      "I'm Brooke, a creative individual who's had a passion for entrepreneurship since childhood. Finberry helps me refine my investment skills and compete with my fellow founders.",
+  },
+  {
+    name: 'Pin Hong Long',
+    title: 'Software Engineer',
+    photo: DanielPhoto,
+    description:
+      "Hi, I'm Pin Hong Long, but you can call me Daniel. I've always been interested in computers, programming, and technology-related areas such as video games, apps, and websites.",
+  },
+  {
+    name: 'Muhammad Tariq',
+    title: 'Software Engineer',
+    photo: TariqPhoto,
+    description:
+      "I'm Muhammad, passionate about tech, crypto, and fintech. I believe in entrepreneurship, meaningful ideas, and love playing competitive games, traveling, and spending time with loved ones.",
+  },
+]
 
 const AboutPage = () => {
-    return (
-        <div>
-            <Container
+  return (
+    <div>
+      <Container
+        sx={{
+          backgroundColor: 'primary.main',
+          minHeight: '100vh',
+          minWidth: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '3rem',
+          boxShadow: '0 4px 15px -6px black',
+          marginBottom: '1rem',
+          paddingTop: '5rem',
+          paddingBottom: '2rem',
+        }}
+      >
+        <Box
+          display={'flex'}
+          sx={{
+            backgroundColor: 'white',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '1rem',
+            width: '100%',
+            margin: { sm: '0rem', lg: '3rem' },
+          }}
+        >
+          <Grid container sx={{ margin: '2rem' }}>
+            <Grid xs={1}></Grid>
+            <Grid xs={10}>
+              <Typography
+                variant='h3'
+                align='center'
+                fontWeight={400}
+                padding={'2rem 0'}
+              >
+                About Us
+              </Typography>
+              <Typography
+                variant='h5'
+                align='center'
+                color='text.secondary'
+                paragraph
+              >
+                Founded in 2022 by friends from the University of Calgary,
+                Finberry offers a free, hands-on experience for learning about
+                investing through stock trading simulations, without risking
+                your own money.
+              </Typography>
+            </Grid>
+            <Grid xs={1}></Grid>
+            <Grid item xs={12}>
+              <Card
                 sx={{
-                    backgroundColor: 'primary.main',
-                    minHeight: '100vh',
-                    minWidth: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '3rem',
-                    boxShadow: '0 4px 15px -6px black',
-                    marginBottom: '1rem',
-                    paddingTop: '5rem',
-                    paddingBottom: '2rem'
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  marginBottom: '1rem',
                 }}
-            >
-                <Box
-                    display={"flex"}
+              >
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <CardMedia
+                    component='img'
+                    image={TeamPhoto}
+                    alt='Team photo'
                     sx={{
-                        backgroundColor: 'white',
-                        borderRadius: "1rem",
-                        width: "100%",
-                        margin: { sm: "0rem", lg: "3rem" },
-                        paddingBottom: "3rem"
+                      borderRadius: '1rem',
                     }}
-                >
-                    <Grid container>
-                        <Grid xs={2}></Grid>
-                        <Grid xs={8}>
-                            <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
-                                About Us
-                            </Typography>
-                            <Typography variant="h5" align="center" color="text.secondary" paragraph>
-                                Finberry was founded in 2022 by a group of friends who found it difficult to break into the world of investing. With so many contradicting resources available and limited funds, we didn’t want to invest our money without practicing beforehand. There were many simulated investing apps but they were not fun and not free. We didn’t want to feel like it was a job to learn how to invest and instead wanted to create a website that provided a fun and hands-on experience to learn how to trade stocks and invest money.
-                            </Typography>
-                        </Grid>
-                        <Grid xs={2}></Grid>
-                        <Container>
-                            <Grid container spacing={2}>
-                                {bios.map((bio, index) => (
-                                    <Grid item key={index} xs={12} sm={6} md={3}>
-                                        <Card
-                                            sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', }}
-                                        >
-                                            <CardContent sx={{ flexGrow: 1 }}>
-                                                <CardMedia
-                                                    component="img"
-                                                    image="https://source.unsplash.com/random"
-                                                    alt="random"
-                                                    sx={{ width: '100%', borderRadius: '1rem', marginBottom: '1rem' }}
-                                                />
-                                                <Typography gutterBottom variant="h5" align='center' component="h2">
-                                                    {bio.name}
-                                                </Typography>
-                                                <Typography >
-                                                    {bio.description}
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Container>
-                    </Grid></Box>
-            </Container>
-        </div>
-    )
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid container spacing={2}>
+              {bios.map((bio, index) => (
+                <Grid item key={index} xs={12} sm={12} md={2.4}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <CardMedia
+                        component='img'
+                        src={bio.photo}
+                        alt='random'
+                        sx={{
+                          height: '15rem',
+                          width: '100%',
+                          borderRadius: '1rem',
+                          marginBottom: '1rem',
+                        }}
+                      />
+                      <Typography gutterBottom variant='h5' fontWeight={'bold'}>
+                        {bio.name}
+                      </Typography>
+                      <Typography
+                        gutterBottom
+                        variant='subtitle1'
+                        fontWeight={'bold'}
+                      >
+                        {bio.title}
+                      </Typography>
+                      <Typography>{bio.description}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+        </Box>
+      </Container>
+    </div>
+  )
 }
 
 export default AboutPage
