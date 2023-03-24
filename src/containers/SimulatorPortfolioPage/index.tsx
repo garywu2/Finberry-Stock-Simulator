@@ -42,7 +42,7 @@ const SimulatorPortfolioPage = () => {
   const [holdingsItems, setHoldingsItems] = React.useState<any>()
   const [buyQuantity, setBuyQuantity] = useState(0)
   const [sellQuantity, setSellQuantity] = useState(0)
-  const [selectedResult, setSelectedResult] = useState(null)
+  const [selectedResult, setSelectedResult] = useState<any>(null)
   const [selectedSimulator, setSelectedSimulator] = useState(null)
 
   const mockStockData = [
@@ -155,11 +155,9 @@ const SimulatorPortfolioPage = () => {
     setSellQuantity(event.target.value)
   }
 
-  const handleStockInputSubmit = (event: any) => {
-    const selectedValue = event.target.value
-    console.log(event)
-    console.log(selectedValue)
-    setSelectedResult(selectedValue)
+  const handleStockInputSubmit = (event: any, value: any) => {
+    const selectedValue = value.name
+    setSelectedResult(value)
 
     const currDate = new Date(Date.now())
     const stringDate = currDate.toISOString()
@@ -537,17 +535,29 @@ const SimulatorPortfolioPage = () => {
                           },
                         }}
                       >
-                        <TextField
-                          required
-                          id='buy-input'
-                          name='stock'
-                          label='Stock Name'
-                          type='text'
-                          margin='normal'
-                          sx={{
-                            width: '100%',
+                        <Autocomplete
+                          id='buy-stock-input'
+                          onChange={(event, newValue) => {
+                            handleStockInputSubmit(event, newValue)
                           }}
-                          color='primary'
+                          options={mockStockData}
+                          value={selectedResult}
+                          getOptionLabel={(option) => option.name}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              id='buy-input'
+                              name='stock'
+                              label='Stock Name'
+                              type='text'
+                              margin='normal'
+                              sx={{
+                                width: '100%',
+                              }}
+                              color='primary'
+                            />
+                          )}
                         />
                         <TextField
                           required
@@ -585,6 +595,39 @@ const SimulatorPortfolioPage = () => {
                           Buy
                         </Button>
                       </Grid>
+                      {selectedSimulator &&
+                      simulatorExists &&
+                      selectedResult ? (
+                        <Grid
+                          lg={6}
+                          xs={12}
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            padding: {
+                              lg: '2rem',
+                              xs: '0rem',
+                            },
+                          }}
+                        >
+                          <Typography variant='body1' fontWeight={400}>
+                            The price of ${chartItems?.meta.symbol} since{' '}
+                            {chartData[0]?.date}
+                          </Typography>
+                          <Paper
+                            sx={{
+                              p: 2,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              height: 240,
+                            }}
+                          >
+                            <Chart data={chartData} />
+                          </Paper>
+                        </Grid>
+                      ) : (
+                        <></>
+                      )}
                     </Grid>
                   </TabPanel>
                   <TabPanel value='sell'>
@@ -603,10 +646,12 @@ const SimulatorPortfolioPage = () => {
                       >
                         <Autocomplete
                           id='sell-stock-input'
-                          onChange={handleStockInputSubmit}
+                          onChange={(event, newValue) => {
+                            handleStockInputSubmit(event, newValue)
+                          }}
                           options={mockStockData}
+                          value={selectedResult}
                           getOptionLabel={(option) => option.name}
-                          value={this}
                           renderInput={(params) => (
                             <TextField
                               {...params}
@@ -659,7 +704,9 @@ const SimulatorPortfolioPage = () => {
                           Sell
                         </Button>
                       </Grid>
-                      {selectedSimulator && simulatorExists ? (
+                      {selectedSimulator &&
+                      simulatorExists &&
+                      selectedResult ? (
                         <Grid
                           lg={6}
                           xs={12}
@@ -672,24 +719,6 @@ const SimulatorPortfolioPage = () => {
                             },
                           }}
                         >
-                          {mockStockData.length > 0 && (
-                            <div>
-                              <select
-                                id='stock-search-results'
-                                value={selectedResult || ''}
-                                onChange={handleStockInputSubmit}
-                              >
-                                <option value='' disabled hidden>
-                                  Select an option
-                                </option>
-                                {mockStockData.map((item) => (
-                                  <option key={item.name} value={item.name}>
-                                    {item.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          )}
                           <Typography variant='body1' fontWeight={400}>
                             The price of ${chartItems?.meta.symbol} since{' '}
                             {chartData[0]?.date}
@@ -713,16 +742,6 @@ const SimulatorPortfolioPage = () => {
                 </TabContext>
               </Box>
             </Grid>
-
-            {selectedSimulator && simulatorExists && chartData.length > 0 ? (
-              <Grid
-                xs={12}
-                lg={6}
-                sx={{ paddingTop: { xs: '2rem', lg: '0rem' } }}
-              ></Grid>
-            ) : (
-              <></>
-            )}
           </Grid>
         </Container>
       ) : (
