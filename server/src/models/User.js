@@ -95,7 +95,7 @@ const userSchema = new mongoose.Schema({
         default: []
     },
     badges: { // Not implemented yet
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "UserBadges" }],
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "UserBadge" }],
         required: true,
         default: []
     },
@@ -105,7 +105,7 @@ const userSchema = new mongoose.Schema({
         default: []
     },
     premiumPaymentHistory: { // Not implemented yet
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PremiumPaymentHistory" }],
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PaymentHistory" }],
         required: true,
         default: []
     },

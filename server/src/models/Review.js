@@ -34,13 +34,13 @@ const reviewSchema = new mongoose.Schema({
     },
     spendMoney: {
         type: Boolean,
-        required: false,
-        default: false
+        required: true,
+        default: false,
     },
     requireReview: {
         type: Boolean,
         required: true,
-        default: false
+        default: false,
     },
     modRemoved: {
         type: Boolean,

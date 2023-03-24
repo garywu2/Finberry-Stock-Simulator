@@ -5,7 +5,7 @@ const   express  =   require("express"),
 
 module.exports  =   router;
 
-//for parsing multipart form data (images)
+// For parsing multipart form data (images)
 const   multer  =   require("multer"),
         storage =   multer.memoryStorage(),
         upload  =   multer({ storage: storage });
@@ -13,9 +13,43 @@ const   multer  =   require("multer"),
 // Relevant schemas
 const   Article  =  mongoose.model("Article");
 
-//create a article
+
+
+/* #region Helper Functions */
+
+// Super helpful parse param function
+// Returns a json file of properly formatted parameters
+function parseRequestParams(reqParams, desiredSchema) {
+  let params = {};
+  if (Object.keys(reqParams).length != 0) {
+    let desiredAttrs = Object.keys(desiredSchema.schema.paths);
+    desiredAttrs.forEach((key) => {
+        if (reqParams[key]) {
+          params[key] = reqParams[key];
+        }
+    });
+  }
+
+  return params;
+}
+
+// Returns true if reqParams has "desiredParam" set to "true", return false otherwise
+function requestingTrueFalseParam(reqParams, desiredParam) {
+  if (reqParams[desiredParam] === "true") {
+      return true;
+  }
+
+  return false;
+}
+
+/* #endregion */
+
+
+/* #region Article */
+
+// POST - Create a article
 // Note: Might want to make title unique somehow, issues with this right now.
-router.post("/", async (req, res) => {
+router.post("/article", async (req, res) => {
   const article = {
     title: req.body.title,
     description: req.body.description,
@@ -44,34 +78,25 @@ router.post("/", async (req, res) => {
   }
 });
 
-//get all article
-router.get("/", async (req, res) => {
-    try {
-      const articles = await Article.find({},{title:1,description:1,externalLink:1,firstPosted:1,dateLastUpdated:1,_id:1});
-      res.json(articles);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
+// GET - all article
+router.get("/article", async (req, res) => {
+  try {
+    let articles;
+    if (requestingTrueFalseParam(req.query, "moreDetails") == true) {
+      articles = await Article.find(parseRequestParams(req.query, Article));
     }
-});
+    else {
+      articles = await Article.find(parseRequestParams(req.query, Article),{content:0});
+    }
 
-//get article by title
-router.get("/:articleID", async (req, res) => {
-    if (!req.params.articleID) {
-      return res.status(400).json({ msg: "Article ID is missing" });
-    }
-    try {
-      const article = await Article.findById(req.params.articleID);
-      if (!article) {
-        return res.status(400).json({ msg: "Article not found" });
-      }
-      res.json(article);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
+    res.json(articles);
+  } catch (e) {
+    return res.status(400).json({ msg: e.message });
+  }
 });
 
 // PUT - Edit article
-router.put("/:articleID", async (req, res) => {
+router.put("/article/:articleID", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
   
@@ -81,59 +106,56 @@ router.put("/:articleID", async (req, res) => {
   
     try {
       const article = await Article.findOne({ _id: req.params.articleID });
+      if (!article) {
+        return res.status(400).json({ msg: "Article with provided ID not found" });
+      }
+
+      article["dateLastUpdated"] = Date.now(); // Atempt to set the dateLastUpdated, this can be overriten by input.
       attrKeys.forEach((key) => {
-        if (key !== "_id" && key !== "firstPosted") {
-          article[key] = newAttrs[key];
+        if (process.env.REACT_APP_DEVELOPMENT == "true") {
+          article[key] = newAttrs[key]; // Admin access, complete changes
+        }
+        else {
+          if (!['_id'].includes(key)) {
+            article[key] = newAttrs[key];
+          }
         }
       });
-      article["dateLastUpdated"] = Date.now();
       await article.save();
+
       res.json(article);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
 });
 
-
-// Deep delete article function
-async function deepDeleteArticle(article_id) {
-  let articleRemoved = await Article.findByIdAndRemove(article_id);
-}
-
 // DELETE article completely
-router.delete("/:articleID", async (req, res) => {
+router.delete("/article/:articleID", async (req, res) => {
   if (!req.params.articleID) {
     return res.status(400).json({ msg: "Article ID is missing" });
   }
   try {
-      const article = await Article.findById(req.params.articleID);
-      if (!article) {
-        return res.status(400).json({ msg: "Article not found" });
-      }
-      
-      await deepDeleteArticle(article._id);
-
-      return res.json({ msg: "Article successfully deleted" });
-
+      const statusMessage = await Article.deleteOne({_id: req.params.articleID });
+      return res.json(statusMessage);
     } catch (e) {
       return res.status(400).json({ msg: "Article deletion failed: " + e.message });
   }
 });
 
 // DELETE ALL Articles (IN REVERSIBLE - DEBUG ONLY!!!!)
-router.delete("/", async (req, res) => {
-  try {
-      let allArticles = await Article.find({});
-
-      allArticles.forEach(async (specificArticle) => {
-          await deepDeleteArticle(specificArticle._id);
-      });
-
-      return res.json({ msg: "ALL Articles successfully deleted" });
-
+router.delete("/article", async (req, res) => {
+  if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+    try {
+      let statusMessage = await Article.deleteMany();
+      return res.json(statusMessage);
     } catch (e) {
       return res.status(400).json({ msg: "Articles deletions failed: " + e.message });
+    }
+  } else {
+    return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
   }
 });
+
+/* #endregion */
 
 module.exports = router;
