@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
 
-const userBadgesSchema = new mongoose.Schema({
-    userBadgeID: {
-        type: Number,
+const userBadgeSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "User",
         required: true,
     },
-    description: {
-        type: { type: mongoose.SchemaTypes.ObjectID, ref: "Badge" },
+    badgeType: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "Badge",
         required: true,
     },
     retracted: {
@@ -24,4 +26,4 @@ const userBadgesSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model("UserBadges", userBadgesSchema);
+module.exports = mongoose.model("UserBadge", userBadgeSchema);

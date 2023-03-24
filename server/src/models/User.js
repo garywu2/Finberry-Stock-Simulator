@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    email: { // Each user is unique (From firebase)
+    email: { // Each user is unique (From firebase).
         type: String,
         required: true,
         unique: true
     },
-    username: {
+    username: { // Each user has an unique username.
         type: String,
         required: true,
         unique: true
@@ -95,7 +95,7 @@ const userSchema = new mongoose.Schema({
         default: []
     },
     badges: { // Not implemented yet
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "UserBadges" }],
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "UserBadge" }],
         required: true,
         default: []
     },
@@ -105,7 +105,7 @@ const userSchema = new mongoose.Schema({
         default: []
     },
     premiumPaymentHistory: { // Not implemented yet
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PremiumPaymentHistory" }],
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PaymentHistory" }],
         required: true,
         default: []
     },

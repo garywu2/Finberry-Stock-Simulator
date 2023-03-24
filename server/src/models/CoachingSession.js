@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const coachingSessionSchema = new mongoose.Schema({
+    coachingProfile: {
+        type: mongoose.SchemaTypes.ObjectID,
+        ref: "CoachingProfile",
+        required: true,
+    },
     coachingCoach: {
         type: mongoose.SchemaTypes.ObjectID,
         ref: "CoachingCoach",
@@ -9,11 +14,6 @@ const coachingSessionSchema = new mongoose.Schema({
     coachingClient: {
         type: mongoose.SchemaTypes.ObjectID,
         ref: "CoachingClient",
-        required: true,
-    },
-    coachingProfile: {
-        type: mongoose.SchemaTypes.ObjectID,
-        ref: "CoachingProfile",
         required: true,
     },
     coach: {

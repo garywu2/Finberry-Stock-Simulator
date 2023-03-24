@@ -1,11 +1,9 @@
 const mongoose = require("mongoose");
 
-// BUG: It appears theres some issues with making title Unique. Need to be investigated.
 const articleSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
-        unique: true,
     },
     description: {
         type: String,

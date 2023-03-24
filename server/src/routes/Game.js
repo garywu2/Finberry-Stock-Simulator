@@ -17,9 +17,146 @@ const   User                    =   mongoose.model("User"),
         Holding                 =   mongoose.model("Holding"),
         TradeTransaction        =   mongoose.model("TradeTransaction");
 
+/* #region Helper Functions */
 
-//// Simulator - Itself
+// Super helpful parse param function
+// Returns a json file of properly formatted parameters
+function parseRequestParams(reqParams, desiredSchema) {
+    let params = {};
+    if (Object.keys(reqParams).length != 0) {
+        let desiredAttrs = Object.keys(desiredSchema.schema.paths);
+        desiredAttrs.forEach((key) => {
+            if (reqParams[key]) {
+            params[key] = reqParams[key];
+            }
+        });
+    }
 
+    return params;
+}
+
+// Returns true if reqParams has "desiredParam" set to "true", return false otherwise
+function requestingTrueFalseParam(reqParams, desiredParam) {
+    if (reqParams[desiredParam] === "true") {
+        return true;
+    }
+
+    return false;
+}
+
+// Returns the desiredParam if reqParams has it, else return null
+function requestingSpecificParam(reqParams, desiredParam) {
+    if (reqParams[desiredParam]) {
+        return reqParams[desiredParam];
+    }
+
+    return null;
+}
+
+/* #endregion */
+
+
+
+/* #region All Deep Delete Functions */
+
+// Simulator
+async function deepDeleteSimulator(simulator_id) {
+    let simulatorRemoved = await Simulator.findByIdAndRemove(simulator_id);
+
+    // Use the deep delete function from simulator to deep delete all its enrollments.
+    simulatorRemoved.simulatorEnrollments.forEach(async (simulatorEnrollment) => {
+        await deepDeleteSimulatorEnrollment(simulatorEnrollment._id);
+    });
+}
+
+// SimulatorEnrollment (Basically un-enrolling an user from a simulator) 
+async function deepDeleteSimulatorEnrollment(simulatorEnrollment_id) {
+    let simulatorEnrollmentRemoved = await SimulatorEnrollment.findByIdAndRemove(simulatorEnrollment_id);
+
+    // Must remove the entry from the user and the simulator as well
+    const ownerUserID = simulatorEnrollmentRemoved.user;
+    const ownerSimulatorID = simulatorEnrollmentRemoved.simulator;
+
+    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion. - For both user and Simulator
+    try {
+        const user = await User.findById(ownerUserID);
+        if (user) {
+            const index = user.simulatorEnrollments.indexOf(simulatorEnrollment_id);
+            if (index > -1) { // only splice array when item is found
+                user.simulatorEnrollments.splice(index, 1); // 2nd parameter means remove one item only
+            }
+            await user.save();
+        }
+    } catch (e) {
+    }
+    try {
+        const simulator = await Simulator.findById(ownerSimulatorID);
+        if (simulator) {
+            const index = simulator.simulatorEnrollments.indexOf(simulatorEnrollment_id);
+            if (index > -1) { // only splice array when item is found
+                simulator.simulatorEnrollments.splice(index, 1); // 2nd parameter means remove one item only
+            }
+            await simulator.save();
+        }
+    } catch (e) {
+    }
+    // Need to remove all holdings + tradeHistory of ths simulator ID
+    try {
+        await Holding.remove({'simulatorEnrollment':simulatorEnrollment_id});
+        await TradeTransaction.remove({'simulatorEnrollment':simulatorEnrollment_id});
+    } catch (e) {
+    }
+}
+
+// Holding
+async function deepDeleteHolding(toBeRemovedEntryID) {
+    let holdingRemoved = await Holding.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Must remove the entry from simulatorEnrollment as well.
+    const simulatorEnrollmentID = holdingRemoved.simulatorEnrollment;
+
+    try { // For CoachingClient
+        const entry = await SimulatorEnrollment.findById(simulatorEnrollmentID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.holdings.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.holdings.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+}
+
+// TradeTransaction
+async function deepDeleteTradeTransaction(toBeRemovedEntryID) {
+    let tradeTransactionRemoved = await TradeTransaction.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Must remove the entry from simulatorEnrollment as well.
+    const simulatorEnrollmentID = tradeTransactionRemoved.simulatorEnrollment;
+
+    try { // For CoachingClient
+        const entry = await SimulatorEnrollment.findById(simulatorEnrollmentID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.tradeHistory.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.tradeHistory.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+}
+
+/* #endregion */
+
+
+
+/* #region Simulator (Itself) */
 
 // POST - Create a new simulator
 router.post("/simulator", async (req, res) => {
@@ -55,7 +192,7 @@ router.post("/simulator", async (req, res) => {
     }
 });
 
-// Tailor returning results
+// Tailor returning results - Helper function for GET Simulator
 function TailorSimulatorList(simulators, showAllAttrs = false) {
     let tailoredSimulators = [];
     simulators.forEach((simulator) => {
@@ -65,7 +202,7 @@ function TailorSimulatorList(simulators, showAllAttrs = false) {
             tailoredSimulator = Object.assign({}, simulator["_doc"]); // Make copy of the input
         } else {
             // Create a new tailored user to only return desired information.
-            let desiredAttrs = ['_id', 'title', 'description', 'userStartFund', 'startTime', 'stopTime', 'hidden', 'dateLastUpdated'];
+            let desiredAttrs = ['_id', 'title', 'description', 'startTime', 'stopTime', 'userStartFund', 'hidden', 'dateLastUpdated'];
 
             desiredAttrs.forEach((key) => {
                 tailoredSimulator[key] = simulator[key];
@@ -80,52 +217,20 @@ function TailorSimulatorList(simulators, showAllAttrs = false) {
     return tailoredSimulators;
 }
 
-// GET all simulators (Only return basic information)
+// GET simulators
 router.get("/simulator", async (req, res) => {
     try {
-        // Only show important information
-        const simulators = await Simulator.find();
-        return res.json(TailorSimulatorList(simulators));
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-
-//get all article
-router.get("/simulator/visible", async (req, res) => {
-    try {
-        const simulators = await Simulator.find({ hidden: true });
-        return res.json(TailorSimulatorList(simulators));
-    } catch (e) {
-        return res.status(400).json({ msg: e.message });
-    }
-});
-  
-//get all article
-router.get("/simulator/hidden", async (req, res) => {
-    try {
-        const simulators = await Simulator.find({ hidden: false });
-        return res.json(TailorSimulatorList(simulators));
-    } catch (e) {
-        return res.status(400).json({ msg: e.message });
-    }
-});
-
-// GET simulator by simulatorID
-router.get("/simulator/:simulatorID", async (req, res) => {
-    if (!req.params.simulatorID) {
-        return res.status(400).json({ msg: "simulatorID is missing" });
-    }
-    try {
-        const simulator = await Simulator.findById(req.params.simulatorID).populate("simulatorEnrollments");
-        if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+        let simulators;
+        let moreDetails = requestingTrueFalseParam(req.query, "moreDetails");
+        if (moreDetails == true) {
+            simulators = await Simulator.find(parseRequestParams(req.query, Simulator)).populate("simulatorEnrollments");
+        } else {
+            simulators = await Simulator.find(parseRequestParams(req.query, Simulator));
         }
 
-        return res.json(TailorSimulatorList([simulator], true));
+        return res.json(TailorSimulatorList(simulators, moreDetails));
     } catch (e) {
-        return res.status(400).json({ msg: e.message });
+      return res.status(400).json({ msg: e.message });
     }
 });
 
@@ -139,32 +244,27 @@ router.put("/simulator/:simulatorID", async (req, res) => {
     }
   
     try {
-        // // Ensure correct types (Force convert to integer (inside the try catch))
-        // newAttrs.userStartFund = Number(newAttrs.userStartFund);
-            
         const simulator = await Simulator.findOne({ _id: req.params.simulatorID });
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+        }
+
+        simulator["dateLastUpdated"] = Date.now(); // Atempt to set the dateLastUpdated, this can be overriten by input.
         attrKeys.forEach((key) => {
-            if (key !== "_id" && key !== "participatingUsers" && key !== "dateLastUpdated") {
-                simulator[key] = newAttrs[key];
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                simulator[key] = newAttrs[key]; // Admin access, complete changes
+            } else {
+                if (!['_id', 'simulatorEnrollments'].includes(key)) {
+                    simulator[key] = newAttrs[key];
+                }
             }
         });
-        simulator["dateLastUpdated"] = Date.now();
         await simulator.save();
         res.json(simulator);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
 });
-
-// Deep delete simulator function
-async function deepDeleteSimulator(simulator_id) {
-    let simulatorRemoved = await Simulator.findByIdAndRemove(simulator_id);
-
-    // Use the deep delete function from simulator to deep delete all its enrollments.
-    simulatorRemoved.simulatorEnrollments.forEach(async (simulatorEnrollment) => {
-        await deepDeleteSimulatorEnrollment(simulatorEnrollment._id);
-    });
-}
 
 // DELETE specific simulator completely (In-reversible)
 // Note: Might reconsider allowing full deletion of simulator instead of simply hidding a simulator
@@ -176,41 +276,44 @@ router.delete("/simulator/:simulatorID", async (req, res) => {
     try {
         const simulator = await Simulator.findById(req.params.simulatorID);
         if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeleteSimulator(simulator._id);
 
-        return res.json({ msg: "Simulator successfully deleted" });
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "Simulator deletion failed: " + e.message });
     }
 });
 
-
-// DELETE ALL SIMULATORS (IN REVERSIBLE - DEBUG ONLY!!!!)
+// DELETE ALL SIMULATORS (IN REVERSIBLE - DEBUG ONLY!!!!) - Shallow (Kinda)
 router.delete("/simulator", async (req, res) => {
-    try {
-        // let simulatorsRemoved = await Simulator.deleteMany({}); // Another method, but siunce we are deep deleting, this is not needed
-        // return res.json({ msg: "ALL Similators successfully deleted", simulatorRemoved: simulatorsRemoved });
-
-        let allSimulators = await Simulator.find({});
-
-        allSimulators.forEach(async (specificSimulator) => {
-            await deepDeleteSimulator(specificSimulator._id);
-        });
-
-        return res.json({ msg: "ALL Simulators successfully deleted" });
-      } catch (e) {
-        return res.status(400).json({ msg: "Simulator deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let allSimulators = await Simulator.find({});
+    
+            allSimulators.forEach(async (specificSimulator) => {
+                await deepDeleteSimulator(specificSimulator._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: allSimulators.length });
+          } catch (e) {
+            return res.status(400).json({ msg: "Simulator deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
 
 
+/* #endregion */
 
-//// SimulatorEnrollment - User enrolment and interactions
 
-// Enroll an user to a simulator. - Basically creates an SimulatorEnrollment Object
+
+/* #region SimulatorEnrollment - User enrolment and interactions */
+
+// POST - Enroll an user to a simulator. - Basically creates an SimulatorEnrollment Object
 router.post("/simulator/:simulatorID", async (req, res) => {
     if (!req.params.simulatorID) {
         return res.status(400).json({ msg: "simulatorID is missing" });
@@ -267,57 +370,56 @@ router.post("/simulator/:simulatorID", async (req, res) => {
     }
 });
 
-
-// Deep Delete an SimulatorEnrollment (Basically un-enrolling an user from a simulator) 
-async function deepDeleteSimulatorEnrollment(simulatorEnrollment_id) {
-    let simulatorEnrollmentRemoved = await SimulatorEnrollment.findByIdAndRemove(simulatorEnrollment_id);
-
-    // Must remove the entry from the user and the simulator as well
-    const ownerUserID = simulatorEnrollmentRemoved.user;
-    const ownerSimulatorID = simulatorEnrollmentRemoved.simulator;
-
-    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion. - For both user and Simulator
-    try {
-        const user = await User.findById(ownerUserID);
-        if (user) {
-            const index = user.simulatorEnrollments.indexOf(simulatorEnrollment_id);
-            if (index > -1) { // only splice array when item is found
-                user.simulatorEnrollments.splice(index, 1); // 2nd parameter means remove one item only
-            }
-            await user.save();
-        }
-    } catch (e) {
-    }
-    try {
-        const simulator = await Simulator.findById(ownerSimulatorID);
-        if (simulator) {
-            const index = simulator.simulatorEnrollments.indexOf(simulatorEnrollment_id);
-            if (index > -1) { // only splice array when item is found
-                simulator.simulatorEnrollments.splice(index, 1); // 2nd parameter means remove one item only
-            }
-            await simulator.save();
-        }
-    } catch (e) {
-    }
-    // Need to remove all holdings + tradeHistory of ths simulator ID
-    try {
-        await Holding.remove({'simulatorEnrollment':simulatorEnrollment_id});
-        await TradeTransaction.remove({'simulatorEnrollment':simulatorEnrollment_id});
-    } catch (e) {
-    }
-}
-
-//get all SimulatorEnrollment
+// GET - simulatorEnrollment based on params
 router.get("/simulatorEnrollment", async (req, res) => {
     try {
-        const simulatorEnrollments = await SimulatorEnrollment.find({});
+        let simulatorEnrollments;
+        let moreDetails = requestingTrueFalseParam(req.query, "moreDetails");
+        if (moreDetails == true) {
+            simulatorEnrollments = await SimulatorEnrollment.find(parseRequestParams(req.query, SimulatorEnrollment)).populate(["holdings", "tradeHistory"]);
+        } else {
+            simulatorEnrollments = await SimulatorEnrollment.find(parseRequestParams(req.query, SimulatorEnrollment));
+        }
+
         return res.json(simulatorEnrollments);
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
 });
 
-// DELETE an SimulatorEnrollment (Basically un-enrolling an user from a simulator) 
+// PUT - Edit simulator by ID
+router.put("/simulatorEnrollment/:simulatorEnrollmentID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+  
+    if (!req.params.simulatorEnrollmentID) {
+      return res.status(400).json({ msg: "simulatorEnrollmentID id is missing" });
+    }
+  
+    try {
+        const simulatorEnrollment = await SimulatorEnrollment.findOne({ _id: req.params.simulatorEnrollmentID });
+        if (!simulatorEnrollment) {
+            return res.status(400).json({ msg: "SimulatorEnrollment with provided ID not found" });
+        }
+
+        simulatorEnrollment["dateLastUpdated"] = Date.now(); // Atempt to set the dateLastUpdated, this can be overriten by input.
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                simulatorEnrollment[key] = newAttrs[key]; // Admin access, complete changes
+            } else {
+                if (!['_id', 'user', "simulator", "holdings", "tradeHistory"].includes(key)) {
+                    simulatorEnrollment[key] = newAttrs[key];
+                }
+            }
+        });
+        await simulatorEnrollment.save();
+        res.json(simulatorEnrollment);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE - an SimulatorEnrollment (Basically un-enrolling an user from a simulator) 
 // Note: Debug function -  should not be used normally
 router.delete("/simulatorEnrollment/:simulatorEnrollmentID", async (req, res) => {
     if (!req.params.simulatorEnrollmentID) {
@@ -327,37 +429,79 @@ router.delete("/simulatorEnrollment/:simulatorEnrollmentID", async (req, res) =>
     try {
         const simulatorEnrollment = await SimulatorEnrollment.findById(req.params.simulatorEnrollmentID);
         if (!simulatorEnrollment) {
-          return res.status(400).json({ msg: "SimulatorEnrollment of the ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeleteSimulatorEnrollment(simulatorEnrollment._id);
 
-        return res.json({ msg: "SimulatorEnrollment successfully deleted" });
-
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "SimulatorEnrollment deletion failed: " + e.message });
     }
 });
 
-// DELETE ALL SimulatorEnrollment
-// **** Problem with deep delete when this is done! ****
+// DELETE ALL SimulatorEnrollment - Shallow (Kinda)
 router.delete("/simulatorEnrollment", async (req, res) => {
-    try {
-        let allSimulatorEnrollments = await SimulatorEnrollment.find({});
-
-        allSimulatorEnrollments.forEach(async (specificSimulatorEnrollment) => {
-            await deepDeleteSimulatorEnrollment(specificSimulatorEnrollment._id);
-        });
-
-        return res.json({ msg: "ALL SimulatorEnrollment successfully deleted" });
-
-      } catch (e) {
-        return res.status(400).json({ msg: "SimulatorEnrollment deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let allSimulatorEnrollments = await SimulatorEnrollment.find({});
+    
+            allSimulatorEnrollments.forEach(async (specificSimulatorEnrollment) => {
+                await deepDeleteSimulatorEnrollment(specificSimulatorEnrollment._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: allSimulatorEnrollments.length });
+    
+          } catch (e) {
+            return res.status(400).json({ msg: "SimulatorEnrollment deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
 
 
-/// STOCK EXCHANGE (User action on simulator, either buy or sell)
+/* #endregion */
+
+
+
+/* #region StockExchange Commands - Special commands not necessarily associated with a specific profile */
+
+// GET the specific balance of a user enrolled in a simulator.
+router.get("/balance/:simulatorID/:email", async (req, res) => {
+    if (!req.params.simulatorID) {
+        return res.status(400).json({ msg: "simulatorID is missing" });
+    }
+    if (!req.params.email) {
+        return res.status(400).json({ msg: "Email is missing" });
+    }
+    try {
+        const simulator = await Simulator.findById(req.params.simulatorID);
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+        }
+
+        const user = await User.findOne({ email: req.params.email });
+        if (!user) {
+          return res.status(400).json({ msg: "User with provided email not found" });
+        }
+
+        let simulatorID = simulator._id;
+        let userID = user._id;
+
+        // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
+        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("tradeHistory");
+        if (!simulatorEnrollment) {
+          return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator with the provided email." });
+        }
+
+        return res.json({"balance": simulatorEnrollment.balance});
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+/// STOCK EXCHANGE (User action on simulator, either buy or sell) - More commands can be added to it in the future.
 router.post("/simulator/:simulatorID/:email", async (req, res) => {
     if (!req.params.simulatorID) {
         return res.status(400).json({ msg: "simulatorID is missing" });
@@ -498,11 +642,6 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
 
             // Save the simulatedEnrollemnt
             await simulatorEnrollment.save();
-
-            // Case - if the desired holding no longer have any quantity, we remove said holding
-            if (desiredHolding.quantity == 0) {
-                await deepDeleteHolding(desiredHolding._id); // Doesnt seem to fully work, seem to leave residue when performed here. (Need further investigation)
-            }
         }  
         else {
             return res.status(400).json({ msg: "Unknown or un-implemented transactionType.", transactionType: newTradeTransaction.transactionType });
@@ -516,108 +655,89 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
     }
 });
 
-// GET a list of ALL holdings
+/* #endregion */
+
+
+
+/* #region Holdings */
+
+// POST for holdings are not directly created, it must be done through the StockExchange Commands when buying stocks.
+
+// GET a list of holdings meeting Params
 router.get("/holding", async (req, res) => {
     try {
-        // Only show important information
-        const holdings = await Holding.find();
+        let params = parseRequestParams(req.query, Holding);
+
+        // Deal with special query
+        let simulatorIDs = requestingSpecificParam(req.query, "simulatorID");
+        let emails = requestingSpecificParam(req.query, "email");
+        if (simulatorIDs != null || emails != null) { // Here we must get a list of simulator enrollments that meets said condition. And add that to the params requirements.
+            let simulatorEnrollmentParams = {};
+            if (emails != null) {
+                const users = await User.find({ email: emails });
+                simulatorEnrollmentParams["user"] = [];
+                users.forEach((user) => {
+                    simulatorEnrollmentParams["user"].push(user._id);
+                });
+            }
+
+            if (simulatorIDs != null) {
+                simulatorEnrollmentParams["simulator"] = simulatorIDs;
+            }
+
+            // Need to search up to find the SimulatorEnrollment with the the params, get a list of all the simulator enrollments desired
+            const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentParams);
+            
+            if (!params["simulatorEnrollment"]) {
+                params["simulatorEnrollment"] = [];
+            }
+
+            simulatorEnrollments.forEach((simulatorEnrollment) => {
+                params["simulatorEnrollment"].push(simulatorEnrollment._id);
+            });
+        }
+
+        if (requestingTrueFalseParam(req.query, "greaterThanZero")) {
+            params["quantity"] = {$gt : 0};
+        }
+
+        const holdings = await Holding.find(params);
         return res.json(holdings);
     } catch (e) {
-      return res.status(400).json({ msg: e.message });
+        return res.status(400).json({ msg: e.message });
     }
 });
 
-// GET a list of ALL holdings of a specific simulator
-router.get("/holding/:simulatorID", async (req, res) => {
-    if (!req.params.simulatorID) {
-        return res.status(400).json({ msg: "simulatorID is missing" });
+// PUT - Edit simulator by ID
+router.put("/holding/:holdingID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+  
+    if (!req.params.holdingID) {
+      return res.status(400).json({ msg: "Holding ID is missing" });
     }
+  
     try {
-        const simulator = await Simulator.findById(req.params.simulatorID);
-        if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+        const holding = await Holding.findOne({ _id: req.params.holdingID });
+        if (!holding) {
+            return res.status(400).json({ msg: "Holding with provided ID not found" });
         }
 
-        let simulatorID = simulator._id;
-
-        // Need to search up to find the SimulatorEnrollment with the simulatorID
-        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulatorID }).populate("holdings");
-        if (!simulatorEnrollments.length > 0) {
-          return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator." });
-        }
-
-        let allHodings = [];
-        simulatorEnrollments.forEach((simulatorEnrollment) => {
-            allHodings.push(
-            {
-                userID: simulatorEnrollment.user,
-                holdings: simulatorEnrollment.holdings
-            });
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                holding[key] = newAttrs[key]; // Admin access, complete changes
+            } else {
+                if (!['_id', 'simulatorEnrollment'].includes(key)) {
+                    holding[key] = newAttrs[key];
+                }
+            }
         });
-
-        return res.json(allHodings);
+        await holding.save();
+        res.json(holding);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
 });
-
-
-// GET a list of ALL holdings of a specific person on a specific simulator
-router.get("/holding/:simulatorID/:email", async (req, res) => {
-    if (!req.params.simulatorID) {
-        return res.status(400).json({ msg: "simulatorID is missing" });
-    }
-    if (!req.params.email) {
-        return res.status(400).json({ msg: "Email is missing" });
-    }
-    try {
-        const simulator = await Simulator.findById(req.params.simulatorID);
-        if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
-        }
-
-        const user = await User.findOne({ email: req.params.email });
-        if (!user) {
-          return res.status(400).json({ msg: "User with provided email not found" });
-        }
-
-        let simulatorID = simulator._id;
-        let userID = user._id;
-
-        // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
-        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("holdings");
-        if (!simulatorEnrollment) {
-          return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator." });
-        }
-
-        return res.json(simulatorEnrollment.holdings);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-
-// Deep delete Holding
-async function deepDeleteHolding(toBeRemovedEntryID) {
-    let chatHoldingRemoved = await Holding.findByIdAndRemove(toBeRemovedEntryID);
-
-    // Must remove the entry from simulatorEnrollment as well.
-    const simulatorEnrollmentID = chatHoldingRemoved.simulatorEnrollment;
-
-    try { // For CoachingClient
-        const entry = await SimulatorEnrollment.findById(simulatorEnrollmentID);
-        if (!entry) {
-            return;
-        }
-        const index = entry.holdings.indexOf(toBeRemovedEntryID);
-        if (index > -1) { // only splice array when item is found
-            entry.chatMessages.splice(index, 1); // 2nd parameter means remove one item only
-        }
-
-        await entry.save();
-    } catch (e) {
-    }
-}
 
 // DELETE - Holding (Deep Delete)
 router.delete("/holding/:entryID", async (req, res) => {
@@ -628,152 +748,164 @@ router.delete("/holding/:entryID", async (req, res) => {
     try {
         const entry = await Holding.findById(req.params.entryID);
         if (!entry) {
-          return res.status(400).json({ msg: "Holding with the provided ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeleteHolding(entry._id);
 
-        return res.json({ msg: "Holding successfully deleted" });
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "Holding deletion failed: " + e.message });
     }
 });
 
-
 // DELETE ALL holdings (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
 router.delete("/holding", async (req, res) => {
-    try {
-        let message = await Holding.deleteMany();
- 
-        return res.json({ msg: "ALL Holdings successfully deleted (Shallow)", reciept: message });
-  
-      } catch (e) {
-        return res.status(400).json({ msg: "Holdings deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let holdings = await Holding.find();
+    
+            holdings.forEach(async (holding) => {
+                await deepDeleteHolding(holding._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: holdings.length });
+    
+          } catch (e) {
+            return res.status(400).json({ msg: "Holdings deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
-  });
+});
 
-// Get a list of ALL trade history (TradeTransactions)
-router.get("/tradeHistory", async (req, res) => {
+/* #endregion */
+
+
+
+/* #region TradeHistory */
+
+// POST for TradeHistory are not directly created, it must be done through the StockExchange Commands when buying or selling stocks.
+
+// GET a list of TradeTransaction meeting params
+router.get("/tradeTransaction", async (req, res) => {
     try {
-        // Only show important information
-        const tradeTransactions = await TradeTransaction.find();
+        let params = parseRequestParams(req.query, TradeTransaction);
+
+        // Deal with special query
+        let simulatorIDs = requestingSpecificParam(req.query, "simulatorID");
+        let emails = requestingSpecificParam(req.query, "email");
+        if (simulatorIDs != null || emails != null) { // Here we must get a list of simulator enrollments that meets said condition. And add that to the params requirements.
+            let simulatorEnrollmentParams = {};
+            if (emails != null) {
+                const users = await User.find({ email: emails });
+                simulatorEnrollmentParams["user"] = [];
+                users.forEach((user) => {
+                    simulatorEnrollmentParams["user"].push(user._id);
+                });
+            }
+
+            if (simulatorIDs != null) {
+                simulatorEnrollmentParams["simulator"] = simulatorIDs;
+            }
+
+            // Need to search up to find the SimulatorEnrollment with the the params, get a list of all the simulator enrollments desired
+            const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentParams);
+            
+            if (!params["simulatorEnrollment"]) {
+                params["simulatorEnrollment"] = [];
+            }
+
+            simulatorEnrollments.forEach((simulatorEnrollment) => {
+                params["simulatorEnrollment"].push(simulatorEnrollment._id);
+            });
+        }
+
+        const tradeTransactions = await TradeTransaction.find(params).sort({transactionTime:1});
         return res.json(tradeTransactions);
     } catch (e) {
-      return res.status(400).json({ msg: e.message });
+        return res.status(400).json({ msg: e.message });
     }
 });
 
-// GET a list of ALL trade history (TradeTransactions) of a specific simulator
-router.get("/tradeHistory/:simulatorID", async (req, res) => {
-    if (!req.params.simulatorID) {
-        return res.status(400).json({ msg: "simulatorID is missing" });
-    }
-    try {
-        const simulator = await Simulator.findById(req.params.simulatorID);
-        if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
-        }
-
-        let simulatorID = simulator._id;
-
-        // Need to search up to find the SimulatorEnrollment with the simulatorID
-        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulatorID }).populate("tradeHistory");
-        if (!simulatorEnrollments.length > 0) {
-          return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator." });
-        }
-
-        let allTradeHistory = [];
-        simulatorEnrollments.forEach((simulatorEnrollment) => {
-            allTradeHistory.push(
-                {
-                    userID: simulatorEnrollment.user,
-                    tradeHistory: simulatorEnrollment.tradeHistory
-                });
-        });
-
-        return res.json(allTradeHistory);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-
-// GET a list of ALL trade history (TradeTransactions) of a specific simulator of a specific person
-router.get("/tradeHistory/:simulatorID/:email", async (req, res) => {
-    if (!req.params.simulatorID) {
-        return res.status(400).json({ msg: "simulatorID is missing" });
-    }
-    if (!req.params.email) {
-        return res.status(400).json({ msg: "Email is missing" });
-    }
-    try {
-        const simulator = await Simulator.findById(req.params.simulatorID);
-        if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
-        }
-
-        const user = await User.findOne({ email: req.params.email });
-        if (!user) {
-          return res.status(400).json({ msg: "User with provided email not found" });
-        }
-
-        let simulatorID = simulator._id;
-        let userID = user._id;
-
-        // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
-        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("tradeHistory");
-        if (!simulatorEnrollment) {
-          return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator." });
-        }
-
-        return res.json(simulatorEnrollment.tradeHistory);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-// DELETE ALL trade history (TradeTransactions) (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
-router.delete("/tradeHistory", async (req, res) => {
-    try {
-        let message = await TradeTransaction.deleteMany();
- 
-        return res.json({ msg: "ALL TradeHistorys successfully deleted (Shallow)", reciept: message });
+// PUT - Edit TradeTransaction by ID
+router.put("/tradeTransaction/:tradeTransactionID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
   
-      } catch (e) {
-        return res.status(400).json({ msg: "TradeHistorys deletions failed: " + e.message });
+    if (!req.params.tradeTransactionID) {
+      return res.status(400).json({ msg: "TradeTransaction ID is missing" });
     }
-});
-
-// GET a list of ALL balance of a specific simulator of a specific person
-router.get("/balance/:simulatorID/:email", async (req, res) => {
-    if (!req.params.simulatorID) {
-        return res.status(400).json({ msg: "simulatorID is missing" });
-    }
-    if (!req.params.email) {
-        return res.status(400).json({ msg: "Email is missing" });
-    }
+  
     try {
-        const simulator = await Simulator.findById(req.params.simulatorID);
-        if (!simulator) {
-            return res.status(400).json({ msg: "Simulator with provided ID not found" });
+        const tradeTransaction = await TradeTransaction.findOne({ _id: req.params.tradeTransactionID });
+        if (!tradeTransaction) {
+            return res.status(400).json({ msg: "TradeTransaction with provided ID not found" });
         }
 
-        const user = await User.findOne({ email: req.params.email });
-        if (!user) {
-          return res.status(400).json({ msg: "User with provided email not found" });
-        }
-
-        let simulatorID = simulator._id;
-        let userID = user._id;
-
-        // Need to search up to find the SimulatorEnrollment with the simulatorID and userID
-        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: userID, simulator: simulatorID }).populate("tradeHistory");
-        if (!simulatorEnrollment) {
-          return res.status(400).json({ msg: "Cannot find any valid SimulatorEnrollment of this simulator with the provided email." });
-        }
-
-        return res.json({"balance": simulatorEnrollment.balance});
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                tradeTransaction[key] = newAttrs[key]; // Admin access, complete changes
+            } else {
+                if (!['_id', 'simulatorEnrollment'].includes(key)) {
+                    tradeTransaction[key] = newAttrs[key];
+                }
+            }
+        });
+        await tradeTransaction.save();
+        res.json(tradeTransaction);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
 });
+
+// DELETE - TradeTransaction (Deep Delete)
+router.delete("/tradeTransaction/:entryID", async (req, res) => {
+    if (!req.params.entryID) {
+        return res.status(400).json({ msg: "TradeTransaction ID is missing" });
+    }
+
+    try {
+        const entry = await TradeTransaction.findById(req.params.entryID);
+        if (!entry) {
+            return res.json({ acknowledged: true, deletedCount: 0 });
+        }
+
+        await deepDeleteTradeTransaction(entry._id);
+
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
+      } catch (e) {
+        return res.status(400).json({ msg: "TradeTransaction deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL TradeTransaction (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
+router.delete("/tradeTransaction", async (req, res) => {
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let tradeTransactions = await TradeTransaction.find();
+    
+            tradeTransactions.forEach(async (holding) => {
+                await deepDeleteTradeTransaction(holding._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: tradeTransactions.length });
+    
+          } catch (e) {
+            return res.status(400).json({ msg: "TradeTransaction deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
+    }
+});
+
+
+/* #endregion */
+
+
+
+/* #region BalanceCalculation (Leaderboard, current total balance (with stock taken into account), etc) */
+
+// WIP
+
+/* #endregion */
