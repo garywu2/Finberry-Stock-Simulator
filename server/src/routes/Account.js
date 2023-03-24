@@ -345,7 +345,7 @@ router.get("/user", async (req, res) => {
                 tailoredUser.isPremium = isPremium;
 
                 if (isPremium) { // If is premium, also show the tier that they are premium
-                    tailoredUser.premiumTier = user[premiumTier];
+                    tailoredUser.premiumTier = user["premiumTier"];
                 }
 
                 // Add this tailored user to a list of all tailored users for return.
@@ -544,6 +544,59 @@ router.delete("/user", async (req, res) => {
         }
     } else {
         return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
+    }
+});
+
+/* #endregion */
+
+
+
+/* #region Special User Commands - Modifies multiple classes and does not fit into any single category */
+
+// POST - Special PUT user operation that affects multiple classes
+// Updates user premium status and also adds new payment history.
+router.post("/user/:userID", async (req, res) => {
+    let newAttrs = req.body;
+
+    if (
+        !newAttrs.premiumTier ||
+        !newAttrs.premiumExpiryDate
+    ) {
+        return res.status(400).json({ msg: "Input is missing one or more required field(s)" });
+    }
+
+    try {
+        const user = await User.findById(req.params.userID);
+        if (!user) {
+            return res.status(400).json({ msg: "User with provided ID not found" });
+        }
+
+        let dbPaymentHistory;
+        if (newAttrs.payment) {
+            let newPaymentHistory = {
+                referenceNumber: newAttrs.payment.referenceNumber,
+                paymentMethod: newAttrs.payment.paymentMethod,
+                paymentReason: newAttrs.payment.paymentReason,
+                payerID: user._id,
+                transferAmount: newAttrs.payment.transferAmount,
+                transactionDate: newAttrs.payment.transactionDate,
+            };
+    
+            dbPaymentHistory = new PaymentHistory(newPaymentHistory);
+    
+            await dbPaymentHistory.save();
+            
+            user.premiumPaymentHistory.push(dbPaymentHistory);
+        }
+
+        user.premiumExpiryDate = newAttrs.premiumExpiryDate;
+        user.premiumTier = newAttrs.premiumTier;
+
+        await user.save();
+
+        return res.json({user: user, newPaymentHistory: dbPaymentHistory});
+    } catch (e) {
+      return res.status(400).json({ msg: "Failed to update user premium: " + e.message });
     }
 });
 
@@ -807,7 +860,6 @@ router.delete("/userbadge", async (req, res) => {
 });
 
 /* #endregion */
-
 
 
 
@@ -1407,6 +1459,7 @@ router.post("/coachingSession/:coachingSessionID", async (req, res) => {
                     let newPaymentHistory = {
                         referenceNumber: newAttrs.payment.referenceNumber,
                         paymentMethod: newAttrs.payment.paymentMethod,
+                        paymentReason: newAttrs.payment.paymentReason,
                         payeeID: coachingSession.coach,
                         payerID: coachingSession.client,
                         transferAmount: newAttrs.payment.transferAmount,
