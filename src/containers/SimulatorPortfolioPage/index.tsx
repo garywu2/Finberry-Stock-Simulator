@@ -496,16 +496,8 @@ const SimulatorPortfolioPage = () => {
             }}
           >
             <Grid xs={12}>
-              <Typography
-                component='div'
-                variant='h3'
-                align='left'
-                fontWeight={400}
-                sx={{ color: 'text.primary', marginBottom: '1rem' }}
-              >
-                <Typography variant='h4' align='left' fontWeight={50}>
-                  Simulate a trade.
-                </Typography>
+              <Typography variant='h4' align='left' fontWeight={50}>
+                Simulate a trade.
               </Typography>
               <Box sx={{ width: '100%' }}>
                 <TabContext value={tab}>
@@ -521,7 +513,7 @@ const SimulatorPortfolioPage = () => {
                       <Tab label='Sell' value='sell' />
                     </TabList>
                   </Box>
-                  <TabPanel value='buy'>
+                  <TabPanel value='buy' sx={{ padding: '0rem' }}>
                     <Grid container>
                       <Grid
                         lg={6}
@@ -630,7 +622,7 @@ const SimulatorPortfolioPage = () => {
                       )}
                     </Grid>
                   </TabPanel>
-                  <TabPanel value='sell'>
+                  <TabPanel value='sell' sx={{ padding: '0rem' }}>
                     <Grid container>
                       <Grid
                         lg={6}
