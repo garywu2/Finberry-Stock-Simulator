@@ -9,7 +9,6 @@ import { Navigate, useNavigate } from "react-router-dom";
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 
-
 interface Props {
     links: Link[]; 
 };
@@ -79,6 +78,7 @@ const Dropdown: React.FC<Props> = ({ links }) => {
               >
                 {links.map((link) => (
                     link.title === "Logout" ? <MenuItem onClick={handleSubmit} component={Link} to={link.url}>{link.title}</MenuItem> :
+                    link.title === "Profile" ? <MenuItem onClick={handleClose} component={Link} to={link.url + `/${user.email}` }>{link.title}</MenuItem> :
                     <MenuItem onClick={handleClose} component={Link} to={link.url}>{link.title}</MenuItem>
                 ))}
               </Menu>
