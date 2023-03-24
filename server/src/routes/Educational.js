@@ -101,11 +101,11 @@ router.put("/article/:articleID", async (req, res) => {
     const attrKeys = Object.keys(newAttrs);
   
     if (!req.params.articleID) {
-      return res.status(400).json({ msg: "Article id is missing" });
+      return res.status(400).json({ msg: "Article ID is missing" });
     }
   
     try {
-      const article = await Article.findOne({ _id: req.params.articleID });
+      const article = await Article.findById(req.params.articleID);
       if (!article) {
         return res.status(400).json({ msg: "Article with provided ID not found" });
       }

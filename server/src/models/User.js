@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    email: { // Each user is unique (From firebase)
+    email: { // Each user is unique (From firebase).
         type: String,
         required: true,
         unique: true
     },
-    username: {
+    username: { // Each user has an unique username.
         type: String,
         required: true,
         unique: true

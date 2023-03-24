@@ -20,32 +20,214 @@ const   User                =   mongoose.model("User"),
         ChatMessage         =   mongoose.model("ChatMessage"),
         PaymentHistory      =   mongoose.model("PaymentHistory");
 
+/* #region Helper Functions */
+
 // Super helpful parse param function
 // Returns a json file of properly formatted parameters
 function parseRequestParams(reqParams, desiredSchema) {
-    let params = {}
+    let params = {};
     if (Object.keys(reqParams).length != 0) {
-        const desiredAttrs = Object.keys(desiredSchema.schema.paths);
+        let desiredAttrs = Object.keys(desiredSchema.schema.paths);
         desiredAttrs.forEach((key) => {
             if (reqParams[key]) {
-                let originalValue = reqParams[key]
-                let numericalValue = Number(originalValue);
-                
-                if (numericalValue) {
-                    params[key] = numericalValue;
-                }
-                else {
-                    params[key] = originalValue;
-                }
+            params[key] = reqParams[key];
             }
         });
     }
-    
+
     return params;
 }
 
+// Returns true if reqParams has "desiredParam" set to "true", return false otherwise
+function requestingTrueFalseParam(reqParams, desiredParam) {
+    if (reqParams[desiredParam] === "true") {
+        return true;
+    }
+
+    return false;
+}
+
+// Returns the desiredParam if reqParams has it, else return null
+function requestingSpecificParam(reqParams, desiredParam) {
+    if (reqParams[desiredParam]) {
+        return reqParams[desiredParam];
+    }
+
+    return null;
+}
+
+/* #endregion */
+
+
+
+/* #region All Deep Delete Functions */
+
+// User
+async function deepDeleteUser(user_id) {
+    let userRemoved = await User.findByIdAndRemove(user_id);
+
+    // Delete all associated coaching profiles
+    userRemoved.coachingProfiles.forEach(async (coachingProfileID) => {
+        // await CoachingProfile.deleteOne( {_id: coachingProfileID});
+        await deepDeleteCoachingProfile(coachingProfileID);
+    });
+
+    // Might want to also remove simulator reference such as SimulatorEnrollment but its ok if thats not deleted.
+    // Since we might want to keep it in the leaderboard but say deleted user instead. But realistically, we should
+    // never delete user.
+}
+
+// Coaching Profile
+async function deepDeleteCoachingProfile(coaching_profile_id) {
+    let coachingProfileRemoved = await CoachingProfile.findByIdAndRemove(coaching_profile_id);
+
+    // Must remove the entry from the user as well
+    const ownerUserID = coachingProfileRemoved.user;
+
+    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
+    try {
+        const user = await User.findById(ownerUserID);
+        if (!user) {
+            return; // Then the user was already deleted (Somehow) then we do not need to do anything more.
+        }
+        // console.log(user.coachingProfiles); // Investigating bug
+        const index = user.coachingProfiles.indexOf(coaching_profile_id);
+        if (index > -1) { // only splice array when item is found
+            user.coachingProfiles.splice(index, 1); // 2nd parameter means remove one item only
+        }
         
-//// USER and PROFILE (Not coaching)
+        await user.save();
+    } catch (e) {
+    }
+
+    // Use the deep delete function from review to remove all associated reviews
+    coachingProfileRemoved.reviews.forEach(async (review) => {
+        await deepDeleteReview(review._id);
+    });
+}
+
+// Review
+async function deepDeleteReview(reviewID) {
+    let reviewRemoved = await Review.findByIdAndRemove(reviewID);
+
+    let coachingProfileID = reviewRemoved.coachingProfile;
+
+    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
+    try {
+        const coachingProfile = await CoachingProfile.findById(coachingProfileID);
+        if (!coachingProfile) {
+            return; 
+        }
+        const index = coachingProfile.reviews.indexOf(reviewID);
+        if (index > -1) { // only splice array when item is found
+            coachingProfile.reviews.splice(index, 1); // 2nd parameter means remove one item only
+        }
+        await coachingProfile.save();
+    } catch (e) {
+    }
+}
+
+// Coaching Session
+async function deepDeleteCoachingSession(toBeRemovedEntryID) {
+    let coachingSessionRemoved = await CoachingSession.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Must remove the entry from CoachingClient and CoachingCoach as well.
+    const coachingClientID = coachingSessionRemoved.coachingClient;
+    const coachingCoachID = coachingSessionRemoved.coachingCoach;
+
+    try { // For CoachingClient
+        const entry = await CoachingClient.findById(coachingClientID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.coachingSessions.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.coachingSessions.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+
+    try { // For CoachingCoach
+        const entry = await CoachingCoach.findById(coachingCoachID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.coachingSessions.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.coachingSessions.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+}
+
+// Chat Message
+async function deepDeleteChatMessage(toBeRemovedEntryID) {
+    let chatMessageRemoved = await ChatMessage.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Must remove the entry from coachingSession as well.
+    const coachingSessionID = chatMessageRemoved.coachingSession;
+
+    try { // For CoachingSession
+        const entry = await CoachingSession.findById(coachingSessionID);
+        if (!entry) {
+            return;
+        }
+        const index = entry.chatMessages.indexOf(toBeRemovedEntryID);
+        if (index > -1) { // only splice array when item is found
+            entry.chatMessages.splice(index, 1); // 2nd parameter means remove one item only
+        }
+
+        await entry.save();
+    } catch (e) {
+    }
+}
+
+// Payment History
+async function deepDeletePaymentHistory(toBeRemovedEntryID) {
+    let chatMessageRemoved = await PaymentHistory.findByIdAndRemove(toBeRemovedEntryID);
+
+    // Maybe we should not be removing the reference from coaching session 
+}
+
+/* #endregion */
+
+
+
+/* #region Normal User - And typical (non - coaching interactions) */
+
+// GET user by email and username, determines if email or username is already taken beforehand - Special Get function
+router.get("/user/:email/:username", async (req, res) => {
+    if (!req.params.email) {
+        return res.status(400).json({ msg: "Email is missing" });
+    }
+    if (!req.params.username) {
+        return res.status(400).json({ msg: "Username is missing" });
+    }
+
+    try {
+        let emailAvailable = true;
+        let usernameAvailable = true;
+
+        const userWithEmail = await User.findOne({ email: req.params.email });
+        if (userWithEmail) { 
+            emailAvailable = false;
+        }
+
+        const userWithUsername = await User.findOne({ username: req.params.username });
+        if (userWithUsername) {
+            
+            usernameAvailable = false;
+        }
+
+        return res.json({ available: (emailAvailable && usernameAvailable), emailAvailable: emailAvailable, usernameAvailable: usernameAvailable });
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
 
 // POST - User sign up - create a new generic user (No coaching profile)
 router.post("/user", async (req, res) => {
@@ -92,259 +274,238 @@ router.post("/user", async (req, res) => {
     }
 });
 
-// Get user by ID (Emergency patch)
-router.get("/user/id/:_id", async (req, res) => {
-    if (!req.params._id) {
-      return res.status(400).json({ msg: "User id is missing" });
-    }
-    try {
-      const user = await User.findById(req.params._id).populate(
-            [
-                {
-                    path: "coachingProfiles"
-                },
-                {
-                    path: "simulatorEnrollments",
-                    select: "simulator balance",
-                    populate: {
-                        path: "simulator",
-                        select: "-simulatorEnrollments"
-                    }
-                }
-            ]
-        );
-      
-      if (!user) {
-        return res.status(400).json({ msg: "User not found" });
-      }
-      res.json(user);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-  });
-
-// GET user by email and username, determines if email or username is already taken beforehand
-router.get("/user/:email/:username", async (req, res) => {
-    if (!req.params.email) {
-        return res.status(400).json({ msg: "Email is missing" });
-    }
-    if (!req.params.username) {
-        return res.status(400).json({ msg: "Username is missing" });
-    }
-
-    try {
-        let emailAvailable = true;
-        let usernameAvailable = true;
-
-        const userWithEmail = await User.findOne({ email: req.params.email });
-        if (userWithEmail) { 
-            emailAvailable = false;
-        }
-
-        const userWithUsername = await User.findOne({ username: req.params.username });
-        if (userWithUsername) {
-            
-            usernameAvailable = false;
-        }
-
-        return res.json({ available: (emailAvailable && usernameAvailable), emailAvailable: emailAvailable, usernameAvailable: usernameAvailable });
-    } catch (e) {
-        return res.status(400).json({ msg: e.message });
-    }
-});
-
-// GET returns all users
+// GET - returns a list of users with specific params
 router.get("/user", async (req, res) => {
     try {
-        const users = await User.find();
+        let users = [];
+
+        let basicMode = requestingTrueFalseParam(req.query, "basicMode");
+        if (basicMode == true) {
+            // Only show important information
+            const rawUsers = await User.find(parseRequestParams(req.query, User), {email:1,username:1,premiumExpiryDate:1,permissionLevel:1,coachingProfiles:1});
+
+            rawUsers.forEach((user) => {
+                // Create a new tailored user to only return desired information.
+                const desiredAttrs = ['_id', 'email', 'username', 'permissionLevel', 'premiumExpiryDate'];
+
+                let tailoredUser = {};
+                desiredAttrs.forEach((key) => {
+                    tailoredUser[key] = user[key];
+                });
+
+                // Determine if user is premium.
+                let isPremium = true;
+                if (!user.premiumExpiryDate || user.premiumExpiryDate <= Date.now()) {
+                    isPremium = false;
+                }
+
+                tailoredUser.isPremium = isPremium;
+
+                // Add this tailored user to a list of all tailored users for return.
+                users.push(tailoredUser);
+            });
+        } else {
+            let moreDetails = requestingTrueFalseParam(req.query, "moreDetails");
+            if (moreDetails == true) {
+                let rawUsers = await User.find(parseRequestParams(req.query, User)).populate(
+                    [
+                        {
+                            path: "coachingProfiles"
+                        },
+                        {
+                            path: "simulatorEnrollments",
+                            select: "simulator balance",
+                            populate: {
+                                path: "simulator",
+                                select: "-simulatorEnrollments"
+                            }
+                        }
+                    ]
+                );
+                
+                // Additional information for each user
+                rawUsers.forEach(async (user) => {
+                    // Determine if user is premium
+                    let isPremium = true;
+                    if (!user.premiumExpiryDate || user.premiumExpiryDate <= Date.now()) {
+                        isPremium = false;
+                    }
+
+                    // Determing if the user has a coaching profile.
+                    let coachingProfileStatus;
+                    user.coachingProfiles.forEach((profile) => {
+                        switch(profile.status) {
+                            case 0:
+                                coachingProfileStatus = "Pending";
+                                break;
+                            case 1:
+                                coachingProfileStatus = "Active";
+                                break;
+                            case 2:
+                                coachingProfileStatus = "Hidden";
+                                break;
+                            default:
+                                coachingProfileStatus = "Unavailable";
+                                break;
+                        }
+                        return;
+                    });
+
+                    if (user.coachingProfiles.length === 0) {
+                        coachingProfileStatus = "None";
+                    }
+
+                    const tailoredUser = Object.assign({}, user["_doc"]); // Make copy of the input
+                    
+                    tailoredUser.isPremium = isPremium;
+                    tailoredUser.coachingProfile = coachingProfileStatus;
+
+                    users.push(tailoredUser);
+                });
+            } else {
+                users = await User.find(parseRequestParams(req.query, User));
+            }
+        }
+
         res.json(users);
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
 })
 
-// GET all Users (Only return basic information)
-router.get("/user/basic", async (req, res) => {
-    try {
-        // Only show important information
-        const users = await User.find({}, {email:1,username:1,premiumExpiryDate:1,permissionLevel:1,coachingProfiles:1,_id:0});
-
-        let tailoredUsers = [];
-        users.forEach((user) => {
-            // Create a new tailored user to only return desired information.
-            const desiredAttrs = ['email', 'username', 'permissionLevel', 'premiumExpiryDate'];
-
-            let tailoredUser = {};
-            desiredAttrs.forEach((key) => {
-                tailoredUser[key] = user[key];
-            });
-
-            // Determine if user is premium.
-            let isPremium = true;
-            if (!user.premiumExpiryDate || user.premiumExpiryDate <= Date.now()) {
-                isPremium = false;
-            }
-
-            tailoredUser.isPremium = isPremium;
-
-            // Add this tailored user to a list of all tailored users for return.
-            tailoredUsers.push(tailoredUser);
-        });
-
-        return res.json(tailoredUsers);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
+// PUT - Edit user (Edit use profile feature) - By ID
+router.put("/user/:userID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+    if (!req.params.userID) {
+        return res.status(400).json({ msg: "Users ID is missing" });
     }
-});
 
-// GET user by email
-router.get("/user/:email", async (req, res) => {
-    if (!req.params.email) {
-        return res.status(400).json({ msg: "Email is missing" });
-    }
     try {
-        const user = await User.findOne({ email: req.params.email }).populate(
-                [
-                    {
-                        path: "coachingProfiles"
-                    },
-                    {
-                        path: "simulatorEnrollments",
-                        select: "simulator balance",
-                        populate: {
-                            path: "simulator",
-                            select: "-simulatorEnrollments"
-                        }
-                    }
-                ]
-            );
-
+        const user = await User.findById(req.params.userID);
         if (!user) {
-            return res.status(400).json({ msg: "User not provided email not found" });
+            return res.status(400).json({ msg: "User with provided ID not found" });
         }
 
-        // Determine if user is premium
-        let isPremium = true;
-        if (!user.premiumExpiryDate || user.premiumExpiryDate <= Date.now()) {
-            isPremium = false;
-        }
-
-        // Determing if the user has a coaching profile.
-        let coachingProfileStatus;
-        user.coachingProfiles.forEach((profile) => {
-            switch(profile.status) {
-                case 0:
-                    coachingProfileStatus = "Pending";
-                    break;
-                case 1:
-                    coachingProfileStatus = "Active";
-                    break;
-                case 2:
-                    coachingProfileStatus = "Hidden";
-                    break;
-                default:
-                    coachingProfileStatus = "Unavailable";
-                    break;
+        user["dateLastUpdated"] = Date.now(); // Atempt to set the dateLastUpdated, this can be overriten by input.
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                user[key] = newAttrs[key]; // Admin access, complete changes
             }
-            return;
+            else {
+                if (!['_id', 'email', 'username', 'simulatorEnrollments', 'badges', 'coachingCoachs', 'premiumPaymentHistory', 'coachingProfiles'].includes(key)) {
+                    user[key] = newAttrs[key];
+                }
+            }
         });
 
-        if (user.coachingProfiles.length === 0) {
-            coachingProfileStatus = "None";
-        }
-
-        const tailoredUser = Object.assign({}, user["_doc"]); // Make copy of the input
-
-        tailoredUser.isPremium = isPremium;
-        tailoredUser.coachingProfile = coachingProfileStatus;
-
-        return res.json(tailoredUser);
+        await user.save();
+        res.json(user);
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
 });
 
-// PUT - Edit user (Edit use profile feature) - But ensure email is unchanged.
-router.put("/user/:email", async (req, res) => {
+// PUT - Edit user (Edit use profile feature) - By Email
+router.put("/user/email/:email", async (req, res) => {
     const newAttrs = req.body;
     const attrKeys = Object.keys(newAttrs);
     if (req.params.email === "") {
         return res.status(400).json({ msg: "Users email is missing" });
-      }
+    }
+
     try {
-        // My original method.
         const user = await User.findOne({ email: req.params.email });
         if (!user) {
-          return res.status(400).json({ msg: "User with provided email not found" });
+            return res.status(400).json({ msg: "User with provided email not found" });
         }
+
+        user["dateLastUpdated"] = Date.now(); // Atempt to set the dateLastUpdated, this can be overriten by input.
         attrKeys.forEach((key) => {
-        if (key !== "_id" && key !== "email" && key !== "createdAt" && key !== "simulatorEnrollments" && key !== "badges" && key !== "coachingCoachs" && key !== "premiumPaymentHistory" && key !== "coachingProfiles" && key !== "premiumExpiryDate") {
-            user[key] = newAttrs[key];
-        }
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                user[key] = newAttrs[key]; // Admin access, complete changes
+            }
+            else {
+                if (!['_id', 'email', 'username', 'simulatorEnrollments', 'badges', 'coachingCoachs', 'premiumPaymentHistory', 'coachingProfiles'].includes(key)) {
+                    user[key] = newAttrs[key];
+                }
+            }
         });
-          user["dateLastUpdated"] = Date.now();
-          await user.save();
-          res.json(user);
-        } catch (e) {
-          return res.status(400).json({ msg: e.message });
-        }
-      });
 
+        await user.save();
+        res.json(user);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
 
-// Deep delete user function
-async function deepDeleteUser(user_id) {
-    let userRemoved = await User.findByIdAndRemove(user_id);
-
-    // Delete all associated coaching profiles
-    userRemoved.coachingProfiles.forEach(async (coachingProfileID) => {
-        // await CoachingProfile.deleteOne( {_id: coachingProfileID});
-        await deepDeleteCoachingProfile(coachingProfileID);
-    });
-
-    // Might want to also remove simulator reference such as SimulatorEnrollment but its ok if thats not deleted.
-    // Since we might want to keep it in the leaderboard but say deleted user instead. But realistically, we should
-    // never delete user.
-}
-
-
-// DELETE user completely (Delete user) - We might want to add a way to cache deleted user in the future to prevent accidental account deletion
+// DELETE user completely (Delete user) - We might want to add a way to cache deleted user in the future to prevent accidental account deletion - by ID
 // Note: Might reconsider allowing user to fully delete their profile
-router.delete("/user/:email", async (req, res) => {
-    if (!req.params.email) {
+router.delete("/user/:userID", async (req, res) => {
+    if (!req.params.userID) {
+        return res.status(400).json({ msg: "Users ID is missing" });
+    }
+
+    try {
+        const user = await User.findById(req.params.userID);
+        if (!user) {
+            return res.json({ acknowledged: true, deletedCount: 0 });
+        }
+        
+        await deepDeleteUser(user._id);
+
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
+      } catch (e) {
+        return res.status(400).json({ msg: "User deletion failed: " + e.message });
+    }
+});
+
+// DELETE user completely (Delete user) - We might want to add a way to cache deleted user in the future to prevent accidental account deletion - by Email
+// Note: Might reconsider allowing user to fully delete their profile
+router.delete("/user/email/:email", async (req, res) => {
+    if (req.params.email === "") {
         return res.status(400).json({ msg: "Email is missing" });
     }
 
     try {
         const user = await User.findOne({ email: req.params.email });
         if (!user) {
-            return res.status(400).json({ msg: "The User with provided email not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
         
         await deepDeleteUser(user._id);
 
-        return res.json({ msg: "User successfully deleted" });
-
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "User deletion failed: " + e.message });
     }
 });
 
-// Delete a user based on _id
+// DELETE ALL Users (IN REVERSIBLE - DEBUG ONLY!!!!) - Shallow (Kinda)
 router.delete("/user", async (req, res) => {
-    const id = req.body._id;
-    if (!id) {
-      return res.status(400).json({ msg: "User id is missing" });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let allUsers = await User.find({});
+    
+            allUsers.forEach(async (user) => {
+                await deepDeleteUser(user._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: allUsers.length });
+          } catch (e) {
+            return res.status(400).json({ msg: "User deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
-    try {
-      await User.deleteOne({ _id: id });
-      const users = await User.find();
-      res.json(users);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-  });
+});
 
-//// Coaches (User - COACHING PROFILE)
+/* #endregion */
+
+
+
+/* #region Coaching Profile itself */
+
 // POST - User sign up - create a new generic user (No coaching profile)
 router.post("/coaching", async (req, res) => {
     if (!req.body.email) {
@@ -360,7 +521,12 @@ router.post("/coaching", async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ email: req.body.email }).populate("coachingProfiles");
+        const user = await User.findOne({ email: req.body.email }).populate(
+        {
+            path: "coachingProfiles",
+            select: "_id status",
+        });
+
         if (!user) {
             return res.status(400).json({ msg: "The User with provided email not found" });
         }
@@ -416,140 +582,88 @@ router.post("/coaching", async (req, res) => {
     }
 });
 
-// GET all Coaching profiles with all data
+// GET - returns a list of coaching profile with specific params
 router.get("/coaching", async (req, res) => {
     try {
-        const coachingProfile = await CoachingProfile.find();
-        return res.json(coachingProfile);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
+        // return res.json(coachingProfiles);
+        let params = parseRequestParams(req.query, CoachingProfile);
 
-// Get all Pending coaching profiles
-router.get("/coaching/pending", async (req, res) => {
-    try {
-        const coachingProfile = await CoachingProfile.find({ status: 0 }, {_id:1,status:1,user:1,price:1,description:1,requestJustification:1,createdAt:1,dateLastUpdated:1});
-        return res.json(coachingProfile);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-// Get all Active coaching profiles
-router.get("/coaching/active", async (req, res) => {
-    try {
-        const coachingProfile = await CoachingProfile.find({ status: 1 });
-        return res.json(coachingProfile);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-// Get all (coach) hidden coaching profiles
-router.get("/coaching/hidden", async (req, res) => {
-    try {
-        const coachingProfile = await CoachingProfile.find({ status: 2 });
-        return res.json(coachingProfile);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-
-// Get all Terminated coaching profiles
-router.get("/coaching/terminated", async (req, res) => {
-    try {
-        const allCoachingProfiles = await CoachingProfile.find({ status: 3, status: 4, status: 5 });
-        return res.json(allCoachingProfiles);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-// GET all coaching profile of a coach by email
-router.get("/coaching/:email", async (req, res) => {
-    if (!req.params.email) {
-        return res.status(400).json({ msg: "Email is missing" });
-    }
-    try {
-        const user = await User.findOne({ email: req.params.email }, {email:1,username:1,coachingProfiles:1,_id:0}).populate("coachingProfiles");
-        if (!user) {
-            return res.status(400).json({ msg: "User not provided email not found" });
+        // Deal with special query
+        let emails = requestingSpecificParam(req.query, "email");
+        if (emails != null) { // Here we must get a list of simulator enrollments that meets said condition. And add that to the params requirements.
+            if (!params["user"]) {
+                params["user"] = [];
+            }
+            
+            if (emails != null) {
+                const users = await User.find({ email: emails });
+                users.forEach((user) => {
+                    params["user"].push(user._id);
+                });
+            }
         }
 
-        return res.json(user);
+        let showHideParams = {};
+        let moreDetails = requestingTrueFalseParam(req.query, "moreDetails");
+        if (moreDetails != true) {
+            showHideParams = {user:1,status:1,price:1,description:1,createdAt:1};
+        }
+
+        let coachingProfiles;
+        let populateUserEmailAndUsername = requestingTrueFalseParam(req.query, "populateUserEmailAndUsername");
+        if (populateUserEmailAndUsername == true) {
+            coachingProfiles = await CoachingProfile.find(params, showHideParams).populate(
+                {
+                    path: "user",
+                    select: "email username",
+                }
+            );
+        }
+        else {
+            coachingProfiles = await CoachingProfile.find(params, showHideParams);
+        }
+
+        return res.json(coachingProfiles);
     } catch (e) {
-        return res.status(400).json({ msg: e.message });
+      return res.status(400).json({ msg: e.message });
     }
 });
 
-// PUT - Edit coach - Ensures ID and coach is unchanged
+// PUT - Edit CoachingProfile - Note: Allowing User to be transfered as well
 router.put("/coaching/:coachingProfileID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+  
     if (!req.params.coachingProfileID) {
-        return res.status(400).json({ msg: "Coaching Profile ID is missing" });
+      return res.status(400).json({ msg: "CoachingProfile ID is missing" });
     }
+  
     try {
-        // Ensure correct types (Force convert to integer (inside the try catch))
-        // req.body.coachingProfile.price = Number( req.body.coachingProfile.price);
-        // req.body.coachingProfile.status = Number( req.body.coachingProfile.status);
+      const coachingProfile = await CoachingProfile.findById(req.params.coachingProfileID);
+      if (!coachingProfile) {
+        return res.status(400).json({ msg: "CoachingProfile with provided ID not found" });
+      }
 
-        const coachingProfile = await CoachingProfile.findById(req.params.coachingProfileID);
-        if (!coachingProfile) {
-          return res.status(400).json({ msg: "Coaching profile of the ID not found" });
+      coachingProfile["dateLastUpdated"] = Date.now(); // Atempt to set the dateLastUpdated, this can be overriten by input.
+      attrKeys.forEach((key) => {
+        if (process.env.REACT_APP_DEVELOPMENT == "true") {
+            coachingProfile[key] = newAttrs[key]; // Admin access, complete changes
         }
-        
-        // Must ensure that some element are the same 
-        req.body.coachingProfile.user = coachingProfile.user;
-        req.body.coachingProfile.createdAt = coachingProfile.createdAt;
-        req.body.coachingProfile._id = coachingProfile._id;
+        else {
+          if (!['_id', 'reviews', 'coachingClients'].includes(key)) {
+            coachingProfile[key] = newAttrs[key];
+          }
+        }
+      });
+      await coachingProfile.save();
 
-        // These fields should be changed elsewhere and not directly fromt this put request.
-        req.body.coachingProfile.reviews = coachingProfile.reviews;
-        req.body.coachingProfile.clients = coachingProfile.clients;
-
-        // Auto set
-        req.body.coachingProfile.dateLastUpdated = Date.now();
-
-        await CoachingProfile.findByIdAndUpdate(coachingProfile._id, req.body.coachingProfile);
-
-        return res.json({ msg: "Coaching Profile Edit successful" });
-      } catch (e) {
-        return res.status(400).json({ msg: "Coaching Profile edit failed: " + e.message });
+      res.json(coachingProfile);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
     }
 });
 
-// Deep delete coaching profile
-async function deepDeleteCoachingProfile(coaching_profile_id) {
-    let coachingProfileRemoved = await CoachingProfile.findByIdAndRemove(coaching_profile_id);
-
-    // Must remove the entry from the user as well
-    const ownerUserID = coachingProfileRemoved.user;
-
-    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
-    try {
-        const user = await User.findById(ownerUserID);
-        if (!user) {
-            return; // Then the user was already deleted (Somehow) then we do not need to do anything more.
-        }
-        // console.log(user.coachingProfiles); // Investigating bug
-        const index = user.coachingProfiles.indexOf(coaching_profile_id);
-        if (index > -1) { // only splice array when item is found
-            user.coachingProfiles.splice(index, 1); // 2nd parameter means remove one item only
-        }
-        
-        await user.save();
-    } catch (e) {
-    }
-
-    // Use the deep delete function from review to remove all associated reviews
-    coachingProfileRemoved.reviews.forEach(async (review) => {
-        await deepDeleteReview(review._id);
-    });
-}
-
-
-// DELETE coaching profile completely (Delete coaching profile)
+// DELETE - coaching profile completely (Delete coaching profile)
 // Note: Debug function -  should not be used normally
 router.delete("/coaching/:coachingProfileID", async (req, res) => {
     if (!req.params.coachingProfileID) {
@@ -559,38 +673,44 @@ router.delete("/coaching/:coachingProfileID", async (req, res) => {
     try {
         const coachingProfile = await CoachingProfile.findById(req.params.coachingProfileID);
         if (!coachingProfile) {
-          return res.status(400).json({ msg: "Coaching profile of the ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeleteCoachingProfile(coachingProfile._id);
 
-        return res.json({ msg: "Coaching profile successfully deleted" });
-
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "Coaching profile deletion failed: " + e.message });
     }
 });
 
-// DELETE ALL coaching profile (IN REVERSIBLE - DEBUG ONLY!!!!)
-// **** Problem with deep delete when this is done! ****
+// DELETE - ALL coaching profile (IN REVERSIBLE - DEBUG ONLY!!!!) (Shallow)
 router.delete("/coaching", async (req, res) => {
-    try {
-        let allCoachingProfiles = await CoachingProfile.find({});
-
-        allCoachingProfiles.forEach(async (specificCoachingProfile) => {
-            await deepDeleteCoachingProfile(specificCoachingProfile._id);
-        });
-
-        return res.json({ msg: "ALL Coaching profile successfully deleted" });
-
-      } catch (e) {
-        return res.status(400).json({ msg: "Coaching profile deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let allCoachingProfiles = await CoachingProfile.find();
+    
+            allCoachingProfiles.forEach(async (specificCoachingProfile) => {
+                await deepDeleteCoachingProfile(specificCoachingProfile._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: allCoachingProfiles.length });
+    
+          } catch (e) {
+            return res.status(400).json({ msg: "Coaching Profile deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
 
+/* #endregion */
 
 
-/// Coaching Reviews 
+
+/* #region Reviews */
+
+// POST - a new review - Need more work for determining who and when can someone post a review.
 router.post("/review", async (req, res) => {
     if (
         !req.body.coachingProfile ||
@@ -646,41 +766,29 @@ router.post("/review", async (req, res) => {
     }
 });
 
-// GET Reviews based on parameters
+// GET - Reviews based on parameters
 router.get("/review", async (req, res) => {
     try {
-        let reviews = await Review.find(parseRequestParams(req.query, Review));
+        let reviews;
+        let moreDetails = requestingTrueFalseParam(req.query, "moreDetails");
+        if (moreDetails == true) {
+            reviews = await Review.find(parseRequestParams(req.query, Review)).populate(
+                [
+                    {
+                        path: "coach",
+                        select: "email username",
+                    },
+                    {
+                        path: "user",
+                        select: "email username",
+                    },
+                ]
+            );
+        }
+        else {
+            reviews = await Review.find(parseRequestParams(req.query, Review));
+        }
 
-        return res.json(reviews);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-// Get all pending (require additional review) Reviews
-router.get("/review/pending", async (req, res) => {
-    try {
-        const reviews = await Review.find({ modRemoved: false, requireReview: true });
-        return res.json(reviews);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-// Get all visible (active) Reviews
-router.get("/review/active", async (req, res) => {
-    try {
-        const reviews = await Review.find({ modRemoved: false, requireReview: false });
-        return res.json(reviews);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-// Get all removed Reviews
-router.get("/review/terminated", async (req, res) => {
-    try {
-        const reviews = await Review.find({ modRemoved: true });
         return res.json(reviews);
     } catch (e) {
       return res.status(400).json({ msg: e.message });
@@ -689,61 +797,42 @@ router.get("/review/terminated", async (req, res) => {
 
 // PUT - EDIT Review
 router.put("/review/:reviewID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+  
     if (!req.params.reviewID) {
-        return res.status(400).json({ msg: "Review ID is missing" });
+      return res.status(400).json({ msg: "Review ID is missing" });
     }
-
+  
     try {
-        // // Ensure correct types (Force convert to integer (inside the try catch))
-        // req.body.rating = Number(req.body.rating);
-
         const review = await Review.findById(req.params.reviewID);
         if (!review) {
-          return res.status(400).json({ msg: "Review of the ID not found" });
+            return res.status(400).json({ msg: "Review with provided ID not found" });
         }
-        
-        // Must ensure that some element are the same 
-        req.body.review.coachingProfile = review.coachingProfile;
-        req.body.review.coach = review.coach;
-        req.body.review.user = review.user;
-        req.body.review.createdAt = review.createdAt;
-        req.body.review._id = review._id;
 
-        // Auto set (Only if user edited)
-        if (req.body.userEdited) {
-            req.body.coachingProfile.dateLastUpdated = Date.now();
+        if (newAttrs["userEdited"]) { // For this special edit, date last edited only apply for the User.
+            review["dateLastUpdated"] = Date.now(); // Atempt to set the dateLastUpdated, this can be overriten by input.
         }
-        
-        await Review.findByIdAndUpdate(review._id, req.body.review);
+      
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                review[key] = newAttrs[key]; // Admin access, complete changes
+            }
+            else {
+            if (!['_id'].includes(key)) {
+                review[key] = newAttrs[key];
+            }
+            }
+        });
+        await review.save();
 
-        return res.json({ msg: "Review Edit successful" });
-      } catch (e) {
-        return res.status(400).json({ msg: "Review edit failed: " + e.message });
+        res.json(review);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
     }
 });
 
-// Deep delete review
-async function deepDeleteReview(reviewID) {
-    let reviewRemoved = await Review.findByIdAndRemove(reviewID);
-
-    let coachingProfileID = reviewRemoved.coachingProfile;
-
-    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
-    try {
-        const coachingProfile = await CoachingProfile.findById(coachingProfileID);
-        if (!coachingProfile) {
-            return; 
-        }
-        const index = coachingProfile.reviews.indexOf(reviewID);
-        if (index > -1) { // only splice array when item is found
-            coachingProfile.reviews.splice(index, 1); // 2nd parameter means remove one item only
-        }
-        await coachingProfile.save();
-    } catch (e) {
-    }
-}
-
-// DELETE review completely
+// DELETE - review completely
 // Note: Debug function -  should not be used normally
 router.delete("/review/:reviewID", async (req, res) => {
     if (!req.params.reviewID) {
@@ -753,36 +842,42 @@ router.delete("/review/:reviewID", async (req, res) => {
     try {
         const review = await Review.findById(req.params.reviewID);
         if (!review) {
-          return res.status(400).json({ msg: "Review of the ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeleteReview(review._id);
 
-        return res.json({ msg: "Review successfully deleted" });
-
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
     } catch (e) {
         return res.status(400).json({ msg: "Review deletion failed: " + e.message });
     }
 });
 
-// DELETE ALL review profile (IN REVERSIBLE - DEBUG ONLY!!!!)
-// **** Problem with deep delete when this is done! ****
+// DELETE - ALL review profile (IN REVERSIBLE - DEBUG ONLY!!!!) (Shallow)
 router.delete("/review", async (req, res) => {
-    try {
-        let allReviews = await Review.find({});
-
-        allReviews.forEach(async (specificReview) => {
-            await deepDeleteReview(specificReview._id);
-        });
-
-        return res.json({ msg: "ALL Review successfully deleted" });
-
-      } catch (e) {
-        return res.status(400).json({ msg: "Review deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let allReviews = await Review.find({});
+    
+            allReviews.forEach(async (specificReview) => {
+                await deepDeleteReview(specificReview._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: allReviews.length });
+    
+          } catch (e) {
+            return res.status(400).json({ msg: "Review deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
 
+/* #endregion */
 
+
+
+/* #region Special Coaching Session commands. - Modifies multiple classes and does not fit into any single category */
 
 /// User applies for a session with a coach, specificially through a coaching profile.
 // Enroll an user to a coaching profile (applying for a session). - Basically creates an CoachingSession Object
@@ -941,7 +1036,7 @@ router.post("/coaching/:coachingProfileID", async (req, res) => {
     }
 });
 
-// POST - coaching sessions. (Completions, etc) (Handles logic) - Might be transalted into put request - but want to do it seperately as
+// POST - But basically PUT coaching sessions. (Completions, etc) (Handles logic) - Might be transalted into put request - but want to do it seperately as
 // We have other effect not just edit CoachingSession.
 router.post("/coachingSession/:coachingSessionID", async (req, res) => {
     // Other status:
@@ -1070,6 +1165,12 @@ router.post("/coachingSession/:coachingSessionID", async (req, res) => {
     }
 });
 
+/* #endregion */
+
+
+
+/* #region Coaching Session */
+
 // GET - coaching sessions based on parameters
 router.get("/coachingSession", async (req, res) => {
     try {
@@ -1111,43 +1212,6 @@ router.put("/coachingSession/:entryID", async (req, res) => {
     }
 });
 
-// Deep delete coaching sessions
-async function deepDeleteCoachingSession(toBeRemovedEntryID) {
-    let coachingSessionRemoved = await CoachingSession.findByIdAndRemove(toBeRemovedEntryID);
-
-    // Must remove the entry from CoachingClient and CoachingCoach as well.
-    const coachingClientID = coachingSessionRemoved.coachingClient;
-    const coachingCoachID = coachingSessionRemoved.coachingCoach;
-
-    try { // For CoachingClient
-        const entry = await CoachingClient.findById(coachingClientID);
-        if (!entry) {
-            return;
-        }
-        const index = entry.coachingSessions.indexOf(toBeRemovedEntryID);
-        if (index > -1) { // only splice array when item is found
-            entry.coachingSessions.splice(index, 1); // 2nd parameter means remove one item only
-        }
-
-        await entry.save();
-    } catch (e) {
-    }
-
-    try { // For CoachingCoach
-        const entry = await CoachingCoach.findById(coachingCoachID);
-        if (!entry) {
-            return;
-        }
-        const index = entry.coachingSessions.indexOf(toBeRemovedEntryID);
-        if (index > -1) { // only splice array when item is found
-            entry.coachingSessions.splice(index, 1); // 2nd parameter means remove one item only
-        }
-
-        await entry.save();
-    } catch (e) {
-    }
-}
-
 // DELETE - coaching sessions completely (Delete coaching profile)
 router.delete("/coachingSession/:entryID", async (req, res) => {
     if (!req.params.entryID) {
@@ -1157,13 +1221,12 @@ router.delete("/coachingSession/:entryID", async (req, res) => {
     try {
         const entry = await CoachingSession.findById(req.params.entryID);
         if (!entry) {
-          return res.status(400).json({ msg: "coachingSession with the provided ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeleteCoachingSession(entry._id);
 
-        return res.json({ msg: "coachingSession successfully deleted" });
-
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "coachingSession deletion failed: " + e.message });
     }
@@ -1171,17 +1234,29 @@ router.delete("/coachingSession/:entryID", async (req, res) => {
 
 // DELETE ALL CoachingSession (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
 router.delete("/coachingSession", async (req, res) => {
-    try {
-        let message = await CoachingSession.deleteMany();
- 
-        return res.json({ msg: "ALL CoachingSessions successfully deleted (Shallow)", reciept: message });
-  
-      } catch (e) {
-        return res.status(400).json({ msg: "CoachingSessions deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let coachingSessions = await CoachingSession.find();
+    
+            coachingSessions.forEach(async (coachingSession) => {
+                await deepDeleteCoachingSession(coachingSession._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: coachingSessions.length });
+    
+          } catch (e) {
+            return res.status(400).json({ msg: "CoachingSession deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
 
+/* #endregion */
 
+
+
+/* #region Coaching Clients */
 
 // Coaching Clients
 // GET - Coaching Clients based on parameters
@@ -1232,10 +1307,8 @@ router.delete("/CoachingClient/:entryID", async (req, res) => {
     }
 
     try {
-        const entry = await CoachingClient.findByIdAndDelete(req.params.entryID);
-
-        return res.json(entry);
-
+        const statusMessage = await CoachingClient.deleteOne({_id: req.params.entryID });
+        return res.json(statusMessage);
       } catch (e) {
         return res.status(400).json({ msg: "Coaching Client deletion failed: " + e.message });
     }
@@ -1243,17 +1316,25 @@ router.delete("/CoachingClient/:entryID", async (req, res) => {
 
 // DELETE ALL Coaching Clients (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
 router.delete("/CoachingClient", async (req, res) => {
-    try {
-        let message = await CoachingClient.deleteMany();
- 
-        return res.json({ msg: "ALL CoachingClient successfully deleted (Shallow)", reciept: message });
-  
-      } catch (e) {
-        return res.status(400).json({ msg: "CoachingClient deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let message = await CoachingClient.deleteMany();
+     
+            return res.json({ msg: "ALL CoachingClient successfully deleted (Shallow)", reciept: message });
+      
+          } catch (e) {
+            return res.status(400).json({ msg: "CoachingClient deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
 
+/* #endregion */
 
+
+
+/* #region Coaching Coaches */
 
 // Coaching Coaches
 // GET - Coaching Coaches based on parameters
@@ -1304,10 +1385,8 @@ router.delete("/CoachingCoach/:entryID", async (req, res) => {
     }
 
     try {
-        const entry = await CoachingCoach.findByIdAndDelete(req.params.entryID);
-
-        return res.json(entry);
-
+        const statusMessage = await CoachingCoach.deleteOne({_id: req.params.entryID });
+        return res.json(statusMessage);
       } catch (e) {
         return res.status(400).json({ msg: "Coaching Coache deletion failed: " + e.message });
     }
@@ -1315,17 +1394,23 @@ router.delete("/CoachingCoach/:entryID", async (req, res) => {
 
 // DELETE ALL Coaching Coaches (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
 router.delete("/CoachingCoach", async (req, res) => {
-    try {
-        let message = await CoachingCoach.deleteMany();
- 
-        return res.json({ msg: "ALL CoachingCoach successfully deleted (Shallow)", reciept: message });
-  
-      } catch (e) {
-        return res.status(400).json({ msg: "CoachingCoachs deletions failed: " + e.message });
-    }
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let statusMessage = await CoachingCoach.deleteMany();
+            return res.json(statusMessage);
+        } catch (e) {
+            return res.status(400).json({ msg: "CoachingCoachs deletions failed: " + e.message });
+        }
+      } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
+      }
 });
 
+/* #endregion */
 
+
+
+/* #region Chat Message */
 
 // Chat Message
 // POST - Post a new chat message
@@ -1392,7 +1477,6 @@ router.post("/ChatMessage", async (req, res) => {
     }
 });
 
-
 // GET - Chat Message based on parameters
 router.get("/ChatMessage", async (req, res) => {
     try {
@@ -1434,30 +1518,6 @@ router.put("/ChatMessage/:entryID", async (req, res) => {
     }
 });
 
-
-
-// Deep delete chat Message
-async function deepDeleteChatMessage(toBeRemovedEntryID) {
-    let chatMessageRemoved = await ChatMessage.findByIdAndRemove(toBeRemovedEntryID);
-
-    // Must remove the entry from coachingSession as well.
-    const coachingSessionID = chatMessageRemoved.coachingSession;
-
-    try { // For CoachingSession
-        const entry = await CoachingSession.findById(coachingSessionID);
-        if (!entry) {
-            return;
-        }
-        const index = entry.chatMessages.indexOf(toBeRemovedEntryID);
-        if (index > -1) { // only splice array when item is found
-            entry.chatMessages.splice(index, 1); // 2nd parameter means remove one item only
-        }
-
-        await entry.save();
-    } catch (e) {
-    }
-}
-
 // DELETE - Chat Message (Deep Delete)
 router.delete("/ChatMessage/:entryID", async (req, res) => {
     if (!req.params.entryID) {
@@ -1467,12 +1527,12 @@ router.delete("/ChatMessage/:entryID", async (req, res) => {
     try {
         const entry = await ChatMessage.findById(req.params.entryID);
         if (!entry) {
-          return res.status(400).json({ msg: "Chat Message with the provided ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeleteChatMessage(entry._id);
 
-        return res.json({ msg: "Chat Message successfully deleted" });
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "Chat Message deletion failed: " + e.message });
     }
@@ -1480,15 +1540,23 @@ router.delete("/ChatMessage/:entryID", async (req, res) => {
 
 // DELETE ALL Chat Message (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
 router.delete("/ChatMessage", async (req, res) => {
-    try {
-        let message = await ChatMessage.deleteMany();
- 
-        return res.json({ msg: "ALL ChatMessage successfully deleted (Shallow)", reciept: message });
-  
-      } catch (e) {
-        return res.status(400).json({ msg: "ChatMessages deletions failed: " + e.message });
-    }
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let statusMessage = await ChatMessage.deleteMany();
+            return res.json(statusMessage);
+          } catch (e) {
+            return res.status(400).json({ msg: "ChatMessages deletions failed: " + e.message });
+        }
+      } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
+      }
 });
+
+/* #endregion */
+
+
+
+/* #region Payment History - Also used for premium user purchases. */
 
 // Payment history
 // GET - Payment history based on parameters
@@ -1532,14 +1600,6 @@ router.put("/PaymentHistory/:entryID", async (req, res) => {
     }
 });
 
-
-// Deep delete Payment History
-async function deepDeletePaymentHistory(toBeRemovedEntryID) {
-    let chatMessageRemoved = await PaymentHistory.findByIdAndRemove(toBeRemovedEntryID);
-
-    // Maybe we should not be removing the reference from coaching session 
-}
-
 // DELETE - Payment History (Shallow) - DEBUG FUNCTION SHOULD NOT BE USED, WE DO NOT WANT TO ERASE RECORDS
 router.delete("/PaymentHistory/:entryID", async (req, res) => {
     if (!req.params.entryID) {
@@ -1549,12 +1609,12 @@ router.delete("/PaymentHistory/:entryID", async (req, res) => {
     try {
         const entry = await PaymentHistory.findById(req.params.entryID);
         if (!entry) {
-          return res.status(400).json({ msg: "Payment History with the provided ID not found" });
+            return res.json({ acknowledged: true, deletedCount: 0 });
         }
 
         await deepDeletePaymentHistory(entry._id);
 
-        return res.json({ msg: "Payment History successfully deleted" });
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
       } catch (e) {
         return res.status(400).json({ msg: "Payment History deletion failed: " + e.message });
     }
@@ -1562,12 +1622,22 @@ router.delete("/PaymentHistory/:entryID", async (req, res) => {
 
 // DELETE ALL Payment History (IN REVERSIBLE - DEBUG ONLY!!!!) (Also shallow delete)
 router.delete("/PaymentHistory", async (req, res) => {
-    try {
-        let message = await PaymentHistory.deleteMany();
- 
-        return res.json({ msg: "ALL Payment History successfully deleted (Shallow)", reciept: message });
-  
-      } catch (e) {
-        return res.status(400).json({ msg: "Payment Histories deletions failed: " + e.message });
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let paymentHistories = await PaymentHistory.find();
+    
+            paymentHistories.forEach(async (paymentHistory) => {
+                await deepDeletePaymentHistory(paymentHistory._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: paymentHistories.length });
+    
+          } catch (e) {
+            return res.status(400).json({ msg: "Payment Histories deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
+
+/* #endregion */
