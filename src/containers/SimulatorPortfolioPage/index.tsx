@@ -1,38 +1,25 @@
 import {
+  Autocomplete,
   Box,
   Button,
   Container,
   Grid,
   Paper,
-  MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
+  Tab,
   TextField,
   Typography,
 } from '@mui/material'
-import Title from '../../components/Title'
-import { TableContainer } from '@mui/material'
+import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Link } from 'react-router-dom'
 import React, { useContext, useState } from 'react'
 import axios from 'axios'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts'
-import UserContext from '../../context/user'
-import { Navigate, useNavigate } from 'react-router-dom'
 
+import Title from '../../components/Title'
 import Chart from '../../components/Chart'
 import Balance from '../../components/Balance'
+import Holdings from '../../components/Holdings'
 import Orders from '../../components/Orders'
+import UserContext from '../../context/user'
 
 const route =
   process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
@@ -43,7 +30,7 @@ var simulatorExists = false
 var simIndex = 0
 var rows: any[] = []
 var chartData: any[] = []
-var currSimId = 0
+var holdingsRows: any[] = []
 
 const SimulatorPortfolioPage = () => {
   const { user } = useContext(UserContext)
@@ -52,10 +39,10 @@ const SimulatorPortfolioPage = () => {
   const [chartItems, setChartItems] = React.useState<any>()
   const [realTimePrice, setRealTimePrice] = React.useState<any>()
   const [tradeHistoryItems, setTradeHistoryItems] = React.useState<any>()
-  const [stockSearchTerm, setStockSearchTerm] = useState('')
+  const [holdingsItems, setHoldingsItems] = React.useState<any>()
   const [buyQuantity, setBuyQuantity] = useState(0)
   const [sellQuantity, setSellQuantity] = useState(0)
-  const [selectedResult, setSelectedResult] = useState(null)
+  const [selectedResult, setSelectedResult] = useState<any>(null)
   const [selectedSimulator, setSelectedSimulator] = useState(null)
 
   const mockStockData = [
@@ -64,10 +51,6 @@ const SimulatorPortfolioPage = () => {
     { name: 'MSFT', company: 'Microsoft' },
     { name: 'GOOG', company: 'Google' },
   ]
-
-  const filteredStockData = mockStockData.filter((item) =>
-    item.name.toLowerCase().includes(stockSearchTerm.toLowerCase())
-  )
 
   const simulators = ['All Time', 'Monthly', 'Weekly']
 
@@ -81,7 +64,7 @@ const SimulatorPortfolioPage = () => {
     var trueAction = ''
     rows = []
     for (var i = 0; i < data.length; i++) {
-      if (data[i].transactionType == 1) {
+      if (data[i].transactionType === 1) {
         trueAction = 'Buy'
       } else {
         trueAction = 'Sell'
@@ -98,6 +81,20 @@ const SimulatorPortfolioPage = () => {
     }
   }
 
+  function updateHoldingsRows(data: any) {
+    holdingsRows = []
+    for (var i = 0; i < data.length; i++) {
+      holdingsRows.push({
+        id: data[i]._id,
+        symbol: data[i].symbol,
+        // name: data[i].name,
+        price: data[i].price,
+        quantity: data[i].quantity,
+        exchange: data[i].index,
+      })
+    }
+  }
+
   const handleSimulatorChange = (event: any) => {
     var sim = String(event.target.value)
     setSelectedSimulator(event.target.value)
@@ -108,14 +105,13 @@ const SimulatorPortfolioPage = () => {
       userItem.simulatorEnrollments.length > 0
     ) {
       for (var i = 0; i < userItem.simulatorEnrollments.length; i += 1) {
-        if (sim == userItem.simulatorEnrollments[i].simulator.title) {
+        if (sim === userItem.simulatorEnrollments[i].simulator.title) {
           simulatorExists = true
           simIndex = i
-          currSimId = userItem.simulatorEnrollments[i].simulator._id
+          break
         } else {
           simulatorExists = false
           simIndex = 0
-          currSimId = 0
         }
       }
     }
@@ -134,6 +130,21 @@ const SimulatorPortfolioPage = () => {
           updateRows(response.data)
         })
     }
+
+    if (simulatorExists) {
+      axios
+        .get(
+          route +
+            'game/holding/' +
+            userItem.simulatorEnrollments[simIndex].simulator._id +
+            '/' +
+            String(user.email)
+        )
+        .then((response) => {
+          setHoldingsItems(response.data)
+          updateHoldingsRows(response.data)
+        })
+    }
   }
 
   const handleBuyInputChange = (event: any) => {
@@ -144,15 +155,9 @@ const SimulatorPortfolioPage = () => {
     setSellQuantity(event.target.value)
   }
 
-  const handleStockInputChange = (event: any) => {
-    setStockSearchTerm(event.target.value)
-    setSelectedResult(null)
-  }
-
-  const handleStockInputSubmit = (event: any) => {
-    const selectedValue = event.target.value
-    setSelectedResult(selectedValue)
-    setStockSearchTerm(selectedValue)
+  const handleStockInputSubmit = (event: any, value: any) => {
+    const selectedValue = value.name
+    setSelectedResult(value)
 
     const currDate = new Date(Date.now())
     const stringDate = currDate.toISOString()
@@ -233,6 +238,18 @@ const SimulatorPortfolioPage = () => {
                 setTradeHistoryItems(response.data)
                 updateRows(response.data)
               })
+            axios
+              .get(
+                route +
+                  'game/holding/' +
+                  userItem.simulatorEnrollments[simIndex].simulator._id +
+                  '/' +
+                  String(user.email)
+              )
+              .then((response) => {
+                setHoldingsItems(response.data)
+                updateHoldingsRows(response.data)
+              })
           })
       })
     }
@@ -274,6 +291,18 @@ const SimulatorPortfolioPage = () => {
                 setTradeHistoryItems(response.data)
                 updateRows(response.data)
               })
+            axios
+              .get(
+                route +
+                  'game/holding/' +
+                  userItem.simulatorEnrollments[simIndex].simulator._id +
+                  '/' +
+                  String(user.email)
+              )
+              .then((response) => {
+                setHoldingsItems(response.data)
+                updateHoldingsRows(response.data)
+              })
           })
       })
     }
@@ -282,7 +311,7 @@ const SimulatorPortfolioPage = () => {
   const handleEnrollSubmit = (event: any) => {
     axios.get(route + 'game/simulator').then((response) => {
       for (var i = 0; i < response.data.length; i++) {
-        if (selectedSimulator == response.data[i].title) {
+        if (selectedSimulator === response.data[i].title) {
           axios({
             method: 'post',
             url: route + 'game/simulator/' + response.data[i]._id,
@@ -297,8 +326,10 @@ const SimulatorPortfolioPage = () => {
     })
   }
 
-  function preventDefault(event: React.MouseEvent) {
-    event.preventDefault()
+  const [tab, setTab] = React.useState('buy')
+
+  const handleChange = (event: React.SyntheticEvent, newTab: string) => {
+    setTab(newTab)
   }
 
   return (
@@ -319,7 +350,7 @@ const SimulatorPortfolioPage = () => {
           overflow: 'auto',
         }}
       >
-        <Container maxWidth='lg' sx={{ mt: 4, mb: 4 }}>
+        <Container maxWidth='xl' sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Paper
@@ -331,12 +362,51 @@ const SimulatorPortfolioPage = () => {
                 }}
               >
                 <Title>
-                  Welcome to your simulator portfolio, {userItem.username}{' '}
-                  {userItem.lastName}
+                  {userItem
+                    ? `Welcome to your simulator portfolio, ${userItem.username} ${userItem.lastName}!`
+                    : `Welcome to your simulator portfolio!`}
                 </Title>
+                <Typography component='p' variant='body1'>
+                  Select a simulator:
+                </Typography>
+                {simulators.length > 0 && (
+                  <select
+                    id='sim-results'
+                    value={selectedSimulator || ''}
+                    onChange={handleSimulatorChange}
+                  >
+                    <option value='' disabled hidden>
+                      ---
+                    </option>
+                    {simulators.map((item) => (
+                      <option>{item}</option>
+                    ))}
+                  </select>
+                )}
+                {selectedSimulator && !simulatorExists ? (
+                  <Button
+                    size='small'
+                    sx={{
+                      backgroundColor: 'secondary.main',
+                      color: 'white',
+                      width: '6rem',
+                      mt: '1rem',
+                      '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                      },
+                    }}
+                    onClick={handleEnrollSubmit}
+                    component={Link}
+                    to='/SimulatorPortfolio'
+                  >
+                    Enroll Now
+                  </Button>
+                ) : (
+                  <></>
+                )}
               </Paper>
             </Grid>
-            <Grid item xs={12} md={8} lg={9}>
+            <Grid item xs={12} md={6} lg={8}>
               <Paper
                 sx={{
                   p: 2,
@@ -348,7 +418,7 @@ const SimulatorPortfolioPage = () => {
                 <Chart data={chartData} />
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} md={3} lg={2}>
               <Paper
                 sx={{
                   p: 2,
@@ -357,252 +427,317 @@ const SimulatorPortfolioPage = () => {
                   height: 240,
                 }}
               >
-                <Balance />
+                <Balance
+                  title='Buying Power'
+                  amount={
+                    selectedSimulator && simulatorExists
+                      ? userItem.simulatorEnrollments[simIndex].balance
+                      : 0
+                  }
+                />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={3} lg={2}>
+              <Paper
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: 240,
+                }}
+              >
+                <Balance
+                  title='Portfolio Value'
+                  amount={
+                    selectedSimulator && simulatorExists
+                      ? userItem.simulatorEnrollments[simIndex].balance
+                      : 0
+                  }
+                />
               </Paper>
             </Grid>
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                <Orders />
+                {selectedSimulator && simulatorExists ? (
+                  <Holdings data={holdingsRows} />
+                ) : (
+                  <Holdings data={undefined} />
+                )}
+              </Paper>
+            </Grid>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                {selectedSimulator && simulatorExists ? (
+                  <Orders data={rows} />
+                ) : (
+                  <Orders data={undefined} />
+                )}
               </Paper>
             </Grid>
           </Grid>
         </Container>
       </Container>
-      {userItem ? (
-        <h1>
-          Welcome to your Simulator Profile, {userItem.firstName}{' '}
-          {userItem.lastName}
-        </h1>
-      ) : (
-        <h1>error reading your name</h1>
-      )}
-
-      {simulators.length > 0 && (
-        <div>
-          <label htmlFor='sim-results'>Simulator: </label>
-          <select
-            id='sim-results'
-            value={selectedSimulator || ''}
-            onChange={handleSimulatorChange}
-          >
-            <option value='' disabled hidden>
-              Select a simulator
-            </option>
-            {simulators.map((item) => (
-              <option>{item}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {selectedSimulator && !simulatorExists ? (
-        <Button
-          size='small'
-          sx={{
-            backgroundColor: 'secondary.main',
-            color: 'white',
-            marginY: '1rem',
-            '&:hover': {
-              backgroundColor: 'secondary.dark',
-            },
-          }}
-          onClick={handleEnrollSubmit}
-          component={Link}
-          to='/SimulatorPortfolio'
-        >
-          Enroll Now
-        </Button>
-      ) : (
-        <p></p>
-      )}
-
       {selectedSimulator && simulatorExists ? (
-        <p>
-          Your account balance:{' '}
-          {userItem.simulatorEnrollments[simIndex].balance}
-        </p>
-      ) : (
-        <p></p>
-      )}
-
-      {selectedSimulator && simulatorExists ? (
-        <div>
-          <label htmlFor='stock-search-input'>Search:</label>
-          <input
-            id='stock-search-input'
-            type='text'
-            value={stockSearchTerm}
-            onChange={handleStockInputChange}
-          />
-          {filteredStockData.length > 0 && (
-            <div>
-              <label htmlFor='stock-search-results'>Results:</label>
-              <select
-                id='stock-search-results'
-                value={selectedResult || ''}
-                onChange={handleStockInputSubmit}
-              >
-                <option value='' disabled hidden>
-                  Select an option
-                </option>
-                {filteredStockData.map((item) => (
-                  <option key={item.name} value={item.name}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p></p>
-      )}
-
-      {selectedSimulator && simulatorExists && chartData.length > 0 ? (
         <Container
           sx={{
             backgroundColor: 'white',
-            minHeight: '100vh',
+            minHeight: '50vh',
             minWidth: '100%',
             display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
             marginTop: '1rem',
             marginBottom: '1rem',
+            padding: '2rem',
           }}
         >
-          <Typography variant='h3' align='center' fontWeight={400}>
-            The price of ${chartItems.meta.symbol} since {chartData[0].date}
-          </Typography>
-          <Paper
+          <Grid
+            container
             sx={{
-              p: 2,
               display: 'flex',
-              flexDirection: 'column',
-              height: 240,
-              width: 1200,
-              backgroundColor: 'white',
-              minHeight: '100vh',
-              minWidth: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginTop: '1rem',
-              marginBottom: '1rem',
             }}
           >
-            <Chart data={chartData} />
-          </Paper>
-          <Typography variant='h4' align='center' fontWeight={50}>
-            Place an order:
-          </Typography>
-
-          <TextField
-            required
-            id='buy-input'
-            label='Enter shares'
-            variant='outlined'
-            type='number'
-            InputProps={{
-              inputProps: {
-                max: 100,
-                min: 1,
-              },
-            }}
-            value={buyQuantity}
-            onChange={handleBuyInputChange}
-          />
-          <Button
-            size='small'
-            sx={{
-              backgroundColor: 'secondary.main',
-              color: 'white',
-              marginY: '1rem',
-              '&:hover': {
-                backgroundColor: 'secondary.dark',
-              },
-            }}
-            onClick={handleBuyInputSubmit}
-          >
-            Buy {chartItems.meta.symbol}
-          </Button>
-
-          <TextField
-            required
-            id='sell-input'
-            label='Enter shares'
-            variant='outlined'
-            type='number'
-            InputProps={{
-              inputProps: {
-                max: 100,
-                min: 1,
-              },
-            }}
-            value={sellQuantity}
-            onChange={handleSellInputChange}
-          />
-          <Button
-            size='small'
-            sx={{
-              backgroundColor: 'secondary.main',
-              color: 'white',
-              marginY: '1rem',
-              '&:hover': {
-                backgroundColor: 'secondary.dark',
-              },
-            }}
-            onClick={handleSellInputSubmit}
-          >
-            Sell {chartItems.meta.symbol}
-          </Button>
+            <Grid xs={12}>
+              <Typography variant='h4' align='left' fontWeight={50}>
+                Simulate a trade.
+              </Typography>
+              <Box sx={{ width: '100%' }}>
+                <TabContext value={tab}>
+                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <TabList
+                      onChange={handleChange}
+                      textColor='secondary'
+                      indicatorColor='secondary'
+                      aria-label='simulate trade tabs'
+                      variant='fullWidth'
+                    >
+                      <Tab label='Buy' value='buy' />
+                      <Tab label='Sell' value='sell' />
+                    </TabList>
+                  </Box>
+                  <TabPanel value='buy' sx={{ padding: '0rem' }}>
+                    <Grid container>
+                      <Grid
+                        lg={6}
+                        xs={12}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          padding: {
+                            lg: '2rem',
+                            xs: '0rem',
+                          },
+                        }}
+                      >
+                        <Autocomplete
+                          id='buy-stock-input'
+                          onChange={(event, newValue) => {
+                            handleStockInputSubmit(event, newValue)
+                          }}
+                          options={mockStockData}
+                          value={selectedResult}
+                          getOptionLabel={(option) => option.name}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              id='buy-input'
+                              name='stock'
+                              label='Stock Name'
+                              type='text'
+                              margin='normal'
+                              sx={{
+                                width: '100%',
+                              }}
+                              color='primary'
+                            />
+                          )}
+                        />
+                        <TextField
+                          required
+                          id='buy-input'
+                          name='quantity'
+                          label='Quantity'
+                          type='number'
+                          value={buyQuantity}
+                          onChange={handleBuyInputChange}
+                          margin='normal'
+                          sx={{
+                            width: '100%',
+                          }}
+                          InputProps={{
+                            inputProps: {
+                              max: 100,
+                              min: 1,
+                            },
+                          }}
+                          color='primary'
+                        />
+                        <Button
+                          size='medium'
+                          fullWidth
+                          sx={{
+                            backgroundColor: 'secondary.main',
+                            color: 'white',
+                            marginY: '1rem',
+                            '&:hover': {
+                              backgroundColor: 'secondary.dark',
+                            },
+                          }}
+                          onClick={handleBuyInputSubmit}
+                        >
+                          Buy
+                        </Button>
+                      </Grid>
+                      {selectedSimulator &&
+                      simulatorExists &&
+                      selectedResult ? (
+                        <Grid
+                          lg={6}
+                          xs={12}
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            padding: {
+                              lg: '2rem',
+                              xs: '0rem',
+                            },
+                          }}
+                        >
+                          <Typography variant='body1' fontWeight={400}>
+                            The price of ${chartItems?.meta.symbol} since{' '}
+                            {chartData[0]?.date}
+                          </Typography>
+                          <Paper
+                            sx={{
+                              p: 2,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              height: 240,
+                            }}
+                          >
+                            <Chart data={chartData} />
+                          </Paper>
+                        </Grid>
+                      ) : (
+                        <></>
+                      )}
+                    </Grid>
+                  </TabPanel>
+                  <TabPanel value='sell' sx={{ padding: '0rem' }}>
+                    <Grid container>
+                      <Grid
+                        lg={6}
+                        xs={12}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          padding: {
+                            lg: '2rem',
+                            xs: '0rem',
+                          },
+                        }}
+                      >
+                        <Autocomplete
+                          id='sell-stock-input'
+                          onChange={(event, newValue) => {
+                            handleStockInputSubmit(event, newValue)
+                          }}
+                          options={mockStockData}
+                          value={selectedResult}
+                          getOptionLabel={(option) => option.name}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              required
+                              id='sell-input'
+                              name='stock'
+                              label='Stock Name'
+                              type='text'
+                              margin='normal'
+                              sx={{
+                                width: '100%',
+                              }}
+                              color='primary'
+                            />
+                          )}
+                        />
+                        <TextField
+                          required
+                          id='sell-input'
+                          name='quantity'
+                          label='Quantity'
+                          type='number'
+                          value={sellQuantity}
+                          onChange={handleSellInputChange}
+                          margin='normal'
+                          sx={{
+                            width: '100%',
+                          }}
+                          InputProps={{
+                            inputProps: {
+                              max: 100,
+                              min: 1,
+                            },
+                          }}
+                          color='primary'
+                        />
+                        <Button
+                          size='medium'
+                          fullWidth
+                          sx={{
+                            backgroundColor: 'secondary.main',
+                            color: 'white',
+                            marginY: '1rem',
+                            '&:hover': {
+                              backgroundColor: 'secondary.dark',
+                            },
+                          }}
+                          onClick={handleSellInputSubmit}
+                        >
+                          Sell
+                        </Button>
+                      </Grid>
+                      {selectedSimulator &&
+                      simulatorExists &&
+                      selectedResult ? (
+                        <Grid
+                          lg={6}
+                          xs={12}
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            padding: {
+                              lg: '2rem',
+                              xs: '0rem',
+                            },
+                          }}
+                        >
+                          <Typography variant='body1' fontWeight={400}>
+                            The price of ${chartItems?.meta.symbol} since{' '}
+                            {chartData[0]?.date}
+                          </Typography>
+                          <Paper
+                            sx={{
+                              p: 2,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              height: 240,
+                            }}
+                          >
+                            <Chart data={chartData} />
+                          </Paper>
+                        </Grid>
+                      ) : (
+                        <></>
+                      )}
+                    </Grid>
+                  </TabPanel>
+                </TabContext>
+              </Box>
+            </Grid>
+          </Grid>
         </Container>
       ) : (
-        <p></p>
-      )}
-
-      {selectedSimulator && simulatorExists ? (
-        <TableContainer>
-          <Title>Recent Orders</Title>
-          <Table size='small'>
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Action</TableCell>
-                <TableCell>Symbol</TableCell>
-                <TableCell>Exchange</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell align='right'>Trade Amount</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.date}</TableCell>
-                  <TableCell>{row.action}</TableCell>
-                  <TableCell>{row.symbol}</TableCell>
-                  <TableCell>{row.exchange}</TableCell>
-                  <TableCell>{`$${row.price}`}</TableCell>
-                  <TableCell>{row.quantity}</TableCell>
-                  <TableCell align='right'>{`$${
-                    row.price * row.quantity
-                  }`}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <Link
-            color='primary'
-            to={'/'}
-            style={{ margin: '2rem 0' }}
-            onClick={preventDefault}
-          >
-            See more orders
-          </Link>
-        </TableContainer>
-      ) : (
-        <p></p>
+        <></>
       )}
     </div>
   )
