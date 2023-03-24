@@ -111,7 +111,7 @@ const ProfilePage = () => {
         setUserItem(response.data);
         setCurrImg(response.data.avatar);
       })
-    }, []);
+    }, [email]);
 
     return (
       <Container
