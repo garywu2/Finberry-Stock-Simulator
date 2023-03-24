@@ -9,6 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { deepOrange } from '@mui/material/colors';
+import { Link, useParams } from 'react-router-dom';
 
 const Av1 = require("../../images/avatars/icons8-badger-100.png");
 const Av2 = require("../../images/avatars/icons8-bear-100.png");
@@ -31,6 +32,7 @@ const ProfilePage = () => {
     const [open, setOpen] = React.useState(false);
     const [open2, setOpen2] = React.useState(false);
     const [bioText, setBioText] = useState("");
+    const { email } = useParams();
 
     const avatars = [
       { img: Av1, string :"../../images/avatars/icons8-badger-100.png"},
@@ -68,7 +70,7 @@ const ProfilePage = () => {
         url:
           route +
           'account/user/' +
-          String(user.email),
+          String(email),
         headers: {},
         data: {
           avatar: String(event.currentTarget.value)
@@ -86,13 +88,13 @@ const ProfilePage = () => {
         url:
           route +
           'account/user/' +
-          String(user.email),
+          String(email),
         headers: {},
         data: {
           bio: bioText
         }
       }).then((result: any) => {
-        axios.get(route + 'account/user/' + String(user.email)).then((response) => {
+        axios.get(route + 'account/user/' + String(email)).then((response) => {
           setUserItem(response.data);
         })
       });
@@ -105,11 +107,11 @@ const ProfilePage = () => {
     }
 
     React.useEffect(() => {
-      axios.get(route + 'account/user/' + String(user.email)).then((response) => {
+      axios.get(route + 'account/user/' + String(email)).then((response) => {
         setUserItem(response.data);
         setCurrImg(response.data.avatar);
       })
-    }, []);
+    }, [email]);
 
     return (
       <Container
@@ -153,10 +155,11 @@ const ProfilePage = () => {
                 <Typography variant='body1' align='center' fontWeight={400}>
                   {userItem.firstName} {userItem.lastName}
                 </Typography>
-
+                {user.email === email &&
                 <Button variant="outlined" onClick={handleClickOpen}>
                   Change Avatar
                 </Button>
+               } 
                 <Dialog open={open} onClose={handleClose}>
                   <DialogTitle>Pick an Avatar</DialogTitle>
                   <DialogContent>
@@ -198,10 +201,11 @@ const ProfilePage = () => {
                 <Typography variant='body1' align='left' fontWeight={400}>
                   {userItem.bio}
                 </Typography>
-                
+                {user.email === email &&
                 <Button variant="outlined" onClick={handleClickOpen2}>
                   Edit Bio
                 </Button>
+                }
                 <Dialog open={open2} onClose={handleClose2}>
                   <DialogTitle>Enter your new bio</DialogTitle>
                   <DialogContent>

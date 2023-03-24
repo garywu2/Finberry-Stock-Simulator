@@ -66,7 +66,7 @@ function App() {
               <Route path="/Register" element={<RegisterPage />} />
               <Route path="/PasswordReset" element={<PasswordResetPage />} />
               <Route path="/Articles" element={<ArticlesPage />} />
-              <Route path="/Profile" element={<ProfilePage />} />
+              <Route path="/Profile/:email" element={<ProfilePage />} />
               <Route path="/SimulatorPortfolio" element={<SimulatorPortfolioPage />} />
               <Route path="/GamePortfolio" element={<GamePortfolioPage />} />
               <Route path="/Leaderboards" element={<LeaderboardsPage />} />

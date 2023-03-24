@@ -62,7 +62,7 @@ const RegisterPage = () => {
               console.log(servResult);
               setError("");
               setSignupState(defaultValues);
-              navigate("/profile");
+              navigate("/profile/" + signupState.email);
             })
             .catch((e: any) => {
               setError(e.response.data.msg);
@@ -221,7 +221,7 @@ const RegisterPage = () => {
             </Grid>
           </Box>
         ) : (
-          <Navigate to='/profile'></Navigate>
+          <Navigate to={'/profile/' + user.email}></Navigate>
         )}
       </Container>
     </div>

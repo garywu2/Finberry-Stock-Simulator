@@ -39,7 +39,7 @@ const LoginPage = () => {
           console.log(servResult);
           setError("");
           setLoginState(defaultValues);
-          navigate("/profile");
+          navigate("/profile/" + loginState.email);
         })
         .catch((e: any) => {
           setError(e.message);
@@ -141,7 +141,7 @@ const LoginPage = () => {
             </Grid>
           </Box>
         ) : (
-          <Navigate to='/profile'></Navigate>
+          <Navigate to={'/profile/' + user.Email}></Navigate>
         )}
       </Container>
     </div>

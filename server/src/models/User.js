@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     avatar: {
         type: String,
         required: false,
-        default: "", // Image link: OUR DB like league avatar
+        default: "../../images/avatars/icons8-badger-100.png", // Image link: OUR DB like league avatar
     },
     theme: { 
         type: Number,
