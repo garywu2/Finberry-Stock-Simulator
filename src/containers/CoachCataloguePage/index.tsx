@@ -16,13 +16,12 @@ import {
   } from '@mui/material';
 import axios from 'axios';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import UserContext from '../../context/user'
+import UserContext from '../../context/user';
+import Title from '../../components/Title';
 
 const CoachCataloguePage = () => {
   const [coaches, setCoaches] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortParam, setSortParam] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
   const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/";
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -46,19 +45,28 @@ const CoachCataloguePage = () => {
 
   return (
     <Container
+    sx={{
+        minHeight: '100vh',
+        minWidth: '100%',
+        borderRadius: '3rem',
+        marginBottom: '1rem',
+        paddingTop: '5rem',
+      }}>
+    <Title>Coach Catalogue</Title>
+    <Container
         sx={{
           backgroundColor: 'white',
           minHeight: '100vh',
           minWidth: '100%',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: 'baseline',
+          justifyContent: 'flex-start',
           borderRadius: '3rem',
           boxShadow: '0 4px 15px -6px black',
           marginBottom: '1rem',
-          paddingTop: '5rem',
           paddingBottom: '2rem',
           overflow: 'auto',
+          paddingTop: '1rem',
         }}
       >
       <Table size='small'>
@@ -85,6 +93,7 @@ const CoachCataloguePage = () => {
               ))}
             </TableBody>
             </Table>
+    </Container>
     </Container>
   );
 };
