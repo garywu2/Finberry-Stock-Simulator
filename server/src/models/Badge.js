@@ -5,13 +5,17 @@ const badgeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    type: {
+        type: String,
+        required: true,
+    },
     description: {
         type: String,
         required: true,
     },
     image: {
-        data: String,
-        required: true,
+        type: String,
+        required: false,
     },
     enabled: {
         type: Boolean,

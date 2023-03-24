@@ -12,13 +12,14 @@ const userBadgeSchema = new mongoose.Schema({
         required: true,
     },
     retracted: {
-        data: Boolean,
+        type: Boolean,
         required: true,
-        default: false
+        default: false,
     },
     displayPosition: {
         type: Number,
         required: true,
+        default: 0,
     },
     dateEarned: {
         type: Date,

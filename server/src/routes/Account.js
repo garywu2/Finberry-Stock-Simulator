@@ -18,7 +18,9 @@ const   User                =   mongoose.model("User"),
         CoachingCoach       =   mongoose.model("CoachingCoach"),
         CoachingSession     =   mongoose.model("CoachingSession"),
         ChatMessage         =   mongoose.model("ChatMessage"),
-        PaymentHistory      =   mongoose.model("PaymentHistory");
+        PaymentHistory      =   mongoose.model("PaymentHistory"),
+        Badge               =   mongoose.model("Badge"),
+        UserBadge           =   mongoose.model("UserBadge");
 
 /* #region Helper Functions */
 
@@ -68,13 +70,54 @@ async function deepDeleteUser(user_id) {
 
     // Delete all associated coaching profiles
     userRemoved.coachingProfiles.forEach(async (coachingProfileID) => {
-        // await CoachingProfile.deleteOne( {_id: coachingProfileID});
         await deepDeleteCoachingProfile(coachingProfileID);
     });
+
+    // Delete all attached UserBadges
+    userRemoved.badges.forEach(async (userBadgeID) => {
+        await deepDeleteUserBadge(userBadgeID);
+    });
+
+    // TODO: Remove all CoachingCoach and other cascading - user owned variables
 
     // Might want to also remove simulator reference such as SimulatorEnrollment but its ok if thats not deleted.
     // Since we might want to keep it in the leaderboard but say deleted user instead. But realistically, we should
     // never delete user.
+}
+
+// Badge
+async function deepDeleteBadge(badgeID) {
+    await Badge.findByIdAndRemove(badgeID);
+
+    // Delete all associated UserBadge
+    try {
+        const userBadges = await UserBadge.find({ badgeType: badgeID });
+        userBadges.forEach(async (userBadge) => {
+            await deepDeleteUserBadge(userBadge._id);
+        });
+    } catch (e) {
+    }
+}
+
+// UserBadge
+async function deepDeleteUserBadge(userBadgeID) {
+    let userBadgeRemoved = await UserBadge.findByIdAndRemove(userBadgeID);
+
+    let userID = userBadgeRemoved.user;
+
+    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
+    try {
+        const user = await User.findById(userID);
+        if (!user) {
+            return; 
+        }
+        const index = user.badges.indexOf(userBadgeID);
+        if (index > -1) { // only splice array when item is found
+            user.badges.splice(index, 1); // 2nd parameter means remove one item only
+        }
+        await user.save();
+    } catch (e) {
+    }
 }
 
 // Coaching Profile
@@ -240,10 +283,10 @@ router.post("/user", async (req, res) => {
         phoneNumber: req.body.phoneNumber,
         dateOfBirth: req.body.dateOfBirth,
         permissionLevel: req.body.permissionLevel,
+        premiumTier: req.body.premiumTier,
         createdAt: Date.now(),
-        dateLastUpdated: Date.now(),
-        profile: -1,
-    };
+        dateLastUpdated: Date.now()
+        };
 
     if (
         !newUser.username ||
@@ -282,7 +325,7 @@ router.get("/user", async (req, res) => {
         let basicMode = requestingTrueFalseParam(req.query, "basicMode");
         if (basicMode == true) {
             // Only show important information
-            const rawUsers = await User.find(parseRequestParams(req.query, User), {email:1,username:1,premiumExpiryDate:1,permissionLevel:1,coachingProfiles:1});
+            const rawUsers = await User.find(parseRequestParams(req.query, User), {email:1,username:1,premiumExpiryDate:1,permissionLevel:1,coachingProfiles:1,premiumTier:1});
 
             rawUsers.forEach((user) => {
                 // Create a new tailored user to only return desired information.
@@ -300,6 +343,10 @@ router.get("/user", async (req, res) => {
                 }
 
                 tailoredUser.isPremium = isPremium;
+
+                if (isPremium) { // If is premium, also show the tier that they are premium
+                    tailoredUser.premiumTier = user[premiumTier];
+                }
 
                 // Add this tailored user to a list of all tailored users for return.
                 users.push(tailoredUser);
@@ -501,6 +548,266 @@ router.delete("/user", async (req, res) => {
 });
 
 /* #endregion */
+
+
+
+/* #region Badge */
+
+// POST - New Badge
+router.post("/badge", async (req, res) => {
+    let newBadge = {
+        displayName: req.body.displayName,
+        type: req.body.type,
+        description: req.body.description,
+        image: req.body.image,
+        enabled: req.body.enabled
+    };
+
+    if (
+        !newBadge.displayName ||
+        !newBadge.type ||
+        !newBadge.description
+    ) {
+        return res.status(400).json({ msg: "Badge is missing one or more required field(s)" });
+    }
+
+    try {
+        const dbBadge = new Badge(newBadge);
+        await dbBadge.save();
+        return res.json(dbBadge);
+    } catch (e) {
+      return res.status(400).json({ msg: "Failed to create Badge: " + e.message });
+    }
+});
+
+// GET - returns a list of badges with specific params
+router.get("/badge", async (req, res) => {
+    try {
+        let badges = await Badge.find(parseRequestParams(req.query, Badge));
+
+        res.json(badges);
+        } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+})
+
+// PUT - Badge - By ID
+router.put("/badge/:badgeID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+    if (!req.params.badgeID) {
+        return res.status(400).json({ msg: "Badge ID is missing" });
+    }
+
+    try {
+        const badge = await Badge.findById(req.params.badgeID);
+        if (!badge) {
+            return res.status(400).json({ msg: "Badge with provided ID not found" });
+        }
+
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                badge[key] = newAttrs[key]; // Admin access, complete changes
+            }
+            else {
+                if (!['_id'].includes(key)) {
+                    badge[key] = newAttrs[key];
+                }
+            }
+        });
+
+        await badge.save();
+        res.json(badge);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE Badge by ID - Deep Delete - Also deletes all associated user Badges
+router.delete("/badge/:badgeID", async (req, res) => {
+    if (!req.params.badgeID) {
+        return res.status(400).json({ msg: "Badge ID is missing" });
+    }
+
+    try {
+        const badge = await Badge.findById(req.params.badgeID);
+        if (!badge) {
+            return res.json({ acknowledged: true, deletedCount: 0 });
+        }
+        
+        await deepDeleteBadge(badge._id);
+
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
+      } catch (e) {
+        return res.status(400).json({ msg: "Badge deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL Badges (IN REVERSIBLE - DEBUG ONLY!!!!) - Shallow (Kinda) - Unsure
+router.delete("/badge", async (req, res) => {
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let allBadges = await Badge.find();
+    
+            allBadges.forEach(async (badge) => {
+                await deepDeleteBadge(badge._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: allBadges.length });
+          } catch (e) {
+            return res.status(400).json({ msg: "Badges deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
+    }
+});
+
+/* #endregion */
+
+
+
+/* #region UserBadge */
+
+// POST - New UserBadge
+router.post("/userbadge", async (req, res) => {
+    let newUserBadge = {
+        user: req.body.user,
+        badgeType: req.body.badgeType,
+        retracted: req.body.retracted,
+        displayPosition: req.body.displayPosition,
+        dateEarned: Date.now()
+    };
+    
+    if (req.body.dateEarned) { // Set to date now but default but can be overriten.
+        newUserBadge.dateEarned = req.body.dateEarned;
+    }
+
+    if (
+        !newUserBadge.user ||
+        !newUserBadge.badgeType
+    ) {
+        return res.status(400).json({ msg: "UserBadge is missing one or more required field(s)" });
+    }
+
+    try {
+        const badge = await Badge.findById(newUserBadge.badgeType);
+        if (!badge) {
+            return res.status(400).json({ msg: "Badge of the ID of input Badge Type do not exist" });
+        }
+
+        const user = await User.findById(newUserBadge.user);
+        if (!user) {
+            return res.status(400).json({ msg: "User of the input ID do not exist" });
+        }
+
+        const dbUserBadge = new UserBadge(newUserBadge);
+        await dbUserBadge.save();
+        
+        try {
+            // Save user with change
+            user.badges.push(dbUserBadge);
+            await user.save();
+        } catch (e) {
+            return res.status(400).json({ msg: "Failed to save newly created profile to user." + e.message });
+        }
+
+        return res.json(dbUserBadge);
+    } catch (e) {
+      return res.status(400).json({ msg: "Failed to create UserBadge: " + e.message });
+    }
+});
+
+// GET - returns a list of UserBadge with specific params
+router.get("/userbadge", async (req, res) => {
+    try {
+        let userBadge;
+        if (requestingTrueFalseParam(req.query, "moreDetails") == true) {
+            userBadge = await UserBadge.find(parseRequestParams(req.query, UserBadge)).populate("badgeType");
+        }
+        else {
+            userBadge = await UserBadge.find(parseRequestParams(req.query, UserBadge));
+        }
+
+        res.json(userBadge);
+
+        } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+})
+
+// PUT - UserBadge - By ID
+router.put("/userbadge/:userbadgeID", async (req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+    if (!req.params.userbadgeID) {
+        return res.status(400).json({ msg: "UserBadge ID is missing" });
+    }
+
+    try {
+        const userBadge = await UserBadge.findById(req.params.userbadgeID);
+        if (!userBadge) {
+            return res.status(400).json({ msg: "UserBadge with provided ID not found" });
+        }
+
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                userBadge[key] = newAttrs[key]; // Admin access, complete changes
+            }
+            else {
+                if (!['_id'].includes(key)) {
+                    userBadge[key] = newAttrs[key];
+                }
+            }
+        });
+
+        await userBadge.save();
+        res.json(userBadge);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE UserBadge by ID - Deep Delete - Also deletes all associated user Badges
+router.delete("/userbadge/:userbadgeID", async (req, res) => {
+    if (!req.params.userbadgeID) {
+        return res.status(400).json({ msg: "UserBadge ID is missing" });
+    }
+
+    try {
+        const userBadge = await UserBadge.findById(req.params.userbadgeID);
+        if (!userBadge) {
+            return res.json({ acknowledged: true, deletedCount: 0 });
+        }
+        
+        await deepDeleteUserBadge(userBadge._id);
+
+        return res.json({ acknowledged: true, deletedCount: 1, deepDelete: true });
+      } catch (e) {
+        return res.status(400).json({ msg: "UserBadge deletion failed: " + e.message });
+    }
+});
+
+// DELETE ALL UserBadge (IN REVERSIBLE - DEBUG ONLY!!!!) - Shallow (Kinda) - Unsure
+router.delete("/userbadge", async (req, res) => {
+    if (process.env.REACT_APP_DEVELOPMENT == "true") { // Development level permission
+        try {
+            let allUserBadges = await UserBadge.find();
+    
+            allUserBadges.forEach(async (userBadge) => {
+                await deepDeleteUserBadge(userBadge._id);
+            });
+    
+            return res.json({ acknowledged: true, deletedCount: allUserBadges.length });
+          } catch (e) {
+            return res.status(400).json({ msg: "UserBadge deletions failed: " + e.message });
+        }
+    } else {
+        return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
+    }
+});
+
+/* #endregion */
+
 
 
 
