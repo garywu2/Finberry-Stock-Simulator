@@ -25,7 +25,9 @@ if (process.env.REACT_APP_DEVELOPMENT == "true") {
   console.log("Developement mode is Enabled.");
 }
 
-const DB = process.env.REACT_APP_DB || "mongodb://localhost/finberry";
+// Emergency fix until we can change .env for vercel server.
+// const DB = process.env.REACT_APP_DB || "mongodb://localhost/finberry";
+const DB = process.env.DB || "mongodb://localhost/finberry";
 mongoose.connect(DB, () => {
   console.log("Database Connected");
 });
