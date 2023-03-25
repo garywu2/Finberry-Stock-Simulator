@@ -21,6 +21,9 @@ require("./src/models/CoachingProfile");
 // Setup environmental variable
 require('dotenv').config();
 
+// Emergency fix until we can change .env for vercel server.
+process.env.REACT_APP_DB = process.env.DB;
+
 if (process.env.REACT_APP_DEVELOPMENT == "true") {
   console.log("Developement mode is Enabled.");
 }
