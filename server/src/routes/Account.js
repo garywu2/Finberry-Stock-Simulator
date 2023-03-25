@@ -58,6 +58,23 @@ function requestingSpecificParam(reqParams, desiredParam) {
     return null;
 }
 
+// If enforceSingleOutput is set to false, simply respond with entries, otherwise:
+// Returns response if the size of the entries is 1. Else return a 400 message and show error Otherwise.
+function autoManageOutput(response, reqParams, entries, entryTypeName) {
+    // To account for enforcingSingleOutput options
+    if (requestingTrueFalseParam(reqParams, "enforceSingleOutput") == true) {
+        if (entries.length == 1) {
+            return response.json(entries[0]);
+        }
+        else {
+            return response.status(400).json({ msg: "Incorrect number of " + entryTypeName + " found based on query parameters.", foundNumberOfEntries: entries.length });
+        }
+    }
+    else {
+        response.json(entries);
+    }
+}
+
 /* #endregion */
 
 
@@ -414,7 +431,7 @@ router.get("/user", async (req, res) => {
             }
         }
 
-        res.json(users);
+        return autoManageOutput(res, req.query, users, "User");
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
@@ -637,8 +654,8 @@ router.post("/badge", async (req, res) => {
 router.get("/badge", async (req, res) => {
     try {
         let badges = await Badge.find(parseRequestParams(req.query, Badge));
-
-        res.json(badges);
+        
+        return autoManageOutput(res, req.query, badges, "Badge");
         } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
@@ -781,9 +798,8 @@ router.get("/userbadge", async (req, res) => {
             userBadge = await UserBadge.find(parseRequestParams(req.query, UserBadge));
         }
 
-        res.json(userBadge);
-
-        } catch (e) {
+        return autoManageOutput(res, req.query, userBadge, "UserBadge");
+    } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
 })
@@ -944,7 +960,6 @@ router.post("/coaching", async (req, res) => {
 // GET - returns a list of coaching profile with specific params
 router.get("/coaching", async (req, res) => {
     try {
-        // return res.json(coachingProfiles);
         let params = parseRequestParams(req.query, CoachingProfile);
 
         // Deal with special query
@@ -982,7 +997,7 @@ router.get("/coaching", async (req, res) => {
             coachingProfiles = await CoachingProfile.find(params, showHideParams);
         }
 
-        return res.json(coachingProfiles);
+        return autoManageOutput(res, req.query, coachingProfiles, "CoachingProfile");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -1148,7 +1163,7 @@ router.get("/review", async (req, res) => {
             reviews = await Review.find(parseRequestParams(req.query, Review));
         }
 
-        return res.json(reviews);
+        return autoManageOutput(res, req.query, reviews, "Reviews");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -1536,7 +1551,7 @@ router.get("/coachingSession", async (req, res) => {
     try {
         let coachingSessions = await CoachingSession.find(parseRequestParams(req.query, CoachingSession));
 
-        return res.json(coachingSessions);
+        return autoManageOutput(res, req.query, coachingSessions, "CoachingSession");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -1624,7 +1639,7 @@ router.get("/CoachingClient", async (req, res) => {
     try {
         let coachingClients = await CoachingClient.find(parseRequestParams(req.query, CoachingClient));
 
-        return res.json(coachingClients);
+        return autoManageOutput(res, req.query, coachingClients, "CoachingClient");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -1702,7 +1717,7 @@ router.get("/CoachingCoach", async (req, res) => {
     try {
         let coachingCoachs = await CoachingCoach.find(parseRequestParams(req.query, CoachingCoach));
 
-        return res.json(coachingCoachs);
+        return autoManageOutput(res, req.query, coachingCoachs, "CoachingCoach");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -1773,7 +1788,7 @@ router.delete("/CoachingCoach", async (req, res) => {
 /* #region Chat Message */
 
 // Chat Message
-// POST - Post a new chat message
+// POST - Post a new chat message 
 router.post("/ChatMessage", async (req, res) => {
     if (!req.body.email) {
         return res.status(400).json({ msg: "Email is missing" });
@@ -1837,12 +1852,12 @@ router.post("/ChatMessage", async (req, res) => {
     }
 });
 
-// GET - Chat Message based on parameters
+// GET - Chat Message based on parameters - In descending order (Newest first)
 router.get("/ChatMessage", async (req, res) => {
     try {
-        let chatMessages = await ChatMessage.find(parseRequestParams(req.query, ChatMessage));
+        let chatMessages = await ChatMessage.find(parseRequestParams(req.query, ChatMessage)).sort({timeSend:-1});
 
-        return res.json(chatMessages);
+        return autoManageOutput(res, req.query, chatMessages, "ChatMessage");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -1924,7 +1939,7 @@ router.get("/PaymentHistory", async (req, res) => {
     try {
         let paymentHistories = await PaymentHistory.find(parseRequestParams(req.query, PaymentHistory));
 
-        return res.json(paymentHistories);
+        return autoManageOutput(res, req.query, paymentHistories, "PaymentHistory");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
