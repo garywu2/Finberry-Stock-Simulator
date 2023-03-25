@@ -1,11 +1,11 @@
 import React from 'react';
-import { MenuItem, Menu, IconButton, Toolbar, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
-import FirebaseContext from "../../context/firebase";
-import UserContext from "../../context/user";
-import { useContext, useState } from "react";
-import { signOut } from "firebase/auth";
-import { Navigate, useNavigate } from "react-router-dom";
+import { MenuItem, Menu, IconButton } from '@mui/material'
+import { Link } from 'react-router-dom'
+import FirebaseContext from '../../context/firebase'
+import UserContext from '../../context/user'
+import { useContext, useState } from 'react'
+import { signOut } from 'firebase/auth'
+import { useNavigate } from 'react-router-dom'
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 
