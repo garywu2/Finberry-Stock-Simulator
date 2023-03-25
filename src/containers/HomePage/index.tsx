@@ -310,7 +310,7 @@ const HomePage = () => {
           </Container>
         </div>
       ) : (
-        <Navigate to='/profile'></Navigate>
+        <Navigate to={'/profile/' + user.email}></Navigate>
       )}
     </div>
   )

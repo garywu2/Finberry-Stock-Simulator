@@ -14,10 +14,10 @@ interface Props {
     isAuthenticated: boolean;
 };
 
-const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Logout', url: '/logout' }];
+const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Coach Catalogue', url: '/CoachCatalogue' }, { title: 'Logout', url: '/logout' }];
 const links2 = [{ title: 'Login', url: '/login' }, { title: 'Register', url: '/register' }];
 
-const authLinks = (handleSubmit: any, error: any) => (
+const authLinks = (handleSubmit: any, error: any, email: String) => (
     <>
         <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
             {error && <Typography color='red'>{error}</Typography>}
@@ -31,7 +31,7 @@ const authLinks = (handleSubmit: any, error: any) => (
                         backgroundColor: 'secondary.dark',
                     }
                 }}
-                component={Link} to='/profile'>
+                component={Link} to={'/profile/' + email }>
                 Profile
             </Button>
             {error && <Typography color='red'>{error}</Typography>}
@@ -47,6 +47,19 @@ const authLinks = (handleSubmit: any, error: any) => (
                 }}
                 component={Link} to='/SimulatorPortfolio'>
                 Simulator
+            </Button>
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/CoachCatalogue'>
+                Coach Catalogue
             </Button>
             {error && <Typography color='red'>{error}</Typography>}
             <Button
@@ -108,7 +121,7 @@ const guestLinks = (
 
 const Header: React.FC<Props> = ({ isAuthenticated }) => {
     const { auth } = useContext(FirebaseContext);
-    const { user } = useContext(UserContext);
+    const { user } = useContext(UserContext); 
 
     const [error, setError] = useState("");
 
@@ -139,7 +152,7 @@ const Header: React.FC<Props> = ({ isAuthenticated }) => {
                         <img src={BerryLogo} alt="Finberry Logo" style={{ flexGrow: 1, height: '100%' }} />
                     </Link>
                 </Box>
-                {isAuthenticated ? authLinks(handleSumbit, error) : guestLinks}
+                {isAuthenticated ? authLinks(handleSumbit, error, user.email) : guestLinks}
             </Toolbar>
         </AppBar>
     );
