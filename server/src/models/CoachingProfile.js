@@ -29,7 +29,7 @@ const coachingProfileSchema = new mongoose.Schema({
     },
     requestJustification: {
         type: String,
-        required: false,
+        required: true,
     },
     requestResponse: {
         id: {

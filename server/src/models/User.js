@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    email: { // Each user is unique (From firebase)
+    email: { // Each user is unique (From firebase).
         type: String,
         required: true,
         unique: true
     },
-    username: {
+    username: { // Each user has an unique username.
         type: String,
         required: true,
         unique: true
@@ -31,7 +31,12 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: false,
     },
-    permissionLevel: { // Let 0 be base permission, 1 be moderator, 2 be administrator, and 3 be master authority 
+    permissionLevel: { // Let 0 be base permission, 1 be moderator, 2 be administrator, and 3 be master authority, the order may be re-arranged as needed.
+        type: Number,
+        required: true,
+        default: 0
+    },
+    premiumTier: { // Let 1 basic plan (or plus plan), 2 be Enterprise Plan, the order may be re-arranged as needed.
         type: Number,
         required: true,
         default: 0
@@ -95,7 +100,7 @@ const userSchema = new mongoose.Schema({
         default: []
     },
     badges: { // Not implemented yet
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "UserBadges" }],
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "UserBadge" }],
         required: true,
         default: []
     },
@@ -105,7 +110,7 @@ const userSchema = new mongoose.Schema({
         default: []
     },
     premiumPaymentHistory: { // Not implemented yet
-        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PremiumPaymentHistory" }],
+        type: [{ type: mongoose.SchemaTypes.ObjectID, ref: "PaymentHistory" }],
         required: true,
         default: []
     },

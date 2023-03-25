@@ -9,10 +9,15 @@ const paymentHistorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    paymentReason: {
+        type: String,
+        required: true,
+        default: "Unspecified",
+    },
     payeeID: {
         type: mongoose.SchemaTypes.ObjectID,
         ref: "User",
-        required: true,
+        // required: true, // No longer required, as we can also accept payment for premium user
     },
     payerID: {
         type: mongoose.SchemaTypes.ObjectID,
@@ -25,7 +30,7 @@ const paymentHistorySchema = new mongoose.Schema({
     },
     transactionDate: {
         type: Date,
-        required: true
+        required: true,
     },
 });
 

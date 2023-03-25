@@ -69,8 +69,8 @@ const ProfilePage = () => {
         method: 'put',
         url:
           route +
-          'account/user/' +
-          String(email),
+          'account/user/email/' +
+          String(user.email),
         headers: {},
         data: {
           avatar: String(event.currentTarget.value)
@@ -87,15 +87,19 @@ const ProfilePage = () => {
         method: 'put',
         url:
           route +
-          'account/user/' +
-          String(email),
+          'account/user/email/' +
+          String(user.email),
         headers: {},
         data: {
           bio: bioText
         }
       }).then((result: any) => {
-        axios.get(route + 'account/user/' + String(email)).then((response) => {
-          setUserItem(response.data);
+        axios.get(route + 'account/user', {
+          params: {
+            email: String(user.email)
+          }
+        }).then((response) => {
+          setUserItem(response.data[0]);
         })
       });
 
@@ -107,9 +111,13 @@ const ProfilePage = () => {
     }
 
     React.useEffect(() => {
-      axios.get(route + 'account/user/' + String(email)).then((response) => {
-        setUserItem(response.data);
-        setCurrImg(response.data.avatar);
+      axios.get(route + 'account/user', {
+        params: {
+          email: String(user.email)
+        }
+      }).then((response) => {
+        setUserItem(response.data[0]);
+        setCurrImg(response.data[0].avatar);
       })
     }, [email]);
 

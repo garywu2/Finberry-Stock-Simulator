@@ -15,6 +15,14 @@ const simulatorEnrollmentSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    lastCalculatedTotal: {
+        type: Number,
+        required: false,
+    },
+    lastCalculatedTotalDate: {
+        type: Date,
+        required: false,
+    },
     joinDate: {
         type: Date,
         required: true,
