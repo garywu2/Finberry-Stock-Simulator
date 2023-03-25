@@ -31,7 +31,12 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: false,
     },
-    permissionLevel: { // Let 0 be base permission, 1 be moderator, 2 be administrator, and 3 be master authority 
+    permissionLevel: { // Let 0 be base permission, 1 be moderator, 2 be administrator, and 3 be master authority, the order may be re-arranged as needed.
+        type: Number,
+        required: true,
+        default: 0
+    },
+    premiumTier: { // Let 1 basic plan (or plus plan), 2 be Enterprise Plan, the order may be re-arranged as needed.
         type: Number,
         required: true,
         default: 0
@@ -45,7 +50,7 @@ const userSchema = new mongoose.Schema({
     avatar: {
         type: String,
         required: false,
-        default: "", // Image link: OUR DB like league avatar
+        default: " ", // Image link: OUR DB like league avatar
     },
     theme: { 
         type: Number,

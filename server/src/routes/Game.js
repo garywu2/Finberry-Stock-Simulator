@@ -53,6 +53,23 @@ function requestingSpecificParam(reqParams, desiredParam) {
     return null;
 }
 
+// If enforceSingleOutput is set to false, simply respond with entries, otherwise:
+// Returns response if the size of the entries is 1. Else return a 400 message and show error Otherwise.
+function autoManageOutput(response, reqParams, entries, entryTypeName) {
+    // To account for enforcingSingleOutput options
+    if (requestingTrueFalseParam(reqParams, "enforceSingleOutput") == true) {
+        if (entries.length == 1) {
+            return response.json(entries[0]);
+        }
+        else {
+            return response.status(400).json({ msg: "Incorrect number of " + entryTypeName + " found based on query parameters.", foundNumberOfEntries: entries.length });
+        }
+    }
+    else {
+        response.json(entries);
+    }
+}
+
 /* #endregion */
 
 
@@ -228,7 +245,7 @@ router.get("/simulator", async (req, res) => {
             simulators = await Simulator.find(parseRequestParams(req.query, Simulator));
         }
 
-        return res.json(TailorSimulatorList(simulators, moreDetails));
+        return autoManageOutput(res, req.query, TailorSimulatorList(simulators, moreDetails), "Simulator");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
     }
@@ -381,7 +398,7 @@ router.get("/simulatorEnrollment", async (req, res) => {
             simulatorEnrollments = await SimulatorEnrollment.find(parseRequestParams(req.query, SimulatorEnrollment));
         }
 
-        return res.json(simulatorEnrollments);
+        return autoManageOutput(res, req.query, simulatorEnrollments, "simulatorEnrollment");
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
@@ -702,7 +719,8 @@ router.get("/holding", async (req, res) => {
         }
 
         const holdings = await Holding.find(params);
-        return res.json(holdings);
+
+        return autoManageOutput(res, req.query, holdings, "Holding");
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
@@ -822,7 +840,8 @@ router.get("/tradeTransaction", async (req, res) => {
         }
 
         const tradeTransactions = await TradeTransaction.find(params).sort({transactionTime:1});
-        return res.json(tradeTransactions);
+        
+        return autoManageOutput(res, req.query, tradeTransactions, "TradeTransaction");
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }

@@ -42,6 +42,23 @@ function requestingTrueFalseParam(reqParams, desiredParam) {
   return false;
 }
 
+// If enforceSingleOutput is set to false, simply respond with entries, otherwise:
+// Returns response if the size of the entries is 1. Else return a 400 message and show error Otherwise.
+function autoManageOutput(response, reqParams, entries, entryTypeName) {
+  // To account for enforcingSingleOutput options
+  if (requestingTrueFalseParam(reqParams, "enforceSingleOutput") == true) {
+      if (entries.length == 1) {
+          return response.json(entries[0]);
+      }
+      else {
+          return response.status(400).json({ msg: "Incorrect number of " + entryTypeName + " found based on query parameters.", foundNumberOfEntries: entries.length });
+      }
+  }
+  else {
+      response.json(entries);
+  }
+}
+
 /* #endregion */
 
 
@@ -89,7 +106,7 @@ router.get("/article", async (req, res) => {
       articles = await Article.find(parseRequestParams(req.query, Article),{content:0});
     }
 
-    res.json(articles);
+    return autoManageOutput(res, req.query, articles, "Article");
   } catch (e) {
     return res.status(400).json({ msg: e.message });
   }
