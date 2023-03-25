@@ -55,8 +55,13 @@ const SimulatorPortfolioPage = () => {
   const simulators = ['All Time', 'Monthly', 'Weekly']
 
   React.useEffect(() => {
-    axios.get(route + 'account/user/' + String(user.email)).then((response) => {
-      setUserItem(response.data)
+    axios.get(route + 'account/user', {
+      params: {
+        email: String(user.email),
+        moreDetails: true
+      }
+    }).then((response) => {
+      setUserItem(response.data[0])
     })
   }, [])
 
@@ -116,14 +121,17 @@ const SimulatorPortfolioPage = () => {
       }
     }
 
-    if (simulatorExists) {
+    if (simulatorExists && userItem.simulatorEnrollments) {
       axios
         .get(
           route +
-            'game/tradeHistory/' +
-            userItem.simulatorEnrollments[simIndex].simulator._id +
-            '/' +
-            String(user.email)
+            'game/tradeTransaction',
+            {
+              params: {
+                email: String(user.email),
+                simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
+              }
+            }
         )
         .then((response) => {
           setTradeHistoryItems(response.data)
@@ -131,14 +139,17 @@ const SimulatorPortfolioPage = () => {
         })
     }
 
-    if (simulatorExists) {
+    if (simulatorExists && userItem.simulatorEnrollments) {
       axios
         .get(
           route +
-            'game/holding/' +
-            userItem.simulatorEnrollments[simIndex].simulator._id +
-            '/' +
-            String(user.email)
+            'game/holding',
+            {
+              params: {
+                email: String(user.email),
+                simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
+              }
+            }
         )
         .then((response) => {
           setHoldingsItems(response.data)
@@ -223,16 +234,24 @@ const SimulatorPortfolioPage = () => {
         },
       }).then((result: any) => {
         axios
-          .get(route + 'account/user/' + String(user.email))
+          .get(route + 'account/user', {
+            params: {
+              email: String(user.email),
+              moreDetails: true
+            }
+          })
           .then((response) => {
-            setUserItem(response.data)
+            setUserItem(response.data[0])
             axios
               .get(
                 route +
-                  'game/tradeHistory/' +
-                  userItem.simulatorEnrollments[simIndex].simulator._id +
-                  '/' +
-                  String(user.email)
+                  'game/tradeTransaction',
+                  {
+                    params: {
+                      email: String(user.email),
+                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
+                    }
+                  }
               )
               .then((response) => {
                 setTradeHistoryItems(response.data)
@@ -241,10 +260,13 @@ const SimulatorPortfolioPage = () => {
             axios
               .get(
                 route +
-                  'game/holding/' +
-                  userItem.simulatorEnrollments[simIndex].simulator._id +
-                  '/' +
-                  String(user.email)
+                  'game/holding',
+                  {
+                    params: {
+                      email: String(user.email),
+                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
+                    }
+                  }
               )
               .then((response) => {
                 setHoldingsItems(response.data)
@@ -276,16 +298,24 @@ const SimulatorPortfolioPage = () => {
         },
       }).then((result: any) => {
         axios
-          .get(route + 'account/user/' + String(user.email))
+          .get(route + 'account/user', {
+            params: {
+              email: String(user.email),
+              moreDetails: true
+            }
+          })
           .then((response) => {
-            setUserItem(response.data)
+            setUserItem(response.data[0])
             axios
               .get(
                 route +
-                  'game/tradeHistory/' +
-                  userItem.simulatorEnrollments[simIndex].simulator._id +
-                  '/' +
-                  String(user.email)
+                  'game/tradeTransaction',
+                  {
+                    params: {
+                      email: String(user.email),
+                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
+                    }
+                  }
               )
               .then((response) => {
                 setTradeHistoryItems(response.data)
@@ -294,10 +324,13 @@ const SimulatorPortfolioPage = () => {
             axios
               .get(
                 route +
-                  'game/holding/' +
-                  userItem.simulatorEnrollments[simIndex].simulator._id +
-                  '/' +
-                  String(user.email)
+                  'game/holding',
+                  {
+                    params: {
+                      email: String(user.email),
+                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
+                    }
+                  }
               )
               .then((response) => {
                 setHoldingsItems(response.data)
@@ -430,7 +463,7 @@ const SimulatorPortfolioPage = () => {
                 <Balance
                   title='Buying Power'
                   amount={
-                    selectedSimulator && simulatorExists
+                    selectedSimulator && simulatorExists && userItem.simulatorEnrollments
                       ? userItem.simulatorEnrollments[simIndex].balance
                       : 0
                   }
@@ -449,7 +482,7 @@ const SimulatorPortfolioPage = () => {
                 <Balance
                   title='Portfolio Value'
                   amount={
-                    selectedSimulator && simulatorExists
+                    selectedSimulator && simulatorExists && userItem.simulatorEnrollments
                       ? userItem.simulatorEnrollments[simIndex].balance
                       : 0
                   }
