@@ -72,6 +72,15 @@ const userSchema = new mongoose.Schema({
         required: false,
         default: null,
     },
+    permittedToCoach: { // Indivate if the user may even be a coach or if it has been revoked. (To be implemented)
+        type: Boolean,
+        default: true
+    },
+    accountStatus: { // The status of an user account. (To be implemented)
+        type: Number,
+        required: true,
+        default: 0, // Number coded: 0 = default (Nothing wrong with account), 1 = User terminated, 2 = Admin Terminated
+    },
     privacySettings: { 
         personalProfile: {
             type: Boolean,
@@ -120,7 +129,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: []
     },
-
+    
     // Last updated date
     dateLastUpdated: {
         type: Date,
