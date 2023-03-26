@@ -1,6 +1,7 @@
 // Express and the routers
 const   express  =   require("express"),
         router   =   express.Router(),
+        url      =   require('url'),
         mongoose =   require("mongoose");
 
 module.exports  =   router;
@@ -925,6 +926,282 @@ router.delete("/tradeTransaction", async (req, res) => {
 
 /* #region BalanceCalculation (Leaderboard, current total balance (with stock taken into account), etc) */
 
-// WIP
+// Get stocks used by only simulator ID - redirect route
+router.get('/balancecalculation/stocksused/:simulatorID', function(req, res) {
+    res.redirect(url.format({
+    pathname: req.baseUrl + "/balancecalculation/stocksused/" + req.params.simulatorID + "/NA",
+    query: {
+        listFormat: req.query.listFormat,
+    }
+    }));
+});
+
+// Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
+router.get("/balancecalculation/stocksused/:simulatorID/:email", async (req, res) => {
+    let requireEmail = true;
+    if (!req.params.email || req.params.email == "NA") {
+        requireEmail = false;
+    }
+
+    if (!req.params.simulatorID) {
+        return res.status(400).json({ msg: "Simulator ID is missing" });
+    }
+
+    try {
+        const simulator = await Simulator.findById(req.params.simulatorID);
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found." });
+        }
+        
+        let simulatorEnrollmentQuery = {
+            simulator: simulator._id,
+        };
+
+        if (requireEmail) {
+            const user = await User.findOne({ email: req.params.email });
+            if (!user) {
+                return res.status(400).json({ msg: "User with provided Email not found." });
+            }
+
+            
+            simulatorEnrollmentQuery["user"] = user._id;
+        }
+
+        // Need to search up to find the SimulatorEnrollment of this simulator
+        const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentQuery);
+
+        // Setup holding param. (Parameter of holdings needed)
+        let holdingsParams = {
+            "simulatorEnrollment": [],
+            "quantity": {$gt : 0},
+        };
+
+        simulatorEnrollments.forEach((simulatorEnrollment) => {
+            holdingsParams["simulatorEnrollment"].push(simulatorEnrollment._id);
+        });
+
+        const holdings = await Holding.find(holdingsParams);
+
+
+        let stockDictionary = {};
+        holdings.forEach((holding) => {
+            let symbol = holding.symbol;
+            let index = holding.index;
+
+            if (!stockDictionary[index]) {
+                stockDictionary[index] = {};
+            }
+
+            stockDictionary[index][symbol] = 0;
+        });
+
+        if (requestingTrueFalseParam(req.query, "listFormat")) {
+            let stockList = [];
+
+            Object.keys(stockDictionary).forEach((index) => {
+                Object.keys(stockDictionary[index]).forEach((symbol) => {
+                    stockList.push({ index:index, symbol: symbol});
+                });
+            });
+
+            return res.json(stockList);
+        }
+
+        return res.json(stockDictionary);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+
+
+// Helper function for balance calculation
+// Return the numberical value of a simulator enrollment, return null if no
+// simulatorEnrollment of the ID was found. Function will break if stockDictionary does not possess required info as well.
+async function calculateSimulatorEnrollmentStockBalance(simulatorEnrollmentID, stockDictionary, missingPrices) {
+    let simulatorEnrollment = await SimulatorEnrollment.findById(simulatorEnrollmentID).populate(
+        {
+            path: "holdings",
+            select: "symbol index quantity",
+        }
+    );
+    
+    if (!simulatorEnrollment) {
+        return null;
+    }
+    
+    let stockBalance = 0;
+
+    if (!missingPrices) {
+        missingPrices = {};
+    }
+
+    // We can either go through the list of holdings in simulatorEnrollment after populating to get stock balance.
+    // OR we can query directly of Simulator enrollment for more relibility. Assuming nothing is broken, first option is easier.
+    // So lets go with the first option. (Asuming we properly manage adding to the holdings)
+    simulatorEnrollment.holdings.forEach((holding) => {
+        let index = holding.index;
+        let symbol = holding.symbol;
+        let quantity = holding.quantity;
+
+        let price = 0;
+
+        try {
+            price = Number(stockDictionary[index][symbol]);
+
+            if (isNaN(price)) {
+                if (!missingPrices[index]) {
+                    missingPrices[index] = {};
+                }
+
+                missingPrices[index][symbol] = "Invalid Price";
+            }
+            else {
+                let balance = quantity * price;
+
+                stockBalance += balance;
+            }
+        }
+        catch {
+            if (!missingPrices[index]) {
+                missingPrices[index] = {};
+            }
+            missingPrices[index][symbol] = "Missing Price";
+        }
+    });
+
+    return ({
+        stockBalance: stockBalance,
+        cashBalance: simulatorEnrollment.balance,
+        missingPrices: missingPrices,
+    });
+}
+
+// Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
+router.get("/balancecalculation/balance/simulatorenrollment/:simulatorEnrollmentID", async (req, res) => {
+    if (!req.params.simulatorEnrollmentID) {
+        return res.status(400).json({ msg: "SimulatorEnrollment ID is missing" });
+    }
+
+    try {
+        let priceInfo = await calculateSimulatorEnrollmentStockBalance(req.params.simulatorEnrollmentID, req.body);
+
+        if (!priceInfo) {
+            return res.status(400).json({ msg: "No SimulatorEnrollment with the provided ID was found." });
+        }
+
+        return res.json(priceInfo);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
+router.get("/balancecalculation/balance/simulatoremail/:simulatorID/:email", async (req, res) => {
+    if (!req.params.email) {
+        return res.status(400).json({ msg: "Email is missing" });
+    }
+
+    if (!req.params.simulatorID) {
+        return res.status(400).json({ msg: "Simulator ID is missing" });
+    }
+
+    try {
+        const simulator = await Simulator.findById(req.params.simulatorID);
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found." });
+        }
+        
+        const user = await User.findOne({ email: req.params.email });
+        if (!user) {
+            return res.status(400).json({ msg: "User with provided Email not found." });
+        }
+
+        const simulatorEnrollment = await SimulatorEnrollment.findOne({ user: user._id, simulator: simulator._id });
+        if (!simulatorEnrollment) {
+            return res.status(400).json({ msg: "No SimulatorEnrollment of the combination of user and simulator was found." });
+        }
+
+        return res.json(await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, req.body));
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// Calculate information for a leaderboard. This fills in the information of 
+// lastCalculatedTotal and lastCalculatedTotalDate in SimulatorEnrollment.
+router.post("/balancecalculation/balance/learderboard/:simulatorID", async (req, res) => {
+    if (!req.params.simulatorID) {
+        return res.status(400).json({ msg: "Simulator ID is missing" });
+    }
+
+    let stockInformationTime = req.body.stockInformationTime;
+    if (!stockInformationTime) {
+        return res.status(400).json({ msg: "No stockInformationTime is set in the body. This must be set for leaderboard calculations." });
+    }
+
+    try {
+        const simulator = await Simulator.findById(req.params.simulatorID);
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found." });
+        }
+
+        let stockDictionary = req.body.stockDictionary;
+        
+        let missingPrices = {};
+
+        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id });
+        simulatorEnrollments.forEach(async (simulatorEnrollment) => {
+
+            let priceInfo = await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, stockDictionary, missingPrices);
+
+            if (priceInfo) { // Should not be possible to not be found unless very specical circumstances. Adding this just in case.
+                let stockBalance = priceInfo.stockBalance;
+                let cashBalance =  priceInfo.cashBalance;
+
+                let totalBalance = Number(stockBalance) + Number(cashBalance);
+
+                simulatorEnrollment.lastCalculatedTotal = totalBalance;
+                simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
+
+                simulatorEnrollment.save();
+
+                missingPrices =  priceInfo.missingPrices; // Continue propagating
+            }
+        });
+
+        return res.json({ numberOfParticipatingUsers: simulatorEnrollments.length, missingPrices: missingPrices});
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// Get leaderboard of a simulator
+router.get("/balancecalculation/balance/learderboard/:simulatorID", async (req, res) => {
+    if (!req.params.simulatorID) {
+        return res.status(400).json({ msg: "Simulator ID is missing" });
+    }
+
+    try {
+        const simulator = await Simulator.findById(req.params.simulatorID); // Can be removed for efficientcy.
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found." });
+        }
+
+        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null } }, {user:1, joinDate:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1}).populate(
+            {
+                path: "user",
+                select: "_id email username",
+            }
+        ).sort({lastCalculatedTotal:-1});
+
+        return res.json(simulatorEnrollments);
+
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+
 
 /* #endregion */
