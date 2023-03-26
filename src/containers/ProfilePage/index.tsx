@@ -117,7 +117,9 @@ const ProfilePage = () => {
         }
       }).then((response) => {
         setUserItem(response.data[0]);
-        setCurrImg(response.data[0].avatar);
+        if(response.data[0]){
+          setCurrImg(response.data[0].avatar);
+        }
       })
     }, [email]);
 
@@ -139,7 +141,8 @@ const ProfilePage = () => {
         }}
       >
         <Container maxWidth='lg' sx={{ mt: 4, mb: 4 }}>
-          <Grid container spacing={3}>
+          { userItem ? (
+            <Grid container spacing={3}>
             <Grid item xs={12} md={4} lg={3}>
               <Paper
                 sx={{
@@ -148,7 +151,9 @@ const ProfilePage = () => {
                   flexDirection: 'column',
                   height: 240,
                 }}
-              >              
+              > 
+
+                           
                 <Avatar
                     sx={{ bgcolor: deepOrange[500], width: 120, height: 120}}
                     alt={userItem.firstName}
@@ -255,6 +260,10 @@ const ProfilePage = () => {
               </Paper>
             </Grid>
           </Grid>
+          ) : (
+            <></>
+          )}  
+          
         </Container>
       </Container>
     )
