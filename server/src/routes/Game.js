@@ -1,7 +1,9 @@
 // Express and the routers
 const   express  =   require("express"),
         router   =   express.Router(),
-        mongoose =   require("mongoose");
+        mongoose =   require("mongoose"),
+        schedule =   require('node-schedule'),
+        axios    =   require('axios');
 
 module.exports  =   router;
 
@@ -15,7 +17,8 @@ const   User                    =   mongoose.model("User"),
         Simulator               =   mongoose.model("Simulator"),
         SimulatorEnrollment     =   mongoose.model("SimulatorEnrollment"),
         Holding                 =   mongoose.model("Holding"),
-        TradeTransaction        =   mongoose.model("TradeTransaction");
+        TradeTransaction        =   mongoose.model("TradeTransaction"),
+        MarketMovers            =   mongoose.model("MarketMovers");
 
 /* #region Helper Functions */
 
@@ -170,8 +173,6 @@ async function deepDeleteTradeTransaction(toBeRemovedEntryID) {
 }
 
 /* #endregion */
-
-
 
 /* #region Simulator (Itself) */
 
@@ -916,6 +917,156 @@ router.delete("/tradeTransaction", async (req, res) => {
     } else {
         return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
+});
+
+
+/* #endregion */
+
+/* #region Market Movers */
+
+// POST - Create a new entry for market movers.
+router.post("/marketmovers", async (req, res) => {
+    let newEntry = {
+        symbol: req.body.symbol,
+        name: req.body.name,
+        exchange: req.body.exchange,
+        datetime: req.body.datetime,
+        last: req.body.last,
+        high: req.body.high,
+        low: req.body.low,
+        volume: req.body.volume,
+        change: req.body.change,
+        percent_change: req.body.percent_change,
+    };
+
+    if (!newEntry.symbol ||
+        !newEntry.name ||
+        !newEntry.exchange ||
+        !newEntry.datetime ||
+        !newEntry.last ||
+        !newEntry.high ||
+        !newEntry.low ||
+        !newEntry.change ||
+        !newEntry.percent_change
+    ) {
+        return res.status(400).json({ msg: "Entry is missing one or more required field(s)", entry: newEntry });
+    }
+
+    try {
+        let marketMovers = await MarketMovers.find();
+        if (marketMovers.length > 5 ) {
+            return res.status(400).json({ msg: "There should only be 5 market movers", marketMovers: marketMovers.length});
+        }
+        const dbMarketMovers = new MarketMovers(newEntry);
+        await dbMarketMovers.save();
+        return res.json(dbMarketMovers);
+    } catch (e) {
+        return res.status(400).json({ msg: "Failed to create an entry for market movers: " + e.message });
+    }
+});
+
+// GET market movers
+router.get("/marketmovers", async (req, res) => {
+    try {
+        let marketMovers = await MarketMovers.find();
+        if (marketMovers.length == 0 ) {
+            return res.status(400).json({ msg: "No market mover in db"});
+        }
+        return res.json(marketMovers);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE all market mover entries
+router.delete("/marketmovers", async (req, res) => {
+    try {
+        let statusMessage = await MarketMovers.deleteMany();
+        return res.json(statusMessage);
+    } catch (e) {
+        return res.status(400).json({ msg: "MarketMovers deletions failed: " + e.message });
+    }
+});
+
+// PUT request for market movers -- i realise we dont really need this, for the schedule job ill use delete and post
+router.put("/marketmovers", async(req, res) => {
+    const newAttrs = req.body;
+    const attrKeys = Object.keys(newAttrs);
+    
+    try {
+        let marketMovers = await MarketMovers.find();
+        if (marketMovers.length == 0 ) {
+            return res.status(400).json({ msg: "No market mover in db"});
+        }
+        let marketMover = marketMovers[0];
+
+        attrKeys.forEach((key) => {
+            if (process.env.REACT_APP_DEVELOPMENT == "true") {
+                marketMover[key] = newAttrs[key]; // Admin access, complete changes
+            } else {
+                if (!['_id'].includes(key)) {
+                    marketMover[key] = newAttrs[key];
+                }
+            }
+        });
+        await marketMover.save();
+        res.json(marketMover);
+    } catch (e) {
+      return res.status(400).json({ msg: e.message });
+    }
+});
+
+const route =
+  process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
+    ? 'http://localhost:5000/'
+    : 'https://finberry-stock-simulator-server.vercel.app/'
+
+// scheduling job to run the market movers api every day at 10 pm
+schedule.scheduleJob('0 22 * * * *', function(){
+    axios
+      .get(
+        `https://api.twelvedata.com/market_movers/stocks?apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}&outputsize=5`
+      )
+      .then((res) => {
+        axios({
+            method: 'delete',
+            url:
+              route +
+              'game/marketmovers',
+            headers: {},
+            data: {},
+          }).then((result) => {
+            for(let i = 0; i < res.data.values.length; i++) {
+                console.log(res.data.values[i]);
+                axios({
+                    method: 'post',
+                    url:
+                      route +
+                      'game/marketmovers',
+                    headers: {},
+                    data: {
+                        symbol: res.data.values[i].symbol,
+                        name: res.data.values[i].name,
+                        exchange: res.data.values[i].exchange,
+                        datetime: res.data.values[i].datetime,
+                        last: res.data.values[i].last,
+                        high: res.data.values[i].high,
+                        low: res.data.values[i].low,
+                        volume: res.data.values[i].volume,
+                        change: res.data.values[i].change,
+                        percent_change: res.data.values[i].percent_change,
+                    },
+                }).catch((error) => {
+                    console.log(error)
+                })
+            }
+          }).catch((error) => {
+            console.log(error)
+        });
+      })
+      .catch((error) => {
+        console.log(error)
+    })
 });
 
 
