@@ -34,49 +34,7 @@ interface StockData {
 const HomePage = () => {
   const { user } = useContext(UserContext)
   const navigate = useNavigate()
-  // const [stockData, setStockData] = useState<StockData[]>([])
-
-  const stockData = [
-    {
-      symbol: 'BSET',
-      name: 'Bassett Furniture Industries Inc',
-      exchange: 'NASDAQ',
-      mic_code: 'XNAS',
-      datetime: '2022-01-31 09:34:00',
-      last: 17.25,
-      high: 17.35,
-      low: 15.90999,
-      volume: 108297,
-      change: 3.31,
-      percent_change: 23.74462,
-    },
-    {
-      symbol: 'TWKS',
-      name: 'Thoughtworks Holding, Inc.',
-      exchange: 'NASDAQ',
-      mic_code: 'XNAS',
-      datetime: '2022-01-31 09:34:40',
-      last: 20.09,
-      high: 19.62999,
-      low: 18.29999,
-      volume: 392376,
-      change: 3.98,
-      percent_change: 20.84861,
-    },
-    {
-      symbol: 'RMED',
-      name: 'RA Medical Systems Inc',
-      exchange: 'NYSE',
-      mic_code: 'XNAS',
-      datetime: '2022-01-31 09:33:50',
-      last: 0.984,
-      high: 0.98519,
-      low: 0.984,
-      volume: 4480,
-      change: 0.159,
-      percent_change: 17.84511,
-    },
-  ]
+  const [stockData, setStockData] = useState<StockData[]>([])
 
   // useEffect(() => {
   //   axios
