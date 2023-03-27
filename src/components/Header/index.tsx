@@ -14,7 +14,7 @@ interface Props {
     isAuthenticated: boolean;
 };
 
-const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Coach Catalogue', url: '/CoachCatalogue' }, { title: 'Coach Registration', url: '/CoachRegistration' }, { title: 'Logout', url: '/logout' }];
+const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Coach Catalogue', url: '/CoachCatalogue' }, { title: 'Coach Portal', url: '/CoachPortal' }, { title: 'Coach Registration', url: '/CoachRegistration' }, { title: 'Logout', url: '/logout' }];
 const links2 = [{ title: 'Login', url: '/login' }, { title: 'Register', url: '/register' }];
 
 const authLinks = (handleSubmit: any, error: any, email: String) => (
@@ -60,6 +60,19 @@ const authLinks = (handleSubmit: any, error: any, email: String) => (
                 }}
                 component={Link} to='/CoachCatalogue'>
                 Coach Catalogue
+            </Button>
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to={'/CoachPortal/' + email}>
+                Coach Portal
             </Button>
             <Button
                 size='small'
