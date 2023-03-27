@@ -14,7 +14,7 @@ interface Props {
     isAuthenticated: boolean;
 };
 
-const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Coach Catalogue', url: '/CoachCatalogue' }, { title: 'Logout', url: '/logout' }];
+const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Coach Catalogue', url: '/CoachCatalogue' }, { title: 'Coach Registration', url: '/CoachRegistration' }, { title: 'Logout', url: '/logout' }];
 const links2 = [{ title: 'Login', url: '/login' }, { title: 'Register', url: '/register' }];
 
 const authLinks = (handleSubmit: any, error: any, email: String) => (
