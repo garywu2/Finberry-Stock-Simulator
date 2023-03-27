@@ -307,7 +307,7 @@ const CoachPortalPage = () => {
             }  
           </Grid>
           ) : (
-            <Typography variant='h4' align='left' fontWeight={400}>
+            <Typography variant='h4' align='left' fontWeight={400} color='white'>
                 If you submitted a Coach Registration request, it has not been approved yet.
             </Typography>
           )}  
