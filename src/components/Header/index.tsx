@@ -61,6 +61,19 @@ const authLinks = (handleSubmit: any, error: any, email: String) => (
                 component={Link} to='/CoachCatalogue'>
                 Coach Catalogue
             </Button>
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/CoachRegistration'>
+                Coach Registration
+            </Button>
             {error && <Typography color='red'>{error}</Typography>}
             <Button
                 size='small'
