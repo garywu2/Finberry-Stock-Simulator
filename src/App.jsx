@@ -89,7 +89,7 @@ function App() {
                 />
                 <Route path="/GamePortfolio" element={<GamePortfolioPage />} />
                 <Route path="/Leaderboards" element={<LeaderboardsPage />} />
-                <Route path="/CoachPortal" element={<CoachPortalPage />} />
+                <Route path="/CoachPortal/:email" element={<CoachPortalPage />} />
                 <Route
                   path="/CoachCatalogue"
                   element={<CoachCataloguePage />}
