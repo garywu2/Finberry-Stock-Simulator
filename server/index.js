@@ -17,6 +17,7 @@ require("./src/models/ChatMessage");
 require("./src/models/CoachingCoach");
 require("./src/models/CoachingClient");
 require("./src/models/CoachingProfile");
+require("./src/models/MarketMovers");
 
 // Setup environmental variable
 require('dotenv').config();
