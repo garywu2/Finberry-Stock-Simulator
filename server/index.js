@@ -40,6 +40,7 @@ const Accounts        =   require("./src/routes/Account"),
       Educational     =   require("./src/routes/Educational"),
       Game            =   require("./src/routes/Game"),
       Admin           =   require("./src/routes/Admin"),
+      Stock           =   require("./src/routes/Stock"),
       cors            =   require("cors");
 
 // import dailyRefresh from "./stock"
@@ -54,16 +55,12 @@ app.use(express.urlencoded({ extended: true }));
 // Perform and activate schedule tasks.
 const scheduleTasks =  require("./src/scheduleTasks");
 
-
-// Daily update functions - This is for calculating leaderboards, values, etc
-// TODO: Call this daily
-// dailyRefresh();
-
 //Routes
 app.use("/account", Accounts);
 app.use("/educational", Educational);
 app.use("/game", Game);
 app.use("/admin", Admin);
+app.use("/stock", Stock);
 
 // Launching Server
 const PORT = process.env.PORT || 5000;
