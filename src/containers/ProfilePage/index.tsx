@@ -108,9 +108,9 @@ const ProfilePage = () => {
           email: String(email)
         }
       }).then((response) => {
-        setUserItem(response.data[0]);
-        if(response.data[0]){
-          setCurrImg(response.data[0].avatar);
+        if (response?.data[0]) {
+          setUserItem(response.data[0])
+          setCurrImg(response.data[0].avatar)
         }
       })
   }, [email])
