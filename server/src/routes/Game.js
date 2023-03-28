@@ -1268,48 +1268,45 @@ router.post("/balancecalculation/balance/learderboard", async (req, res) => {
     try {
         const simulators = await Simulator.find({ hidden: false });
 
-        let simulatorEnrollmentQuery = {
-            simulator: [],
-        };
-
-        simulators.forEach(async (simulator) => {
-            simulatorEnrollmentQuery.simulator.push(simulator._id);
-        });
-
-        let stockDictionary = req.body.stockDictionary;
-        
         let missingPrices = {};
+        let stockDictionary = req.body.stockDictionary;
+        let totalNumberOfParticipatingUserEntries = 0;
+        for (const simulator of simulators) {
+            const simulatorID = simulator._id;
 
-        // Need to search up to find the SimulatorEnrollment of this simulator
-        const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentQuery);
-        for (const simulatorEnrollment of simulatorEnrollments) {
-            let priceInfo = await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, stockDictionary, missingPrices);
-            if (priceInfo) { // Should not be possible to not be found unless very specical circumstances. Adding this just in case.
-                let stockBalance = priceInfo.stockBalance;
-                let cashBalance =  priceInfo.cashBalance;
+            // Need to search up to find the SimulatorEnrollment of this simulator
+            const simulatorEnrollments = await SimulatorEnrollment.find({simulator: simulatorID});
+            for (const simulatorEnrollment of simulatorEnrollments) {
+                let priceInfo = await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, stockDictionary, missingPrices);
+                if (priceInfo) { // Should not be possible to not be found unless very specical circumstances. Adding this just in case.
+                    let stockBalance = priceInfo.stockBalance;
+                    let cashBalance =  priceInfo.cashBalance;
 
-                let totalBalance = Number(stockBalance) + Number(cashBalance);
+                    let totalBalance = Number(stockBalance) + Number(cashBalance);
 
-                simulatorEnrollment.lastCalculatedTotal = totalBalance;
-                simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
+                    simulatorEnrollment.lastCalculatedTotal = totalBalance;
+                    simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
 
-                missingPrices =  priceInfo.missingPrices; // Continue propagating
-            } else {
-                simulatorEnrollment.lastCalculatedTotal = -1;
-                simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
+                    missingPrices =  priceInfo.missingPrices; // Continue propagating
+                } else {
+                    simulatorEnrollment.lastCalculatedTotal = -1;
+                    simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
+                }
             }
+
+            let ranking = 1;
+            for (const simulatorEnrollment of simulatorEnrollments.sort(function(a, b) {
+                return parseFloat(b.lastCalculatedTotal) - parseFloat(a.lastCalculatedTotal);
+            })) {
+                simulatorEnrollment.lastCalculatedRanking = ranking;
+                ranking += 1;
+                simulatorEnrollment.save();
+            }
+
+            totalNumberOfParticipatingUserEntries += simulatorEnrollments.length;
         }
 
-        let ranking = 1;
-        for (const simulatorEnrollment of simulatorEnrollments.sort(function(a, b) {
-            return parseFloat(b.lastCalculatedTotal) - parseFloat(a.lastCalculatedTotal);
-        })) {
-            simulatorEnrollment.lastCalculatedRanking = ranking;
-            ranking += 1;
-            simulatorEnrollment.save();
-        }
-
-        return res.json({ totalNumberOfParticipatingUserEntries: simulatorEnrollments.length, missingPrices: missingPrices});
+        return res.json({ totalNumberOfParticipatingUserEntries: totalNumberOfParticipatingUserEntries, missingPrices: missingPrices});
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
