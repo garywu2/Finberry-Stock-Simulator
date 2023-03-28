@@ -119,7 +119,7 @@ async function getPricedStockInformation(stockDictionary) {
 }
 
 // Get stocks used by only simulator ID - redirect route
-router.get('/price_dictionary', async function(req, res) {
+router.put('/price_dictionary', async function(req, res) {
     try {
         return res.json(await getPricedStockInformation(req.body));
     } catch (e) {

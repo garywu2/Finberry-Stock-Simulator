@@ -37,6 +37,7 @@ const SimulatorPortfolioPage = () => {
 
   const [userItem, setUserItem] = React.useState<any>([])
   const [chartItems, setChartItems] = React.useState<any>()
+  const [portfolioValue, setPortfolioValue] = React.useState<any>()
   const [realTimePrice, setRealTimePrice] = React.useState<any>()
   const [tradeHistoryItems, setTradeHistoryItems] = React.useState<any>()
   const [holdingsItems, setHoldingsItems] = React.useState<any>()
@@ -62,7 +63,7 @@ const SimulatorPortfolioPage = () => {
       }
     }).then((response) => {
       setUserItem(response.data[0])
-    })
+    });
   }, [])
 
   function updateRows(data: any) {
@@ -155,6 +156,35 @@ const SimulatorPortfolioPage = () => {
           setHoldingsItems(response.data)
           updateHoldingsRows(response.data)
         })
+    }
+
+    if (simulatorExists && userItem.simulatorEnrollments) {
+      axios.get(
+        route +
+        'game/balancecalculation/stocksused/' +
+        userItem.simulatorEnrollments[simIndex].simulator._id +
+        "/" +
+        userItem.email
+      ).then((response) => {
+        axios({
+          method: 'put',
+          url: route + 'stock/price_dictionary',
+          data: response.data,
+        }).then((res) => {
+          axios({
+            method: 'put',
+            url: 
+              route + 
+              'game/balancecalculation/balance/simulatoremail/' + 
+              userItem.simulatorEnrollments[simIndex].simulator._id +
+              "/" +
+              userItem.email,
+            data: res.data,
+          }).then((resp) => {
+            setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
+          });
+        });
+      });
     }
   }
 
@@ -272,8 +302,37 @@ const SimulatorPortfolioPage = () => {
                 setHoldingsItems(response.data)
                 updateHoldingsRows(response.data)
               })
+
+            axios.get(
+                route +
+                'game/balancecalculation/stocksused/' +
+                userItem.simulatorEnrollments[simIndex].simulator._id +
+                "/" +
+                userItem.email
+              ).then((response) => {
+                axios({
+                  method: 'put',
+                  url: route + 'stock/price_dictionary',
+                  data: response.data,
+                }).then((res) => {
+                  axios({
+                    method: 'put',
+                    url: 
+                      route + 
+                      'game/balancecalculation/balance/simulatoremail/' + 
+                      userItem.simulatorEnrollments[simIndex].simulator._id +
+                      "/" +
+                      userItem.email,
+                    data: res.data,
+                  }).then((resp) => {
+                    setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
+                  });
+                });
+              });
           })
       })
+
+      
     }
   }
 
@@ -336,8 +395,37 @@ const SimulatorPortfolioPage = () => {
                 setHoldingsItems(response.data)
                 updateHoldingsRows(response.data)
               })
+
+            axios.get(
+                route +
+                'game/balancecalculation/stocksused/' +
+                userItem.simulatorEnrollments[simIndex].simulator._id +
+                "/" +
+                userItem.email
+              ).then((response) => {
+                axios({
+                  method: 'put',
+                  url: route + 'stock/price_dictionary',
+                  data: response.data,
+                }).then((res) => {
+                  axios({
+                    method: 'put',
+                    url: 
+                      route + 
+                      'game/balancecalculation/balance/simulatoremail/' + 
+                      userItem.simulatorEnrollments[simIndex].simulator._id +
+                      "/" +
+                      userItem.email,
+                    data: res.data,
+                  }).then((resp) => {
+                    setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
+                  });
+                });
+              });
           })
       })
+
+      
     }
   }
 
@@ -482,8 +570,8 @@ const SimulatorPortfolioPage = () => {
                 <Balance
                   title='Portfolio Value'
                   amount={
-                    selectedSimulator && simulatorExists && userItem.simulatorEnrollments
-                      ? userItem.simulatorEnrollments[simIndex].balance
+                    selectedSimulator && simulatorExists && userItem.simulatorEnrollments && portfolioValue
+                      ? portfolioValue
                       : 0
                   }
                 />

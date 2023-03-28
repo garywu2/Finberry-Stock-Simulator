@@ -1207,7 +1207,7 @@ async function calculateSimulatorEnrollmentStockBalance(simulatorEnrollmentID, s
 }
 
 // Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
-router.get("/balancecalculation/balance/simulatorenrollment/:simulatorEnrollmentID", async (req, res) => {
+router.put("/balancecalculation/balance/simulatorenrollment/:simulatorEnrollmentID", async (req, res) => {
     if (!req.params.simulatorEnrollmentID) {
         return res.status(400).json({ msg: "SimulatorEnrollment ID is missing" });
     }
@@ -1226,7 +1226,7 @@ router.get("/balancecalculation/balance/simulatorenrollment/:simulatorEnrollment
 });
 
 // Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
-router.get("/balancecalculation/balance/simulatoremail/:simulatorID/:email", async (req, res) => {
+router.put("/balancecalculation/balance/simulatoremail/:simulatorID/:email", async (req, res) => {
     if (!req.params.email) {
         return res.status(400).json({ msg: "Email is missing" });
     }
