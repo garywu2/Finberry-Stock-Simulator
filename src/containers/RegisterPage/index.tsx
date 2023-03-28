@@ -46,9 +46,9 @@ const RegisterPage = () => {
         signupState.email,
         signupState.password
       )
-        .then((result: any) => {
-          axios
-            .post(route + "account/user", {
+        .then(async (result: any) => {
+          await axios
+            .post(route + 'account/user', {
               firstName: signupState.firstName,
               lastName: signupState.lastName,
               email: signupState.email,
@@ -56,21 +56,21 @@ const RegisterPage = () => {
               username: signupState.username,
               dateOfBirth: Date.now(),
               preferredName: 'test',
-              permissionLevel: '0'
+              permissionLevel: '0',
             })
             .then((servResult: any) => {
-              console.log(servResult);
-              setError("");
-              setSignupState(defaultValues);
-              navigate("/profile/" + signupState.email);
+              console.log(servResult)
+              setError('')
+              setSignupState(defaultValues)
             })
             .catch((e: any) => {
-              setError(e.response.data.msg);
-            });
+              setError(e.response.data.msg)
+            })
+          navigate('/profile/' + signupState.email)
         })
         .catch((e: any) => {
-          setError(e.message);
-        });
+          setError(e.message)
+        })
     } else {
       setError("One of the required fields is missing!");
     }
