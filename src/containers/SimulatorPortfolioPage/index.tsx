@@ -182,15 +182,20 @@ const SimulatorPortfolioPage = () => {
 
     axios
       .get(
-        'https://api.twelvedata.com/time_series?&start_date=' +
-          finalStr2 +
-          '&symbol=' +
-          String(selectedValue) +
-          `&interval=1month&apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}`
+        route +
+        'stock/time_series',
+        {
+          params: {
+            symbol: String(selectedValue),
+            interval: '1week',
+            start_date: finalStr2,
+            outputsize: '60'
+          }
+        }
       )
       .then((response) => {
-        setChartItems(response.data)
-        var saveData = response.data
+        setChartItems(response.data.data)
+        var saveData = response.data.data
         chartData = []
         if (saveData) {
           for (var i = saveData.values.length - 1; i >= 0; i--) {
@@ -203,12 +208,16 @@ const SimulatorPortfolioPage = () => {
         }
         axios
           .get(
-            'https://api.twelvedata.com/price?symbol=' +
-              saveData.meta.symbol +
-              `&apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}`
+            route +
+            'stock/price',
+            {
+              params:{
+                symbol: saveData.meta.symbol
+              }
+            }
           )
           .then((response) => {
-            setRealTimePrice(response.data)
+            setRealTimePrice(response.data.data)
           })
       })
   }
