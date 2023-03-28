@@ -22,6 +22,11 @@ require("./src/models/MarketMovers");
 // Setup environmental variable
 require('dotenv').config();
 
+// Routes
+process.env.local_route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
+    ? 'http://localhost:5000/'
+    : 'https://finberry-stock-simulator-server.vercel.app/';
+
 if (process.env.REACT_APP_DEVELOPMENT == "true") {
   console.log("Developement mode is Enabled.");
 }
@@ -46,6 +51,11 @@ app.use(cors());
 //Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+// Perform and activate schedule tasks.
+const scheduleTasks =  require("./src/scheduleTasks");
+
 
 // Daily update functions - This is for calculating leaderboards, values, etc
 // TODO: Call this daily
