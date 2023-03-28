@@ -10,6 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Link, useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles'
+import { width } from '@mui/system'
 
 const Av1 = require('../../images/avatars/a1.png')
 const Av2 = require('../../images/avatars/a2.png')
@@ -200,6 +201,7 @@ const ProfilePage = () => {
                     bgcolor: theme.palette.secondary.main,
                     width: 120,
                     height: 120,
+                    margin: '0 auto',
                   }}
                   alt={userItem.firstName}
                   src={currImg}
@@ -217,8 +219,13 @@ const ProfilePage = () => {
                     Change Avatar
                   </Button>
                 )}
-                <Dialog open={open} onClose={handleClose}>
-                  <DialogTitle>Pick an Avatar</DialogTitle>
+                <Dialog
+                  open={open}
+                  onClose={handleClose}
+                  fullWidth={true}
+                  maxWidth='lg'
+                >
+                  <DialogTitle>Choose your avatar</DialogTitle>
                   <DialogContent>
                     {avatars && (
                       <DialogContentText>
@@ -269,7 +276,12 @@ const ProfilePage = () => {
                     Edit Bio
                   </Button>
                 )}
-                <Dialog open={open2} onClose={handleClose2}>
+                <Dialog
+                  open={open2}
+                  onClose={handleClose2}
+                  fullWidth={true}
+                  maxWidth='lg'
+                >
                   <DialogTitle>Enter your new bio</DialogTitle>
                   <DialogContent>
                     <DialogContentText>
@@ -281,6 +293,7 @@ const ProfilePage = () => {
                         defaultValue='I love DogeCoin'
                         value={bioText}
                         onChange={handleBioTextChange}
+                        fullWidth={true}
                       />
                     </DialogContentText>
                   </DialogContent>

@@ -219,6 +219,7 @@ const CoachPortalPage = () => {
                     bgcolor: theme.palette.secondary.main,
                     width: 120,
                     height: 120,
+                    margin: '0 auto',
                   }}
                   alt={userItem.firstName}
                   src={currImg}
@@ -245,8 +246,13 @@ const CoachPortalPage = () => {
                     Change Avatar
                   </Button>
                 )}
-                <Dialog open={open} onClose={handleClose}>
-                  <DialogTitle>Pick an Avatar</DialogTitle>
+                <Dialog
+                  open={open}
+                  onClose={handleClose}
+                  fullWidth={true}
+                  maxWidth='lg'
+                >
+                  <DialogTitle>Choose your avatar</DialogTitle>
                   <DialogContent>
                     {avatars && (
                       <DialogContentText>
@@ -297,7 +303,12 @@ const CoachPortalPage = () => {
                     Edit Bio
                   </Button>
                 )}
-                <Dialog open={open2} onClose={handleClose2}>
+                <Dialog
+                  open={open2}
+                  onClose={handleClose2}
+                  fullWidth={true}
+                  maxWidth='lg'
+                >
                   <DialogTitle>Enter your new bio</DialogTitle>
                   <DialogContent>
                     <DialogContentText>
@@ -309,6 +320,7 @@ const CoachPortalPage = () => {
                         defaultValue='I love DogeCoin'
                         value={bioText}
                         onChange={handleBioTextChange}
+                        fullWidth={true}
                       />
                     </DialogContentText>
                   </DialogContent>
