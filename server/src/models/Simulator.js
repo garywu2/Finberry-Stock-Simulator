@@ -21,7 +21,7 @@ const simulatorSchema = new mongoose.Schema({
     userStartFund: {
         type: Number,
         required: true,
-      },
+    },
     hidden: {
         type: Boolean,
         required: true,
