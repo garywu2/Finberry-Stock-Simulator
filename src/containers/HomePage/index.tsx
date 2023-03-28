@@ -24,9 +24,14 @@ import Pricing from '../../components/Pricing'
 import UserContext from '../../context/user'
 import IPad from '../../images/photos/ipad-mini.png'
 
+const route =
+  process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
+    ? 'http://localhost:5000/'
+    : 'https://finberry-stock-simulator-server.vercel.app/'
 interface StockData {
   symbol: string
   name: string
+  exchange: string
   price: number
   change: number
 }
@@ -39,10 +44,10 @@ const HomePage = () => {
   useEffect(() => {
     axios
       .get(
-        `https://api.twelvedata.com/market_movers/stocks?apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}&outputsize=5`
+        route + 'game/marketmovers'
       )
       .then((res) => {
-        setStockData(res.data.values)
+        setStockData(res.data)
       })
       .catch((error) => {
         console.log(error)
@@ -260,9 +265,9 @@ const HomePage = () => {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell>#</TableCell>
                         <TableCell>Symbol</TableCell>
                         <TableCell>Name</TableCell>
+                        <TableCell>Exchange</TableCell>
                         <TableCell align='right'>Price</TableCell>
                         <TableCell align='right'>Change</TableCell>
                       </TableRow>
@@ -278,10 +283,10 @@ const HomePage = () => {
                           <TableCell component='th' scope='row'>
                             {stock?.symbol}
                           </TableCell>
-                          <TableCell>{stock?.symbol}</TableCell>
                           <TableCell>{stock?.name}</TableCell>
-                          <TableCell align='right'>${stock?.last}</TableCell>
-                          <TableCell align='right'>%{stock?.change}</TableCell>
+                          <TableCell>{stock?.exchange}</TableCell>
+                          <TableCell align='right'>${stock?.high}</TableCell>
+                          <TableCell align='right'>%{stock?.percent_change}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
