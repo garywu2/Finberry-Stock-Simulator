@@ -9,7 +9,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Link, useParams } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles';
+import FirebaseContext from "../../context/firebase";
 
 const Av1 = require('../../images/avatars/av1.png')
 const Av2 = require('../../images/avatars/av2.png')
@@ -31,6 +32,7 @@ const ProfilePage = () => {
   const [bioText, setBioText] = useState('')
   const { email } = useParams()
   const theme = useTheme()
+  const { auth } = useContext(FirebaseContext);
 
   const avatars = [
     { img: Av1, string: '../../images/avatars/av1.png' },
@@ -113,7 +115,7 @@ const ProfilePage = () => {
           setCurrImg(response.data[0].avatar)
         }
       })
-  }, [email])
+  }, [email, auth, user]);
 
   return (
     <Container
@@ -140,7 +142,9 @@ const ProfilePage = () => {
                 sx={{
                   p: 2,
                   display: 'flex',
+                  alignItems: 'center',
                   flexDirection: 'column',
+                  justifyContent: 'center',
                   height: 240,
                 }}
               >
@@ -149,6 +153,8 @@ const ProfilePage = () => {
                     bgcolor: theme.palette.secondary.main,
                     width: 120,
                     height: 120,
+                    align: 'center',
+                    justifyContent: 'center'
                   }}
                   alt={userItem.firstName}
                   src={currImg}
