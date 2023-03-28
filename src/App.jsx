@@ -11,6 +11,7 @@ import GamePortfolioPage from "./containers/GamePortfolioPage";
 import LeaderboardsPage from "./containers/LeaderboardsPage";
 import CoachPortalPage from "./containers/CoachPortalPage";
 import CoachCataloguePage from "./containers/CoachCataloguePage";
+import CoachRegistrationPage from "./containers/CoachRegistrationPage";
 import FaqPage from "./containers/FaqPage";
 import ContactPage from "./containers/ContactPage";
 import AboutPage from "./containers/AboutPage";
@@ -88,11 +89,12 @@ function App() {
                 />
                 <Route path="/GamePortfolio" element={<GamePortfolioPage />} />
                 <Route path="/Leaderboards" element={<LeaderboardsPage />} />
-                <Route path="/CoachPortal" element={<CoachPortalPage />} />
+                <Route path="/CoachPortal/:email" element={<CoachPortalPage />} />
                 <Route
                   path="/CoachCatalogue"
                   element={<CoachCataloguePage />}
                 />
+                <Route path="/CoachRegistration" element={<CoachRegistrationPage />} />
                 <Route path="/FAQ" element={<FaqPage />} />
                 <Route path="/Contact" element={<ContactPage />} />
                 <Route path="/About" element={<AboutPage />} />
