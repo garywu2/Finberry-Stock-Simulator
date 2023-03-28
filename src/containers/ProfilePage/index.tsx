@@ -105,13 +105,12 @@ const ProfilePage = () => {
     axios
       .get(route + 'account/user', {
         params: {
-          email: String(user.email),
-        },
-      })
-      .then((response) => {
-        setUserItem(response.data[0])
-        if (response.data[0]) {
-          setCurrImg(response.data[0].avatar)
+          email: String(email)
+        }
+      }).then((response) => {
+        setUserItem(response.data[0]);
+        if(response.data[0]){
+          setCurrImg(response.data[0].avatar);
         }
       })
   }, [email])

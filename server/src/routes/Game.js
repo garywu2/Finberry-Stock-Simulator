@@ -1,8 +1,6 @@
 // Express and the routers
 const   express  =   require("express"),
         router   =   express.Router(),
-        schedule =   require('node-schedule'),
-        axios    =   require('axios');
         url      =   require('url'),
         mongoose =   require("mongoose");
 
@@ -174,6 +172,8 @@ async function deepDeleteTradeTransaction(toBeRemovedEntryID) {
 }
 
 /* #endregion */
+
+
 
 /* #region Simulator (Itself) */
 
@@ -923,6 +923,8 @@ router.delete("/tradeTransaction", async (req, res) => {
 
 /* #endregion */
 
+
+
 /* #region Market Movers */
 
 // POST - Create a new entry for market movers.
@@ -955,7 +957,7 @@ router.post("/marketmovers", async (req, res) => {
 
     try {
         let marketMovers = await MarketMovers.find();
-        if (marketMovers.length > 5 ) {
+        if (marketMovers.length >= 5 ) {
             return res.status(400).json({ msg: "There should only be 5 market movers", marketMovers: marketMovers.length});
         }
         const dbMarketMovers = new MarketMovers(newEntry);
@@ -969,7 +971,7 @@ router.post("/marketmovers", async (req, res) => {
 // GET market movers
 router.get("/marketmovers", async (req, res) => {
     try {
-        let marketMovers = await MarketMovers.find();
+        let marketMovers = await MarketMovers.find(parseRequestParams(req.query, MarketMovers));
         if (marketMovers.length == 0 ) {
             return res.status(400).json({ msg: "No market mover in db"});
         }
@@ -989,93 +991,85 @@ router.delete("/marketmovers", async (req, res) => {
     }
 });
 
-// PUT request for market movers -- i realise we dont really need this, for the schedule job ill use delete and post
-router.put("/marketmovers", async(req, res) => {
-    const newAttrs = req.body;
-    const attrKeys = Object.keys(newAttrs);
-    
-    try {
-        let marketMovers = await MarketMovers.find();
-        if (marketMovers.length == 0 ) {
-            return res.status(400).json({ msg: "No market mover in db"});
-        }
-        let marketMover = marketMovers[0];
-
-        attrKeys.forEach((key) => {
-            if (process.env.REACT_APP_DEVELOPMENT == "true") {
-                marketMover[key] = newAttrs[key]; // Admin access, complete changes
-            } else {
-                if (!['_id'].includes(key)) {
-                    marketMover[key] = newAttrs[key];
-                }
-            }
-        });
-        await marketMover.save();
-        res.json(marketMover);
-    } catch (e) {
-      return res.status(400).json({ msg: e.message });
-    }
-});
-
-const route =
-  process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
-    ? 'http://localhost:5000/'
-    : 'https://finberry-stock-simulator-server.vercel.app/'
-
-// scheduling job to run the market movers api every day at 10 pm
-schedule.scheduleJob('0 22 * * * *', function(){
-    axios
-      .get(
-        `https://api.twelvedata.com/market_movers/stocks?apikey=${process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY}&outputsize=5`
-      )
-      .then((res) => {
-        axios({
-            method: 'delete',
-            url:
-              route +
-              'game/marketmovers',
-            headers: {},
-            data: {},
-          }).then((result) => {
-            for(let i = 0; i < res.data.values.length; i++) {
-                console.log(res.data.values[i]);
-                axios({
-                    method: 'post',
-                    url:
-                      route +
-                      'game/marketmovers',
-                    headers: {},
-                    data: {
-                        symbol: res.data.values[i].symbol,
-                        name: res.data.values[i].name,
-                        exchange: res.data.values[i].exchange,
-                        datetime: res.data.values[i].datetime,
-                        last: res.data.values[i].last,
-                        high: res.data.values[i].high,
-                        low: res.data.values[i].low,
-                        volume: res.data.values[i].volume,
-                        change: res.data.values[i].change,
-                        percent_change: res.data.values[i].percent_change,
-                    },
-                }).catch((error) => {
-                    console.log(error)
-                })
-            }
-          }).catch((error) => {
-            console.log(error)
-        });
-      })
-      .catch((error) => {
-        console.log(error)
-    })
-});
-
-
 /* #endregion */
 
 
 
 /* #region BalanceCalculation (Leaderboard, current total balance (with stock taken into account), etc) */
+
+async function getStockDictionaryOfSimulatorEnrollments(simulatorEnrollments) {
+    // Setup holding param. (Parameter of holdings needed)
+    let holdingsParams = {
+        "simulatorEnrollment": [],
+        "quantity": {$gt : 0},
+    };
+
+    simulatorEnrollments.forEach((simulatorEnrollment) => {
+        holdingsParams["simulatorEnrollment"].push(simulatorEnrollment._id);
+    });
+
+    const holdings = await Holding.find(holdingsParams);
+
+    let stockDictionary = {};
+
+    for (const holding of holdings) {
+        let symbol = holding.symbol;
+        let index = holding.index;
+
+        if (!stockDictionary[index]) {
+            stockDictionary[index] = {};
+        }
+
+        stockDictionary[index][symbol] = 0;
+    }
+
+    return stockDictionary;
+}
+
+function convertDictionaryToListFormat(stockDictionary) {
+    let stockList = [];
+
+    Object.keys(stockDictionary).forEach((index) => {
+        Object.keys(stockDictionary[index]).forEach((symbol) => {
+            stockList.push({ index:index, symbol: symbol});
+        });
+    });
+
+    return stockList;
+}
+
+// Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
+router.get("/balancecalculation/stocksused", async (req, res) => {
+    try {
+        let simulators;
+        if (requestingTrueFalseParam(req.query, "visibleOnly")) {
+            simulators = await Simulator.find({ hidden: false });
+        } else {
+            simulators = await Simulator.find();
+        }
+
+        let simulatorEnrollmentQuery = {
+            simulator: [],
+        };
+
+        simulators.forEach(async (simulator) => {
+            simulatorEnrollmentQuery.simulator.push(simulator._id);
+        });
+
+        // Need to search up to find the SimulatorEnrollment of this simulator
+        const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentQuery);
+
+        stockDictionary = await getStockDictionaryOfSimulatorEnrollments(simulatorEnrollments);
+
+        if (requestingTrueFalseParam(req.query, "listFormat")) {
+            return res.json(convertDictionaryToListFormat(stockDictionary));
+        }
+
+        return res.json(stockDictionary);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
 
 // Get stocks used by only simulator ID - redirect route
 router.get('/balancecalculation/stocksused/:simulatorID', function(req, res) {
@@ -1114,48 +1108,16 @@ router.get("/balancecalculation/stocksused/:simulatorID/:email", async (req, res
                 return res.status(400).json({ msg: "User with provided Email not found." });
             }
 
-            
             simulatorEnrollmentQuery["user"] = user._id;
         }
 
         // Need to search up to find the SimulatorEnrollment of this simulator
         const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentQuery);
 
-        // Setup holding param. (Parameter of holdings needed)
-        let holdingsParams = {
-            "simulatorEnrollment": [],
-            "quantity": {$gt : 0},
-        };
-
-        simulatorEnrollments.forEach((simulatorEnrollment) => {
-            holdingsParams["simulatorEnrollment"].push(simulatorEnrollment._id);
-        });
-
-        const holdings = await Holding.find(holdingsParams);
-
-
-        let stockDictionary = {};
-        holdings.forEach((holding) => {
-            let symbol = holding.symbol;
-            let index = holding.index;
-
-            if (!stockDictionary[index]) {
-                stockDictionary[index] = {};
-            }
-
-            stockDictionary[index][symbol] = 0;
-        });
+        let stockDictionary = await getStockDictionaryOfSimulatorEnrollments(simulatorEnrollments);
 
         if (requestingTrueFalseParam(req.query, "listFormat")) {
-            let stockList = [];
-
-            Object.keys(stockDictionary).forEach((index) => {
-                Object.keys(stockDictionary[index]).forEach((symbol) => {
-                    stockList.push({ index:index, symbol: symbol});
-                });
-            });
-
-            return res.json(stockList);
+            return res.json(convertDictionaryToListFormat(stockDictionary));
         }
 
         return res.json(stockDictionary);
@@ -1163,8 +1125,6 @@ router.get("/balancecalculation/stocksused/:simulatorID/:email", async (req, res
         return res.status(400).json({ msg: e.message });
     }
 });
-
-
 
 // Helper function for balance calculation
 // Return the numberical value of a simulator enrollment, return null if no
@@ -1195,22 +1155,40 @@ async function calculateSimulatorEnrollmentStockBalance(simulatorEnrollmentID, s
         let symbol = holding.symbol;
         let quantity = holding.quantity;
 
+        if (quantity <= 0) {
+            return;
+        }
+
         let price = 0;
 
         try {
-            price = Number(stockDictionary[index][symbol]);
-
-            if (isNaN(price)) {
+            if (!stockDictionary || !stockDictionary[index] || !stockDictionary[index][symbol]) {
                 if (!missingPrices[index]) {
                     missingPrices[index] = {};
                 }
 
-                missingPrices[index][symbol] = "Invalid Price";
+                missingPrices[index][symbol] = "Missing Price";
             }
             else {
-                let balance = quantity * price;
+                price = Number(stockDictionary[index][symbol]);
+                if (isNaN(price)) {
+                    if (!missingPrices[index]) {
+                        missingPrices[index] = {};
+                    }
 
-                stockBalance += balance;
+                    missingPrices[index][symbol] = "Invalid Price";
+                }
+                else if (price < 0) {
+                    if (!missingPrices[index]) {
+                        missingPrices[index] = {};
+                    }
+                    missingPrices[index][symbol] = "This combination of Symbol and Index does not exist (In our current stock API), Or for some reason value is negative.";
+                }
+                else {
+                    let balance = quantity * price;
+
+                    stockBalance += balance;
+                }
             }
         }
         catch {
@@ -1281,6 +1259,61 @@ router.get("/balancecalculation/balance/simulatoremail/:simulatorID/:email", asy
 
 // Calculate information for a leaderboard. This fills in the information of 
 // lastCalculatedTotal and lastCalculatedTotalDate in SimulatorEnrollment.
+router.post("/balancecalculation/balance/learderboard", async (req, res) => {
+    let stockInformationTime = req.body.stockInformationTime;
+    if (!stockInformationTime) {
+        return res.status(400).json({ msg: "No stockInformationTime is set in the body. This must be set for leaderboard calculations." });
+    }
+
+    try {
+        const simulators = await Simulator.find({ hidden: false });
+
+        let missingPrices = {};
+        let stockDictionary = req.body.stockDictionary;
+        let totalNumberOfParticipatingUserEntries = 0;
+        for (const simulator of simulators) {
+            const simulatorID = simulator._id;
+
+            // Need to search up to find the SimulatorEnrollment of this simulator
+            const simulatorEnrollments = await SimulatorEnrollment.find({simulator: simulatorID});
+            for (const simulatorEnrollment of simulatorEnrollments) {
+                let priceInfo = await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, stockDictionary, missingPrices);
+                if (priceInfo) { // Should not be possible to not be found unless very specical circumstances. Adding this just in case.
+                    let stockBalance = priceInfo.stockBalance;
+                    let cashBalance =  priceInfo.cashBalance;
+
+                    let totalBalance = Number(stockBalance) + Number(cashBalance);
+
+                    simulatorEnrollment.lastCalculatedTotal = totalBalance;
+                    simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
+
+                    missingPrices =  priceInfo.missingPrices; // Continue propagating
+                } else {
+                    simulatorEnrollment.lastCalculatedTotal = -1;
+                    simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
+                }
+            }
+
+            let ranking = 1;
+            for (const simulatorEnrollment of simulatorEnrollments.sort(function(a, b) {
+                return parseFloat(b.lastCalculatedTotal) - parseFloat(a.lastCalculatedTotal);
+            })) {
+                simulatorEnrollment.lastCalculatedRanking = ranking;
+                ranking += 1;
+                simulatorEnrollment.save();
+            }
+
+            totalNumberOfParticipatingUserEntries += simulatorEnrollments.length;
+        }
+
+        return res.json({ totalNumberOfParticipatingUserEntries: totalNumberOfParticipatingUserEntries, missingPrices: missingPrices});
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// Calculate information for a leaderboard. This fills in the information of 
+// lastCalculatedTotal and lastCalculatedTotalDate in SimulatorEnrollment.
 router.post("/balancecalculation/balance/learderboard/:simulatorID", async (req, res) => {
     if (!req.params.simulatorID) {
         return res.status(400).json({ msg: "Simulator ID is missing" });
@@ -1300,12 +1333,9 @@ router.post("/balancecalculation/balance/learderboard/:simulatorID", async (req,
         let stockDictionary = req.body.stockDictionary;
         
         let missingPrices = {};
-
         const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id });
-        simulatorEnrollments.forEach(async (simulatorEnrollment) => {
-
+        for (const simulatorEnrollment of simulatorEnrollments) {
             let priceInfo = await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, stockDictionary, missingPrices);
-
             if (priceInfo) { // Should not be possible to not be found unless very specical circumstances. Adding this just in case.
                 let stockBalance = priceInfo.stockBalance;
                 let cashBalance =  priceInfo.cashBalance;
@@ -1315,11 +1345,21 @@ router.post("/balancecalculation/balance/learderboard/:simulatorID", async (req,
                 simulatorEnrollment.lastCalculatedTotal = totalBalance;
                 simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
 
-                simulatorEnrollment.save();
-
                 missingPrices =  priceInfo.missingPrices; // Continue propagating
+            } else {
+                simulatorEnrollment.lastCalculatedTotal = -1;
+                simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
             }
-        });
+        }
+
+        let ranking = 1;
+        for (const simulatorEnrollment of simulatorEnrollments.sort(function(a, b) {
+            return parseFloat(b.lastCalculatedTotal) - parseFloat(a.lastCalculatedTotal);
+        })) {
+            simulatorEnrollment.lastCalculatedRanking = ranking;
+            ranking += 1;
+            simulatorEnrollment.save();
+        }
 
         return res.json({ numberOfParticipatingUsers: simulatorEnrollments.length, missingPrices: missingPrices});
     } catch (e) {
@@ -1339,15 +1379,49 @@ router.get("/balancecalculation/balance/learderboard/:simulatorID", async (req, 
             return res.status(400).json({ msg: "Simulator with provided ID not found." });
         }
 
-        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null } }, {user:1, joinDate:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1}).populate(
+        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } }, {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1}).populate(
             {
                 path: "user",
                 select: "_id email username",
             }
-        ).sort({lastCalculatedTotal:-1});
+        ).sort({lastCalculatedRanking:1});
 
-        return res.json(simulatorEnrollments);
+        return res.json({
+            simulatorID: simulator._id,
+            title: simulator.title,
+            userStartFund: simulator.userStartFund,
+            orderedSimulatorEnrollments: simulatorEnrollments,
+        });
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
 
+// Get leaderboards of ALL simulators
+router.get("/balancecalculation/balance/learderboard", async (req, res) => {
+    try {
+        let leaderboards = [];
+
+        const simulators = await Simulator.find();
+        for (const simulator of simulators) {
+            const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } }, {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1}).populate(
+                {
+                    path: "user",
+                    select: "_id email username",
+                }
+            ).sort({lastCalculatedRanking:1});
+
+            leaderboards.push(
+                {
+                    simulatorID: simulator._id,
+                    title: simulator.title,
+                    userStartFund: simulator.userStartFund,
+                    orderedSimulatorEnrollments: simulatorEnrollments,
+                }
+            );
+        }
+
+        return res.json(leaderboards);
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }

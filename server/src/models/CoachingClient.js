@@ -15,10 +15,6 @@ const coachingClientSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
-    // approvedStatus: { // Approval is by session, use block to block all session requests.
-    //     type: Boolean,
-    //     required: true,
-    // },
     blocked: { // Coach may edit the coaching client profile of any of their clients and
         // Choose to add a note, or block them at will.
         type: Boolean,

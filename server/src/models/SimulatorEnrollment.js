@@ -23,6 +23,11 @@ const simulatorEnrollmentSchema = new mongoose.Schema({
         type: Date,
         required: false,
     },
+    lastCalculatedRanking: {
+        type: Number,
+        required: true,
+        default: -1
+    },
     joinDate: {
         type: Date,
         required: true,

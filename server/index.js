@@ -22,13 +22,16 @@ require("./src/models/MarketMovers");
 // Setup environmental variable
 require('dotenv').config();
 
+// Routes
+process.env.local_route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
+    ? 'http://localhost:5000/'
+    : 'https://finberry-stock-simulator-server.vercel.app/';
+
 if (process.env.REACT_APP_DEVELOPMENT == "true") {
   console.log("Developement mode is Enabled.");
 }
 
-// Emergency fix until we can change .env for vercel server.
-// const DB = process.env.REACT_APP_DB || "mongodb://localhost/finberry";
-const DB = process.env.DB || "mongodb://localhost/finberry";
+const DB = process.env.REACT_APP_DB || "mongodb://localhost/finberry";
 mongoose.connect(DB, () => {
   console.log("Database Connected");
 });
@@ -37,6 +40,7 @@ const Accounts        =   require("./src/routes/Account"),
       Educational     =   require("./src/routes/Educational"),
       Game            =   require("./src/routes/Game"),
       Admin           =   require("./src/routes/Admin"),
+      Stock           =   require("./src/routes/Stock"),
       cors            =   require("cors");
 
 // import dailyRefresh from "./stock"
@@ -47,15 +51,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Daily update functions - This is for calculating leaderboards, values, etc
-// TODO: Call this daily
-// dailyRefresh();
+
+// Perform and activate schedule tasks.
+const scheduleTasks =  require("./src/scheduleTasks");
 
 //Routes
 app.use("/account", Accounts);
 app.use("/educational", Educational);
 app.use("/game", Game);
 app.use("/admin", Admin);
+app.use("/stock", Stock);
 
 // Launching Server
 const PORT = process.env.PORT || 5000;
