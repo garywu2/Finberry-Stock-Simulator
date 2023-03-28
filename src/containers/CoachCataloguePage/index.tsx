@@ -37,7 +37,12 @@ const CoachCataloguePage = () => {
 //   });
 
     const getUser = (email: any) => {
-        axios.get(route + 'account/user/' + String(email)).then((response: any) => {
+        axios.get(route + 'account/user', {
+          params: {
+            email: email,
+            enforceSingleOutput: true
+          }
+        }).then((response: any) => {
             navigate("/profile/" + response.email);
             return;
         })

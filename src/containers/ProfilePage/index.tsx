@@ -32,7 +32,7 @@ const ProfilePage = () => {
     const [open, setOpen] = React.useState(false);
     const [open2, setOpen2] = React.useState(false);
     const [bioText, setBioText] = useState("");
-    const { email } = useParams();
+    let { email } = useParams();
 
     const avatars = [
       { img: Av1, string :"../../images/avatars/icons8-badger-100.png"},
@@ -113,7 +113,7 @@ const ProfilePage = () => {
     React.useEffect(() => {
       axios.get(route + 'account/user', {
         params: {
-          email: String(user.email)
+          email: String(email)
         }
       }).then((response) => {
         setUserItem(response.data[0]);
