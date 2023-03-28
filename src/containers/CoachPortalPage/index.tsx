@@ -295,7 +295,14 @@ const CoachPortalPage = () => {
                 <Typography variant='h4' align='left' fontWeight={400}>
                   Coaching Bio:
                 </Typography>
-                <Typography variant='body1' align='left' fontWeight={400}>
+                <Typography
+                  variant='body1'
+                  align='left'
+                  fontWeight={400}
+                  sx={{ overflow: 'auto' }}
+                  height='100%'
+                  marginBottom={2}
+                >
                   {coachItem.description}
                 </Typography>
                 {user.email === email && (

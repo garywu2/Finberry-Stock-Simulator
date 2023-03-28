@@ -268,7 +268,14 @@ const ProfilePage = () => {
                 <Typography variant='h4' align='left' fontWeight={400}>
                   About Yourself:
                 </Typography>
-                <Typography variant='body1' align='left' fontWeight={400}>
+                <Typography
+                  variant='body1'
+                  align='left'
+                  fontWeight={400}
+                  sx={{ overflow: 'auto' }}
+                  height='100%'
+                  marginBottom={2}
+                >
                   {userItem.bio}
                 </Typography>
                 {user.email === email && (
