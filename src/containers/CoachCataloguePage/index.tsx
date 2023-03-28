@@ -86,7 +86,7 @@ const CoachCataloguePage = () => {
               {coaches.map((coach: { firstName: React.Key | null | undefined; lastName: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; bio: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; email: String | null | undefined }) => (
                 <TableRow key={coach.firstName}>
                   <TableCell>
-                    <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to={'/profile/' + coach.email}>{coach.lastName}</Link>
+                    <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to={'/profile/' + coach.email}>{coach.firstName}</Link>
                     </TableCell>
                   <TableCell>{coach.lastName}</TableCell>
                   <TableCell align='left'>{coach.email}</TableCell>
