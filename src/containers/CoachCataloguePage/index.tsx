@@ -21,6 +21,7 @@ import Title from '../../components/Title';
 
 const CoachCataloguePage = () => {
   const [coaches, setCoaches] = useState<any>([]);
+  const [realCoaches, setRealCoaches] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/";
   const { user } = useContext(UserContext);
@@ -30,6 +31,19 @@ const CoachCataloguePage = () => {
     axios.get(route + 'account/user/').then((response) => {
         setCoaches(response.data)
       })
+
+    axios.get(
+      route +
+      'account/coaching',
+      {
+        params: {
+          populateUserEmailAndUsername: true,
+          status: 1
+        }
+      }
+    ).then((response) => {
+      setRealCoaches(response.data);
+    });
   }, []);
 
 //   const filteredCoaches = coaches.filter((coach: { firstname: string; }) => {
@@ -57,7 +71,7 @@ const CoachCataloguePage = () => {
         marginBottom: '1rem',
         paddingTop: '5rem',
       }}>
-    <Title>Coach Catalogue</Title>
+    <Title>Coach Catalogue (Showing List of Users Right now)</Title>
     <Container
         sx={{
           backgroundColor: 'white',
@@ -90,6 +104,49 @@ const CoachCataloguePage = () => {
                     </TableCell>
                   <TableCell>{coach.lastName}</TableCell>
                   <TableCell align='left'>{coach.email}</TableCell>
+                  <TableCell>
+                    <Button> 
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            </Table>
+    </Container>
+
+    <Title>Coach Catalogue (List of Coaches)</Title>
+    <Container
+        sx={{
+          backgroundColor: 'white',
+          minHeight: '100vh',
+          minWidth: '100%',
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'flex-start',
+          borderRadius: '3rem',
+          boxShadow: '0 4px 15px -6px black',
+          marginBottom: '1rem',
+          paddingBottom: '2rem',
+          overflow: 'auto',
+          paddingTop: '1rem',
+        }}
+      >
+      <Table size='small'>
+            <TableHead>
+              <TableRow>
+                <TableCell>Display Name</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell align="left">Email</TableCell>
+              </TableRow>
+            </TableHead>
+      <TableBody>
+              {realCoaches.map((coach: any) => (
+                <TableRow key={coach._id}>
+                  <TableCell>
+                    <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to={'/CoachPortal/' + coach.user?.email}>{coach.user?.username}</Link>
+                    </TableCell>
+                  <TableCell>${coach.price}/hr</TableCell>
+                  <TableCell align='left'>{coach.user?.email}</TableCell>
                   <TableCell>
                     <Button> 
                     </Button>

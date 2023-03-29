@@ -10,6 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Link, useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles'
+import FirebaseContext from "../../context/firebase";
 
 const Av1 = require("../../images/avatars/av1.png");
 const Av2 = require("../../images/avatars/av2.png");
@@ -24,15 +25,20 @@ const route =
 var currImg: any
 
 const CoachPortalPage = () => {
-  const { user } = useContext(UserContext)
-  const [userItem, setUserItem] = React.useState<any>([])
-  const [coachItem, setCoachItem] = React.useState<any>([])
-  const [open, setOpen] = React.useState(false)
-  const [open2, setOpen2] = React.useState(false)
-  const [bioText, setBioText] = useState('')
-  const [isApprovedCoach, setIsApprovedCoach] = React.useState(false)
-  const { email } = useParams()
-  const theme = useTheme()
+  const { user } = useContext(UserContext);
+  const [userItem, setUserItem] = React.useState<any>([]);
+  const [coachItem, setCoachItem] = React.useState<any>([]);
+  const [open, setOpen] = React.useState(false);
+  const [open2, setOpen2] = React.useState(false);
+  const [open3, setOpen3] = React.useState(false);
+  const [requestSubmitted, setRequestSubmitted] = React.useState(false);
+  const [activeClient, setActiveClient] = React.useState(false);
+  const [bioText, setBioText] = useState('');
+  const [requestText, setRequestText] = useState('');
+  const [isApprovedCoach, setIsApprovedCoach] = React.useState(false);
+  const { email } = useParams();
+  const theme = useTheme();
+  const { auth } = useContext(FirebaseContext);
 
   const avatars = [
     { img: Av1, string: '../../images/avatars/av1.png' },
@@ -40,7 +46,7 @@ const CoachPortalPage = () => {
     { img: Av3, string: '../../images/avatars/av3.png' },
     { img: Av4, string: '../../images/avatars/av4.png' },
     { img: Av5, string: '../../images/avatars/av5.png' },
-  ]
+  ];
 
   const setCurrImg = (imgStr: any) => {
     for (var i = 0; i < avatars.length; i++) {
@@ -51,16 +57,20 @@ const CoachPortalPage = () => {
   }
 
   const handleClickOpen = () => {
-    setOpen(true)
+    setOpen(true);
   }
 
   const handleClickOpen2 = () => {
-    setOpen2(true)
+    setOpen2(true);
+  }
+
+  const handleClickOpen3 = () => {
+    setOpen3(true);
   }
 
   const handleClose = (event: any) => {
-    setOpen(false)
-    setCurrImg(String(event.currentTarget.value))
+    setOpen(false);
+    setCurrImg(String(event.currentTarget.value));
 
     axios({
       method: 'put',
@@ -69,11 +79,15 @@ const CoachPortalPage = () => {
       data: {
         avatar: String(event.currentTarget.value),
       },
-    })
+    });
   }
 
   const handleClose2 = (event: any) => {
-    setOpen2(false)
+    setOpen2(false);
+  }
+
+  const handleClose3 = (event: any) => {
+    setOpen3(false);
   }
 
   const handleBioSubmit = (event: any) => {
@@ -100,11 +114,67 @@ const CoachPortalPage = () => {
     setOpen2(false)
   }
 
+  const handleCoachingRequestSubmit = (event: any) => {
+    console.log(email);
+    console.log(user.email);
+    console.log(coachItem);
+
+    if(coachItem) {
+      axios({
+        method: 'post',
+        url: route + 'account/coaching/' + coachItem._id,
+        headers: {},
+        data: {
+          email: String(user.email),
+          clientRequestNote: requestText,
+        }
+      }).then((res) => {
+        setRequestSubmitted(true);
+      });
+    }
+    
+
+    setOpen3(false);
+  }
+
   const handleBioTextChange = (event: any) => {
     setBioText(event.target.value)
   }
 
+  const handleRequestTextChange = (event: any) => {
+    setRequestText(event.target.value)
+  }
+
   React.useEffect(() => {
+    axios
+      .get(route + 'account/user', {
+        params: {
+          email: String(email),
+        },
+      })
+      .then((response) => {
+        if (response?.data[0]) {
+          setUserItem(response.data[0])
+          setCurrImg(response.data[0].avatar)
+        }
+      })
+  }, [email, auth, user])
+
+  React.useEffect(() => {
+    axios
+      .get(route + 'account/coaching', {
+        params: {
+          email: String(email),
+          moreDetails: true,
+        },
+      })
+      .then((response) => {
+        if (response?.data[0].status == 1) {
+          setCoachItem(response.data[0])
+          setIsApprovedCoach(true)
+        }
+      })
+
     axios
       .get(route + 'account/user', {
         params: {
@@ -112,28 +182,24 @@ const CoachPortalPage = () => {
         },
       })
       .then((response) => {
-        setUserItem(response.data[0])
-        if (response.data[0]) {
-          setCurrImg(response.data[0].avatar)
-        }
-      })
-  }, [email])
-
-  React.useEffect(() => {
-    axios
-      .get(route + 'account/coaching', {
+        axios
+        .get(route + 'account/coachingsession', {
         params: {
-          email: String(user.email),
-          moreDetails: true,
-        },
-      })
-      .then((response) => {
-        setCoachItem(response.data[0])
-        if (response.data[0].status == 1) {
-          setIsApprovedCoach(true)
-        }
-      })
-  }, [])
+          coachingProfile: coachItem._id,
+          client: response?.data[0]?._id
+          }
+        }).then((res)=>{
+          if(res?.data[0]?.status == 0) {
+            setRequestSubmitted(true);
+          }
+          else if (res?.data[0]?.status == 1) {
+            setActiveClient(true);
+          }
+        });
+      });
+
+    
+  }, [email, auth, user])
 
   return (
     <Container
@@ -191,6 +257,7 @@ const CoachPortalPage = () => {
                     Change Avatar
                   </Button>
                 )}
+
                 <Dialog open={open} onClose={handleClose}>
                   <DialogTitle>Pick an Avatar</DialogTitle>
                   <DialogContent>
@@ -270,6 +337,36 @@ const CoachPortalPage = () => {
                 <Typography variant='h4' align='left' fontWeight={400}>
                   Service Fee: ${coachItem.price}/hour
                 </Typography>
+                {user.email !== email && requestSubmitted && (
+                  <Typography variant='h5' align='left' fontWeight={400}>
+                    -- You have already submitted a request to be coached -- 
+                  </Typography>
+                )}
+                {user.email !== email && !requestSubmitted && (
+                  <Button variant='outlined' onClick={handleClickOpen3}>
+                    Submit Coaching Request with this Coach
+                  </Button>
+                )}
+                <Dialog open={open3} onClose={handleClose3}>
+                  <DialogTitle>Enter a Request Note</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      <TextField
+                        id='outlined-multiline-static'
+                        label=''
+                        multiline
+                        rows={4}
+                        defaultValue='I love DogeCoin'
+                        value={requestText}
+                        onChange={handleRequestTextChange}
+                      />
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCoachingRequestSubmit}>Submit Request</Button>
+                    <Button onClick={handleClose3}>Cancel</Button>
+                  </DialogActions>
+                </Dialog>
               </Paper>
             </Grid>
             <Grid item xs={12}>
