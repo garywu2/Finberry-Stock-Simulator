@@ -131,31 +131,39 @@ const SimulatorPortfolioPage = () => {
     }
 
     if (simulatorExists && userItem.simulatorEnrollments) {
-      axios
-        .get(route + 'game/tradeTransaction', {
-          params: {
-            email: String(user.email),
-            simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id,
-          },
-        })
-        .then((response) => {
-          setTradeHistoryItems(response.data)
-          updateRows(response.data)
-        })
+      trackPromise(
+        axios
+          .get(route + 'game/tradeTransaction', {
+            params: {
+              email: String(user.email),
+              simulatorID:
+                userItem.simulatorEnrollments[simIndex].simulator._id,
+            },
+          })
+          .then((response) => {
+            setTradeHistoryItems(response.data)
+            updateRows(response.data)
+          }),
+        areas.simulatorPortfolioTradeHistory
+      )
     }
 
     if (simulatorExists && userItem.simulatorEnrollments) {
-      axios
-        .get(route + 'game/holding', {
-          params: {
-            email: String(user.email),
-            simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id,
-          },
-        })
-        .then((response) => {
-          setHoldingsItems(response.data)
-          updateHoldingsRows(response.data)
-        })
+      trackPromise(
+        axios
+          .get(route + 'game/holding', {
+            params: {
+              email: String(user.email),
+              simulatorID:
+                userItem.simulatorEnrollments[simIndex].simulator._id,
+            },
+          })
+          .then((response) => {
+            setHoldingsItems(response.data)
+            updateHoldingsRows(response.data)
+          }),
+        areas.simulatorPortfolioHoldings
+      )
     }
 
     if (simulatorExists && userItem.simulatorEnrollments) {
@@ -527,7 +535,10 @@ const SimulatorPortfolioPage = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 {selectedSimulator && simulatorExists ? (
-                  <Holdings data={holdingsRows} />
+                  <>
+                    <Holdings data={holdingsRows} />
+                    <Spinner area={areas.simulatorPortfolioHoldings} />
+                  </>
                 ) : (
                   <Holdings data={undefined} />
                 )}
@@ -536,7 +547,10 @@ const SimulatorPortfolioPage = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 {selectedSimulator && simulatorExists ? (
-                  <Orders data={rows} />
+                  <>
+                    <Spinner area={areas.simulatorPortfolioTradeHistory} />
+                    <Orders data={rows} />
+                  </>
                 ) : (
                   <Orders data={undefined} />
                 )}
