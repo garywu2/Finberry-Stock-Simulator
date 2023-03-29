@@ -13,6 +13,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Link } from 'react-router-dom'
 import React, { useContext, useState } from 'react'
 import axios from 'axios'
+import { trackPromise } from 'react-promise-tracker'
 
 import Title from '../../components/Title'
 import Chart from '../../components/Chart'
@@ -20,6 +21,8 @@ import Balance from '../../components/Balance'
 import Holdings from '../../components/Holdings'
 import Orders from '../../components/Orders'
 import UserContext from '../../context/user'
+import Spinner from '../../components/Spinner'
+import { areas } from '../../constants/areas'
 
 const route =
   process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
@@ -56,14 +59,19 @@ const SimulatorPortfolioPage = () => {
   const simulators = ['All Time', 'Monthly', 'Weekly']
 
   React.useEffect(() => {
-    axios.get(route + 'account/user', {
-      params: {
-        email: String(user.email),
-        moreDetails: true
-      }
-    }).then((response) => {
-      setUserItem(response.data[0])
-    });
+    trackPromise(
+      axios
+        .get(route + 'account/user', {
+          params: {
+            email: String(user.email),
+            moreDetails: true,
+          },
+        })
+        .then((response) => {
+          setUserItem(response.data[0])
+        }),
+      areas.simulatorPortfolioUserInfo
+    )
   }, [])
 
   function updateRows(data: any) {
@@ -123,53 +131,53 @@ const SimulatorPortfolioPage = () => {
     }
 
     if (simulatorExists && userItem.simulatorEnrollments) {
-      axios
-        .get(
-          route +
-            'game/tradeTransaction',
-            {
-              params: {
-                email: String(user.email),
-                simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
-              }
-            }
-        )
-        .then((response) => {
-          setTradeHistoryItems(response.data)
-          updateRows(response.data)
-        })
+      trackPromise(
+        axios
+          .get(route + 'game/tradeTransaction', {
+            params: {
+              email: String(user.email),
+              simulatorID:
+                userItem.simulatorEnrollments[simIndex].simulator._id,
+            },
+          })
+          .then((response) => {
+            setTradeHistoryItems(response.data)
+            updateRows(response.data)
+          }),
+        areas.simulatorPortfolioTradeHistory
+      )
     }
 
     if (simulatorExists && userItem.simulatorEnrollments) {
-      axios
-        .get(
-          route +
-            'game/holding',
-            {
-              params: {
-                email: String(user.email),
-                simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
-              }
-            }
-        )
-        .then((response) => {
-          setHoldingsItems(response.data)
-          updateHoldingsRows(response.data)
-        })
+      trackPromise(
+        axios
+          .get(route + 'game/holding', {
+            params: {
+              email: String(user.email),
+              simulatorID:
+                userItem.simulatorEnrollments[simIndex].simulator._id,
+            },
+          })
+          .then((response) => {
+            setHoldingsItems(response.data)
+            updateHoldingsRows(response.data)
+          }),
+        areas.simulatorPortfolioHoldings
+      )
     }
 
     if (simulatorExists && userItem.simulatorEnrollments) {
       axios({
         method: 'get',
-        url: 
-          route + 
-          'game/balancecalculation/balance/simulatoremail/' + 
+        url:
+          route +
+          'game/balancecalculation/balance/simulatoremail/' +
           userItem.simulatorEnrollments[simIndex].simulator._id +
-          "/" +
+          '/' +
           userItem.email,
       }).then((resp) => {
-        setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
-    });
+        setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance)
+      })
     }
   }
 
@@ -196,18 +204,14 @@ const SimulatorPortfolioPage = () => {
     const finalStr2 = stringNewDate.substring(0, stringNewDate.indexOf('T'))
 
     axios
-      .get(
-        route +
-        'stock/time_series',
-        {
-          params: {
-            symbol: String(selectedValue),
-            interval: '1week',
-            start_date: finalStr2,
-            outputsize: '60'
-          }
-        }
-      )
+      .get(route + 'stock/time_series', {
+        params: {
+          symbol: String(selectedValue),
+          interval: '1week',
+          start_date: finalStr2,
+          outputsize: '60',
+        },
+      })
       .then((response) => {
         setChartItems(response.data.data)
         var saveData = response.data.data
@@ -222,15 +226,11 @@ const SimulatorPortfolioPage = () => {
           }
         }
         axios
-          .get(
-            route +
-            'stock/price',
-            {
-              params:{
-                symbol: saveData.meta.symbol
-              }
-            }
-          )
+          .get(route + 'stock/price', {
+            params: {
+              symbol: saveData.meta.symbol,
+            },
+          })
           .then((response) => {
             setRealTimePrice(response.data.data)
           })
@@ -261,57 +261,49 @@ const SimulatorPortfolioPage = () => {
           .get(route + 'account/user', {
             params: {
               email: String(user.email),
-              moreDetails: true
-            }
+              moreDetails: true,
+            },
           })
           .then((response) => {
             setUserItem(response.data[0])
             axios
-              .get(
-                route +
-                  'game/tradeTransaction',
-                  {
-                    params: {
-                      email: String(user.email),
-                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
-                    }
-                  }
-              )
+              .get(route + 'game/tradeTransaction', {
+                params: {
+                  email: String(user.email),
+                  simulatorID:
+                    userItem.simulatorEnrollments[simIndex].simulator._id,
+                },
+              })
               .then((response) => {
                 setTradeHistoryItems(response.data)
                 updateRows(response.data)
               })
             axios
-              .get(
-                route +
-                  'game/holding',
-                  {
-                    params: {
-                      email: String(user.email),
-                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
-                    }
-                  }
-              )
+              .get(route + 'game/holding', {
+                params: {
+                  email: String(user.email),
+                  simulatorID:
+                    userItem.simulatorEnrollments[simIndex].simulator._id,
+                },
+              })
               .then((response) => {
                 setHoldingsItems(response.data)
                 updateHoldingsRows(response.data)
               })
 
-              axios({
-                method: 'get',
-                url: 
-                  route + 
-                  'game/balancecalculation/balance/simulatoremail/' + 
-                  userItem.simulatorEnrollments[simIndex].simulator._id +
-                  "/" +
-                  userItem.email,
-              }).then((resp) => {
-                setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
-              });
+            axios({
+              method: 'get',
+              url:
+                route +
+                'game/balancecalculation/balance/simulatoremail/' +
+                userItem.simulatorEnrollments[simIndex].simulator._id +
+                '/' +
+                userItem.email,
+            }).then((resp) => {
+              setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance)
+            })
           })
       })
-
-      
     }
   }
 
@@ -339,37 +331,31 @@ const SimulatorPortfolioPage = () => {
           .get(route + 'account/user', {
             params: {
               email: String(user.email),
-              moreDetails: true
-            }
+              moreDetails: true,
+            },
           })
           .then((response) => {
             setUserItem(response.data[0])
             axios
-              .get(
-                route +
-                  'game/tradeTransaction',
-                  {
-                    params: {
-                      email: String(user.email),
-                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
-                    }
-                  }
-              )
+              .get(route + 'game/tradeTransaction', {
+                params: {
+                  email: String(user.email),
+                  simulatorID:
+                    userItem.simulatorEnrollments[simIndex].simulator._id,
+                },
+              })
               .then((response) => {
                 setTradeHistoryItems(response.data)
                 updateRows(response.data)
               })
             axios
-              .get(
-                route +
-                  'game/holding',
-                  {
-                    params: {
-                      email: String(user.email),
-                      simulatorID: userItem.simulatorEnrollments[simIndex].simulator._id
-                    }
-                  }
-              )
+              .get(route + 'game/holding', {
+                params: {
+                  email: String(user.email),
+                  simulatorID:
+                    userItem.simulatorEnrollments[simIndex].simulator._id,
+                },
+              })
               .then((response) => {
                 setHoldingsItems(response.data)
                 updateHoldingsRows(response.data)
@@ -377,19 +363,17 @@ const SimulatorPortfolioPage = () => {
 
             axios({
               method: 'get',
-              url: 
-                route + 
-                'game/balancecalculation/balance/simulatoremail/' + 
+              url:
+                route +
+                'game/balancecalculation/balance/simulatoremail/' +
                 userItem.simulatorEnrollments[simIndex].simulator._id +
-                "/" +
+                '/' +
                 userItem.email,
             }).then((resp) => {
-              setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
-            });
+              setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance)
+            })
           })
       })
-
-      
     }
   }
 
@@ -447,9 +431,11 @@ const SimulatorPortfolioPage = () => {
                 }}
               >
                 <Title>
-                  {userItem
-                    ? `Welcome to your simulator portfolio, ${userItem.username} ${userItem.lastName}!`
-                    : `Welcome to your simulator portfolio!`}
+                  {userItem?.username ? (
+                    `Welcome to your simulator portfolio, ${userItem.username}!`
+                  ) : (
+                    <Spinner area={areas.simulatorPortfolioUserInfo} />
+                  )}
                 </Title>
                 <Typography component='p' variant='body1'>
                   Select a simulator:
@@ -515,7 +501,9 @@ const SimulatorPortfolioPage = () => {
                 <Balance
                   title='Buying Power'
                   amount={
-                    selectedSimulator && simulatorExists && userItem.simulatorEnrollments
+                    selectedSimulator &&
+                    simulatorExists &&
+                    userItem.simulatorEnrollments
                       ? userItem.simulatorEnrollments[simIndex].balance
                       : 0
                   }
@@ -534,7 +522,10 @@ const SimulatorPortfolioPage = () => {
                 <Balance
                   title='Portfolio Value'
                   amount={
-                    selectedSimulator && simulatorExists && userItem.simulatorEnrollments && portfolioValue
+                    selectedSimulator &&
+                    simulatorExists &&
+                    userItem.simulatorEnrollments &&
+                    portfolioValue
                       ? portfolioValue
                       : 0
                   }
@@ -544,7 +535,10 @@ const SimulatorPortfolioPage = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 {selectedSimulator && simulatorExists ? (
-                  <Holdings data={holdingsRows} />
+                  <>
+                    <Holdings data={holdingsRows} />
+                    <Spinner area={areas.simulatorPortfolioHoldings} />
+                  </>
                 ) : (
                   <Holdings data={undefined} />
                 )}
@@ -553,7 +547,10 @@ const SimulatorPortfolioPage = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 {selectedSimulator && simulatorExists ? (
-                  <Orders data={rows} />
+                  <>
+                    <Spinner area={areas.simulatorPortfolioTradeHistory} />
+                    <Orders data={rows} />
+                  </>
                 ) : (
                   <Orders data={undefined} />
                 )}
