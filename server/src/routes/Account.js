@@ -752,13 +752,13 @@ router.delete("/badge", async (req, res) => {
 // POST - New UserBadge
 router.post("/userbadge", async (req, res) => {
     let newUserBadge = {
-        user: req.body.user,
-        badgeType: req.body.badgeType,
-        aquisition: req.body.aquisition,
-        retracted: req.body.retracted,
-        displayPosition: req.body.displayPosition,
-        dateEarned: Date.now()
-    };
+      user: req.body.user,
+      badgeType: req.body.badgeType,
+      acquisition: req.body.acquisition,
+      retracted: req.body.retracted,
+      displayPosition: req.body.displayPosition,
+      dateEarned: Date.now(),
+    }
     
     if (req.body.dateEarned) { // Set to date now but default but can be overriten.
         newUserBadge.dateEarned = req.body.dateEarned;

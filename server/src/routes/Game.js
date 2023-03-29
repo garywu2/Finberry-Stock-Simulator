@@ -702,37 +702,35 @@ async function getStockDictionaryOfSimulatorEnrollmentsByHoldings(holdings) {
 }
 
 function createTailoredHoldingsList(holdings, stockDictionary) {
-    let taoloredHoldings = [];
-    
+    let tailoredHoldings = []
+
     holdings.forEach((holding) => {
-        let index = holding.index;
-        let symbol = holding.symbol;
-        let quantity = holding.quantity;
+      let index = holding.index
+      let symbol = holding.symbol
+      let quantity = holding.quantity
 
-        let price = 0;
-        if (quantity > 0) {
-            try {
-                price = stockDictionary[index][symbol];
-            }
-            catch {
-                price = -1;
-            }
+      let price = 0
+      if (quantity > 0) {
+        try {
+          price = stockDictionary[index][symbol]
+        } catch {
+          price = -1
         }
+      }
 
-        let tailoredHolding = Object.assign({}, holding["_doc"]); // Make copy of the input
-        tailoredHolding.stockPrice = price;
+      let tailoredHolding = Object.assign({}, holding['_doc']) // Make copy of the input
+      tailoredHolding.stockPrice = price
 
-        if (price > 0) {
-            tailoredHolding.totalValue = price * tailoredHolding.quantity;
-        }
-        else {
-            tailoredHolding.totalValue = 0;
-        }
-        
-        taoloredHoldings.push(tailoredHolding);
-    });
+      if (price > 0) {
+        tailoredHolding.totalValue = price * tailoredHolding.quantity
+      } else {
+        tailoredHolding.totalValue = 0
+      }
 
-    return (taoloredHoldings);
+      tailoredHoldings.push(tailoredHolding)
+    })
+
+    return tailoredHoldings
 }
 
 // GET a list of holdings meeting Params
