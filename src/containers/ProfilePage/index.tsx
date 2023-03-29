@@ -13,6 +13,10 @@ import { useTheme } from '@mui/material/styles';
 import { width } from '@mui/system';
 import FirebaseContext from "../../context/firebase";
 
+import { trackPromise } from 'react-promise-tracker'
+import Spinner from '../../components/Spinner'
+import { areas } from '../../constants/areas'
+
 const Av1 = require('../../images/avatars/a1.png')
 const Av2 = require('../../images/avatars/a2.png')
 const Av3 = require('../../images/avatars/a3.png')
@@ -58,7 +62,7 @@ const ProfilePage = () => {
   const [bioText, setBioText] = useState('')
   const { email } = useParams()
   const theme = useTheme()
-  const { auth } = useContext(FirebaseContext);
+  const { auth } = useContext(FirebaseContext)
 
   const avatars = [
     { img: Av1, string: '../../images/avatars/a1.png' },
@@ -136,17 +140,19 @@ const ProfilePage = () => {
         bio: bioText,
       },
     }).then((result: any) => {
-      axios
-        .get(route + 'account/user', {
-          params: {
-            email: String(user.email),
-          },
-        })
-        .then((response) => {
-          setUserItem(response.data[0])
-        })
+      trackPromise(
+        axios
+          .get(route + 'account/user', {
+            params: {
+              email: String(user.email),
+            },
+          })
+          .then((response) => {
+            setUserItem(response.data[0])
+          }),
+        areas.profileUserBioSubmit
+      )
     })
-
     setOpen2(false)
   }
 
@@ -155,19 +161,22 @@ const ProfilePage = () => {
   }
 
   React.useEffect(() => {
-    axios
-      .get(route + 'account/user', {
-        params: {
-          email: String(email),
-        },
-      })
-      .then((response) => {
-        if (response?.data[0]) {
-          setUserItem(response.data[0])
-          setCurrImg(response.data[0].avatar)
-        }
-      })
-  }, [email, auth, user]);
+    trackPromise(
+      axios
+        .get(route + 'account/user', {
+          params: {
+            email: String(email),
+          },
+        })
+        .then((response) => {
+          if (response?.data[0]) {
+            setUserItem(response.data[0])
+            setCurrImg(response.data[0].avatar)
+          }
+        }),
+      areas.profileUserInfo
+    )
+  }, [email, auth, user])
 
   return (
     <Container
@@ -206,13 +215,14 @@ const ProfilePage = () => {
                     width: 120,
                     height: 120,
                     align: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
                   }}
                   alt={userItem.firstName}
                   src={currImg}
                 ></Avatar>
 
                 <Typography variant='body1' align='center' fontWeight={400}>
+                  <Spinner area={areas.profileUserInfo} />
                   {userItem.username}
                 </Typography>
 
@@ -281,6 +291,8 @@ const ProfilePage = () => {
                   height='100%'
                   marginBottom={2}
                 >
+                  <Spinner area={areas.profileUserInfo} />
+                  <Spinner area={areas.profileUserBioSubmit} />
                   {userItem.bio}
                 </Typography>
                 {user.email === email && (
