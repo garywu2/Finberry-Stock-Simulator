@@ -88,7 +88,7 @@ async function updateMarketMovers() {
       )
       .then(async (res) => {
         let creditsLeft = Number(res.headers["api-credits-left"]);
-        console.log("Credits left for the minute: " + creditsLeft);
+        console.log("Market Mover - Credits left for the minute: " + creditsLeft);
 
         await axios({
             method: 'delete',
@@ -170,7 +170,7 @@ async function getPricedStockInformation(stockDictionary) {
                     let latestStockPrice = -1; 
                     let priceResults = result.data; // Those are all the stocks we will need.
                     let creditsLeft = Number(result.headers["api-credits-left"]);
-                    console.log("Credits left for the minute: " + creditsLeft);
+                    console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft);
 
                     if (priceResults["price"]) {
                         latestStockPrice = Number(priceResults["price"]);
@@ -270,6 +270,13 @@ router.post("/leaderboard/:simulatorID", async (req, res) => {
         return res.status(400).json({ msg: e.message });
     }
 });
+
+
+/* #endregion */
+
+
+/* #region Create mock data */
+
 
 
 /* #endregion */
