@@ -2,7 +2,8 @@
 const   express  =   require("express"),
         router   =   express.Router(),
         url      =   require('url'),
-        mongoose =   require("mongoose");
+        mongoose =   require("mongoose"),
+        axios    =   require('axios');
 
 module.exports  =   router;
 
@@ -1031,11 +1032,29 @@ function convertDictionaryToListFormat(stockDictionary) {
 
     Object.keys(stockDictionary).forEach((index) => {
         Object.keys(stockDictionary[index]).forEach((symbol) => {
-            stockList.push({ index:index, symbol: symbol});
+            stockList.push({ index:index, symbol: symbol, price: stockDictionary[index][symbol]});
         });
     });
 
     return stockList;
+}
+
+// Proxy call to get stockDictionary populated with axio calls to another part of application,
+async function getPricedStockInformation(stockDictionary) {
+    return new Promise(async (resolve) => {
+        await axios({ // For leaderboard calculation - also getting data from the real time stock API
+            method: 'put',
+            url:
+            process.env.local_route +
+            'stock/price_dictionary',
+            headers: {},
+            data: stockDictionary,
+        }).then(result => {
+            stockDictionary = result.data;
+        });
+
+        resolve(stockDictionary);
+    });
 }
 
 // Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
@@ -1059,7 +1078,11 @@ router.get("/balancecalculation/stocksused", async (req, res) => {
         // Need to search up to find the SimulatorEnrollment of this simulator
         const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentQuery);
 
-        stockDictionary = await getStockDictionaryOfSimulatorEnrollments(simulatorEnrollments);
+        let stockDictionary = await getStockDictionaryOfSimulatorEnrollments(simulatorEnrollments);
+
+        if (requestingTrueFalseParam(req.query, "populateResults")) { // For populate results
+            stockDictionary = await getPricedStockInformation(stockDictionary);
+        }
 
         if (requestingTrueFalseParam(req.query, "listFormat")) {
             return res.json(convertDictionaryToListFormat(stockDictionary));
@@ -1077,6 +1100,7 @@ router.get('/balancecalculation/stocksused/:simulatorID', function(req, res) {
     pathname: req.baseUrl + "/balancecalculation/stocksused/" + req.params.simulatorID + "/NA",
     query: {
         listFormat: req.query.listFormat,
+        populateResults: req.query.populateResults,
     }
     }));
 });
@@ -1115,6 +1139,10 @@ router.get("/balancecalculation/stocksused/:simulatorID/:email", async (req, res
         const simulatorEnrollments = await SimulatorEnrollment.find(simulatorEnrollmentQuery);
 
         let stockDictionary = await getStockDictionaryOfSimulatorEnrollments(simulatorEnrollments);
+
+        if (requestingTrueFalseParam(req.query, "populateResults")) { // For populate results
+            stockDictionary = await getPricedStockInformation(stockDictionary);
+        }
 
         if (requestingTrueFalseParam(req.query, "listFormat")) {
             return res.json(convertDictionaryToListFormat(stockDictionary));
@@ -1207,26 +1235,7 @@ async function calculateSimulatorEnrollmentStockBalance(simulatorEnrollmentID, s
 }
 
 // Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
-router.put("/balancecalculation/balance/simulatorenrollment/:simulatorEnrollmentID", async (req, res) => {
-    if (!req.params.simulatorEnrollmentID) {
-        return res.status(400).json({ msg: "SimulatorEnrollment ID is missing" });
-    }
-
-    try {
-        let priceInfo = await calculateSimulatorEnrollmentStockBalance(req.params.simulatorEnrollmentID, req.body);
-
-        if (!priceInfo) {
-            return res.status(400).json({ msg: "No SimulatorEnrollment with the provided ID was found." });
-        }
-
-        return res.json(priceInfo);
-    } catch (e) {
-        return res.status(400).json({ msg: e.message });
-    }
-});
-
-// Get stocks used by simulator ID and user email. (has option to only get for simulator ID)
-router.put("/balancecalculation/balance/simulatoremail/:simulatorID/:email", async (req, res) => {
+router.get("/balancecalculation/balance/simulatoremail/:simulatorID/:email", async (req, res) => {
     if (!req.params.email) {
         return res.status(400).json({ msg: "Email is missing" });
     }
@@ -1251,7 +1260,21 @@ router.put("/balancecalculation/balance/simulatoremail/:simulatorID/:email", asy
             return res.status(400).json({ msg: "No SimulatorEnrollment of the combination of user and simulator was found." });
         }
 
-        return res.json(await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, req.body));
+        let stockDictionary = {};
+        await axios({ // For leaderboard calculation - also getting data from the real time stock API
+            method: 'get',
+            url:
+            process.env.local_route +
+            'game/balancecalculation/stocksused/' + simulator._id + '/' + user.email,
+            headers: {},
+            params: {
+                populateResults: true,
+            }
+        }).then(result => {
+            stockDictionary = result.data;
+        });
+
+        return res.json(await calculateSimulatorEnrollmentStockBalance(simulatorEnrollment._id, stockDictionary, req.body));
     } catch (e) {
         return res.status(400).json({ msg: e.message });
     }
