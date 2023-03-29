@@ -11,6 +11,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { Link, useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles'
 
+import { trackPromise } from 'react-promise-tracker'
+import Spinner from '../../components/Spinner'
+import { areas } from '../../constants/areas'
+
 const Av1 = require('../../images/avatars/a1.png')
 const Av2 = require('../../images/avatars/a2.png')
 const Av3 = require('../../images/avatars/a3.png')
@@ -135,6 +139,47 @@ const CoachPortalPage = () => {
         description: bioText,
       },
     }).then((result: any) => {
+      trackPromise(
+        axios
+          .get(route + 'account/coaching', {
+            params: {
+              email: String(user.email),
+              moreDetails: true,
+            },
+          })
+          .then((response) => {
+            setCoachItem(response.data[0])
+          }),
+        areas.coachPortalBioSubmit
+      )
+    })
+    setOpen2(false)
+  }
+
+  const handleBioTextChange = (event: any) => {
+    setBioText(event.target.value)
+  }
+
+  React.useEffect(() => {
+    trackPromise(
+      axios
+        .get(route + 'account/user', {
+          params: {
+            email: String(user.email),
+          },
+        })
+        .then((response) => {
+          setUserItem(response.data[0])
+          if (response.data[0]) {
+            setCurrImg(response.data[0].avatar)
+          }
+        }),
+      areas.coachPortalUserImage
+    )
+  }, [email])
+
+  React.useEffect(() => {
+    trackPromise(
       axios
         .get(route + 'account/coaching', {
           params: {
@@ -144,45 +189,12 @@ const CoachPortalPage = () => {
         })
         .then((response) => {
           setCoachItem(response.data[0])
-        })
-    })
-
-    setOpen2(false)
-  }
-
-  const handleBioTextChange = (event: any) => {
-    setBioText(event.target.value)
-  }
-
-  React.useEffect(() => {
-    axios
-      .get(route + 'account/user', {
-        params: {
-          email: String(user.email),
-        },
-      })
-      .then((response) => {
-        setUserItem(response.data[0])
-        if (response.data[0]) {
-          setCurrImg(response.data[0].avatar)
-        }
-      })
-  }, [email])
-
-  React.useEffect(() => {
-    axios
-      .get(route + 'account/coaching', {
-        params: {
-          email: String(user.email),
-          moreDetails: true,
-        },
-      })
-      .then((response) => {
-        setCoachItem(response.data[0])
-        if (response.data[0].status == 1) {
-          setIsApprovedCoach(true)
-        }
-      })
+          if (response.data[0].status == 1) {
+            setIsApprovedCoach(true)
+          }
+        }),
+      areas.coachPortalUserInfo
+    )
   }, [])
 
   return (
@@ -233,6 +245,8 @@ const CoachPortalPage = () => {
                 >
                   Approved Coach
                 </Typography>
+
+                <Spinner area={areas.coachPortalUserInfo} />
 
                 <Typography variant='body1' align='center' fontWeight={400}>
                   {userItem.username}
@@ -304,6 +318,7 @@ const CoachPortalPage = () => {
                   marginBottom={2}
                 >
                   {coachItem.description}
+                  <Spinner area={areas.coachPortalBioSubmit} />
                 </Typography>
                 {user.email === email && (
                   <Button variant='outlined' onClick={handleClickOpen2}>
