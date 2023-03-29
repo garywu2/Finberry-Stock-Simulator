@@ -638,6 +638,7 @@ router.post("/badge", async (req, res) => {
     let newBadge = {
         displayName: req.body.displayName,
         type: req.body.type,
+        rarity: req.body.rarity,
         description: req.body.description,
         image: req.body.image,
         enabled: req.body.enabled
@@ -753,6 +754,7 @@ router.post("/userbadge", async (req, res) => {
     let newUserBadge = {
         user: req.body.user,
         badgeType: req.body.badgeType,
+        aquisition: req.body.aquisition,
         retracted: req.body.retracted,
         displayPosition: req.body.displayPosition,
         dateEarned: Date.now()

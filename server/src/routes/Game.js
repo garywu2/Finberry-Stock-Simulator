@@ -683,6 +683,58 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
 
 // POST for holdings are not directly created, it must be done through the StockExchange Commands when buying stocks.
 
+
+async function getStockDictionaryOfSimulatorEnrollmentsByHoldings(holdings) {
+    let stockDictionary = {};
+
+    for (const holding of holdings) {
+        let symbol = holding.symbol;
+        let index = holding.index;
+
+        if (!stockDictionary[index]) {
+            stockDictionary[index] = {};
+        }
+
+        stockDictionary[index][symbol] = 0;
+    }
+
+    return stockDictionary;
+}
+
+function createTailoredHoldingsList(holdings, stockDictionary) {
+    let taoloredHoldings = [];
+    
+    holdings.forEach((holding) => {
+        let index = holding.index;
+        let symbol = holding.symbol;
+        let quantity = holding.quantity;
+
+        let price = 0;
+        if (quantity > 0) {
+            try {
+                price = stockDictionary[index][symbol];
+            }
+            catch {
+                price = -1;
+            }
+        }
+
+        let tailoredHolding = Object.assign({}, holding["_doc"]); // Make copy of the input
+        tailoredHolding.stockPrice = price;
+
+        if (price > 0) {
+            tailoredHolding.totalValue = price * tailoredHolding.quantity;
+        }
+        else {
+            tailoredHolding.totalValue = 0;
+        }
+        
+        taoloredHoldings.push(tailoredHolding);
+    });
+
+    return (taoloredHoldings);
+}
+
 // GET a list of holdings meeting Params
 router.get("/holding", async (req, res) => {
     try {
@@ -721,7 +773,15 @@ router.get("/holding", async (req, res) => {
             params["quantity"] = {$gt : 0};
         }
 
-        const holdings = await Holding.find(params);
+        let holdings = await Holding.find(params);
+
+        // If the user wishes to get the price information alongside the actual stock.
+        if (requestingTrueFalseParam(req.query, "populatePriceAndValue")) {
+            // Get stock information and value
+            let stockDictionary = await getPricedStockInformation(await getStockDictionaryOfSimulatorEnrollmentsByHoldings(holdings));
+
+           holdings = createTailoredHoldingsList(holdings, stockDictionary);
+        }   
 
         return autoManageOutput(res, req.query, holdings, "Holding");
     } catch (e) {

@@ -11,6 +11,11 @@ const userBadgeSchema = new mongoose.Schema({
         ref: "Badge",
         required: true,
     },
+    aquisition: {
+        type: String,
+        required: true,
+        default: "Mysteriously appeared.",
+    },
     retracted: {
         type: Boolean,
         required: true,
