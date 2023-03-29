@@ -8,4 +8,5 @@ export const areas = {
   simulatorPortfolioUserInfo: 'simulator-portfolio-user-info-area',
   simulatorPortfolioTradeHistory: 'simulator-portfolio-trade-history-area',
   simulatorPortfolioHoldings: 'simulator-portfolio-holdings-area',
+  leaderboardsPage: 'leaderboards-page-area',
 }
