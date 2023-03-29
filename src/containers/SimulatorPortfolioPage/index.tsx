@@ -159,32 +159,17 @@ const SimulatorPortfolioPage = () => {
     }
 
     if (simulatorExists && userItem.simulatorEnrollments) {
-      axios.get(
-        route +
-        'game/balancecalculation/stocksused/' +
-        userItem.simulatorEnrollments[simIndex].simulator._id +
-        "/" +
-        userItem.email
-      ).then((response) => {
-        axios({
-          method: 'put',
-          url: route + 'stock/price_dictionary',
-          data: response.data,
-        }).then((res) => {
-          axios({
-            method: 'put',
-            url: 
-              route + 
-              'game/balancecalculation/balance/simulatoremail/' + 
-              userItem.simulatorEnrollments[simIndex].simulator._id +
-              "/" +
-              userItem.email,
-            data: res.data,
-          }).then((resp) => {
-            setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
-          });
-        });
-      });
+      axios({
+        method: 'get',
+        url: 
+          route + 
+          'game/balancecalculation/balance/simulatoremail/' + 
+          userItem.simulatorEnrollments[simIndex].simulator._id +
+          "/" +
+          userItem.email,
+      }).then((resp) => {
+        setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
+    });
     }
   }
 
@@ -312,31 +297,16 @@ const SimulatorPortfolioPage = () => {
                 updateHoldingsRows(response.data)
               })
 
-            axios.get(
-                route +
-                'game/balancecalculation/stocksused/' +
-                userItem.simulatorEnrollments[simIndex].simulator._id +
-                "/" +
-                userItem.email
-              ).then((response) => {
-                axios({
-                  method: 'put',
-                  url: route + 'stock/price_dictionary',
-                  data: response.data,
-                }).then((res) => {
-                  axios({
-                    method: 'put',
-                    url: 
-                      route + 
-                      'game/balancecalculation/balance/simulatoremail/' + 
-                      userItem.simulatorEnrollments[simIndex].simulator._id +
-                      "/" +
-                      userItem.email,
-                    data: res.data,
-                  }).then((resp) => {
-                    setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
-                  });
-                });
+              axios({
+                method: 'get',
+                url: 
+                  route + 
+                  'game/balancecalculation/balance/simulatoremail/' + 
+                  userItem.simulatorEnrollments[simIndex].simulator._id +
+                  "/" +
+                  userItem.email,
+              }).then((resp) => {
+                setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
               });
           })
       })
@@ -405,32 +375,17 @@ const SimulatorPortfolioPage = () => {
                 updateHoldingsRows(response.data)
               })
 
-            axios.get(
-                route +
-                'game/balancecalculation/stocksused/' +
+            axios({
+              method: 'get',
+              url: 
+                route + 
+                'game/balancecalculation/balance/simulatoremail/' + 
                 userItem.simulatorEnrollments[simIndex].simulator._id +
                 "/" +
-                userItem.email
-              ).then((response) => {
-                axios({
-                  method: 'put',
-                  url: route + 'stock/price_dictionary',
-                  data: response.data,
-                }).then((res) => {
-                  axios({
-                    method: 'put',
-                    url: 
-                      route + 
-                      'game/balancecalculation/balance/simulatoremail/' + 
-                      userItem.simulatorEnrollments[simIndex].simulator._id +
-                      "/" +
-                      userItem.email,
-                    data: res.data,
-                  }).then((resp) => {
-                    setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
-                  });
-                });
-              });
+                userItem.email,
+            }).then((resp) => {
+              setPortfolioValue(resp.data.stockBalance + resp.data.cashBalance);
+            });
           })
       })
 
