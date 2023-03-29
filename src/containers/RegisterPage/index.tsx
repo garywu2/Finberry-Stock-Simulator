@@ -23,6 +23,7 @@ const RegisterPage = () => {
   };
 
   const [signupState, setSignupState] = useState(defaultValues);
+  const [move, setMove] = useState(true);
   const [error, setError] = useState("");
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -46,8 +47,8 @@ const RegisterPage = () => {
         signupState.email,
         signupState.password
       )
-        .then(async (result: any) => {
-          await axios
+        .then((result: any) => {
+          axios
             .post(route + 'account/user', {
               firstName: signupState.firstName,
               lastName: signupState.lastName,
@@ -61,12 +62,12 @@ const RegisterPage = () => {
             .then((servResult: any) => {
               console.log(servResult)
               setError('')
+              setMove(false)
               setSignupState(defaultValues)
             })
             .catch((e: any) => {
               setError(e.response.data.msg)
             })
-          navigate('/profile/' + signupState.email)
         })
         .catch((e: any) => {
           setError(e.message)
@@ -93,7 +94,7 @@ const RegisterPage = () => {
           paddingBottom: '2rem',
         }}
       >
-        {!user ? (
+        {!user || move ? (
           <Box
             component='form'
             display={'flex'}

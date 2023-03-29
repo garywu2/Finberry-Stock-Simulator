@@ -313,7 +313,7 @@ router.post("/user", async (req, res) => {
         !newUser.permissionLevel ||
         !newUser.createdAt
     ) {
-        return res.status(400).json({ msg: "User is missing one or more required field(s)" });
+        return res.status(400).json({ msg: "User is missing one or more required field(s)", errorCode: 1 }); // 1 - Missing one or more field.
     }
 
     // Permission level - Must be integer between 0 and 3
@@ -330,7 +330,17 @@ router.post("/user", async (req, res) => {
         await dbUser.save();
         return res.json(dbUser);
     } catch (e) {
-      return res.status(400).json({ msg: "Failed to create user: " + e.message });
+        let errorCode = 4; //  4 - Unexpected errors
+        if (e.code == "11000") { // Duplicate key error 
+            if (e.keyPattern.email) {
+                errorCode = 2; // 2 - email already taken
+            }
+            else if (e.keyPattern.username) {
+                errorCode = 3; // 3 - username already taken
+            }
+        }
+
+        return res.status(400).json({ msg: "Failed to create user: " + e.message, errorCode: errorCode });
     }
 });
 
