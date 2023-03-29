@@ -95,41 +95,57 @@ const CoachCataloguePage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            <Spinner area={areas.coachCatalogue} />
-            {coaches.map(
-              (coach: {
-                firstName: React.Key | null | undefined
-                lastName:
-                  | boolean
-                  | React.ReactChild
-                  | React.ReactFragment
-                  | React.ReactPortal
-                  | null
-                  | undefined
-                bio:
-                  | boolean
-                  | React.ReactChild
-                  | React.ReactFragment
-                  | React.ReactPortal
-                  | null
-                  | undefined
-                email: String | null | undefined
-              }) => (
-                <TableRow key={coach.firstName}>
-                  <TableCell>
-                    <Link
-                      style={{ fontFamily: 'Fredoka', margin: '10px' }}
-                      to={'/profile/' + coach.email}
-                    >
-                      {coach.firstName}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{coach.lastName}</TableCell>
-                  <TableCell align='left'>{coach.email}</TableCell>
-                  <TableCell>
-                    <Button></Button>
-                  </TableCell>
-                </TableRow>
+            {coaches.length === 0 ? (
+              <TableRow key={'spinner'}>
+                <TableCell>
+                  <Spinner area={areas.coachCatalogue} />
+                </TableCell>
+                <TableCell>
+                  <Spinner area={areas.coachCatalogue} />
+                </TableCell>
+                <TableCell align='left'>
+                  <Spinner area={areas.coachCatalogue} />
+                </TableCell>
+                <TableCell>
+                  <Spinner area={areas.coachCatalogue} />{' '}
+                </TableCell>
+              </TableRow>
+            ) : (
+              coaches.map(
+                (coach: {
+                  firstName: React.Key | null | undefined
+                  lastName:
+                    | boolean
+                    | React.ReactChild
+                    | React.ReactFragment
+                    | React.ReactPortal
+                    | null
+                    | undefined
+                  bio:
+                    | boolean
+                    | React.ReactChild
+                    | React.ReactFragment
+                    | React.ReactPortal
+                    | null
+                    | undefined
+                  email: String | null | undefined
+                }) => (
+                  <TableRow key={coach.firstName}>
+                    <TableCell>
+                      <Link
+                        style={{ fontFamily: 'Fredoka', margin: '10px' }}
+                        to={'/profile/' + coach.email}
+                      >
+                        {coach.firstName}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{coach.lastName}</TableCell>
+                    <TableCell align='left'>{coach.email}</TableCell>
+                    <TableCell>
+                      <Button></Button>
+                    </TableCell>
+                  </TableRow>
+                )
               )
             )}
           </TableBody>
