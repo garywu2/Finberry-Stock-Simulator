@@ -1,7 +1,7 @@
 import UserContext from "../../context/user";
 import { useContext, useState } from "react";
-import React from 'react'
-import axios from 'axios'
+import React from 'react';
+import axios from 'axios';
 import { Box, Button, Container, Grid, TextField, Typography, Paper, Avatar } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -9,9 +9,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Link, useParams } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles'
-import { width } from '@mui/system'
 import { useTheme } from '@mui/material/styles';
+import { width } from '@mui/system';
 import FirebaseContext from "../../context/firebase";
 
 const Av1 = require('../../images/avatars/a1.png')
