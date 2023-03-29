@@ -2,7 +2,7 @@ import UserContext from "../../context/user";
 import { useContext, useState } from "react";
 import React from 'react'
 import axios from 'axios'
-import { Box, Button, Container, Grid, TextField, Typography, Paper, Avatar } from "@mui/material";
+import { Box, Button, Container, Grid, TextField, Typography, Paper, Avatar, Table,TableBody, TableCell, TableHead, TableRow, } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -53,6 +53,8 @@ const CoachPortalPage = () => {
   const { user } = useContext(UserContext);
   const [userItem, setUserItem] = React.useState<any>([]);
   const [coachItem, setCoachItem] = React.useState<any>([]);
+  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([]);
+  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([]);
   const [open, setOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
   const [open3, setOpen3] = React.useState(false);
@@ -61,6 +63,7 @@ const CoachPortalPage = () => {
   const [bioText, setBioText] = useState('');
   const [requestText, setRequestText] = useState('');
   const [isApprovedCoach, setIsApprovedCoach] = React.useState(false);
+  const [clientAorD, setClientAorD] = React.useState(false);
   const { email } = useParams();
   const theme = useTheme();
   const { auth } = useContext(FirebaseContext);
@@ -157,7 +160,7 @@ const CoachPortalPage = () => {
           },
         })
         .then((response) => {
-          setCoachItem(response.data[0])
+          setCoachItem(response?.data[0])
         })
     })
 
@@ -183,9 +186,32 @@ const CoachPortalPage = () => {
       });
     }
     
-
     setOpen3(false);
   }
+
+  const handleAcceptClient = (event: any) =>{
+    axios({
+      method: 'post',
+      url: route + 'account/coachingsession/' + event.target.value,
+      data: {
+        status: 1
+      }
+    });
+
+    setClientAorD(true);
+  };
+
+  const handleDeclineClient = (event: any) =>{
+    axios({
+      method: 'post',
+      url: route + 'account/coachingsession/' + event.target.value,
+      data: {
+        status: 3
+      }
+    });
+
+    setClientAorD(true);
+  };
 
   const handleBioTextChange = (event: any) => {
     setBioText(event.target.value)
@@ -208,10 +234,8 @@ const CoachPortalPage = () => {
           setCurrImg(response.data[0].avatar)
         }
       })
-  }, [email, auth, user])
 
-  React.useEffect(() => {
-    axios
+      axios
       .get(route + 'account/coaching', {
         params: {
           email: String(email),
@@ -220,7 +244,7 @@ const CoachPortalPage = () => {
       })
       .then((response) => {
         if (response?.data[0].status == 1) {
-          setCoachItem(response.data[0])
+          setCoachItem(response?.data[0])
           setIsApprovedCoach(true)
         }
       })
@@ -248,8 +272,25 @@ const CoachPortalPage = () => {
         });
       });
 
-    
-  }, [email, auth, user])
+    axios.get(route + 'account/coachingsession', {
+      params: {
+        coachingProfile: coachItem._id,
+        status: 0
+      }
+    }).then((res) => {
+      setCoachingSessionsReq(res?.data);
+    });
+
+    axios.get(route + 'account/coachingsession', {
+      params: {
+        coachingProfile: coachItem._id,
+        status: 1
+      }
+    }).then((res) => {
+      setCoachingSessionsAct(res?.data);
+    });
+
+  }, [email, auth, user, clientAorD])
 
   return (
     <Container
@@ -409,15 +450,20 @@ const CoachPortalPage = () => {
                 <Typography variant='h4' align='left' fontWeight={400}>
                   Service Fee: ${coachItem.price}/hour
                 </Typography>
-                {user.email !== email && requestSubmitted && (
+                {user.email !== email && requestSubmitted && !activeClient && (
                   <Typography variant='h5' align='left' fontWeight={400}>
-                    -- You have already submitted a request to be coached -- 
+                    -- You have already submitted a request to be coached by {userItem.username} -- 
                   </Typography>
                 )}
-                {user.email !== email && !requestSubmitted && (
+                {user.email !== email && !requestSubmitted && !activeClient && (
                   <Button variant='outlined' onClick={handleClickOpen3}>
                     Submit Coaching Request with this Coach
                   </Button>
+                )}
+                {user.email !== email && activeClient && (
+                  <Typography variant='h5' align='left' fontWeight={400}>
+                    -- You are currently being coached by {userItem.username} --
+                  </Typography>
                 )}
                 <Dialog open={open3} onClose={handleClose3}>
                   <DialogTitle>Enter a Request Note</DialogTitle>
@@ -459,12 +505,90 @@ const CoachPortalPage = () => {
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                   {coachItem.coachingClients.length > 0 ? (
                     <Typography variant='h4' align='left' fontWeight={400}>
-                      Clients currently being coached:
+                      Clients:
                     </Typography>
                   ) : (
                     <Typography variant='h4' align='left' fontWeight={400}>
                       You currently have no clients.
                     </Typography>
+                  )}
+
+                  {coachingSessionsReq.length > 0 ? (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      The following Clients have requested to be coached:
+                    </Typography>
+                  ) : (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      You have no new Client requests.
+                    </Typography>
+                  )}
+
+                  {coachingSessionsReq.length > 0 && coachingSessionsReq && (
+                    <Table size='small'>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Client</TableCell>
+                              <TableCell>Agreed Payment</TableCell>
+                              <TableCell align="left">Client's Request Note</TableCell>
+                              <TableCell></TableCell>
+                              <TableCell></TableCell>
+                            </TableRow>
+                          </TableHead>
+                      <TableBody>
+                            {coachingSessionsReq.map((session: any) => (
+                              <TableRow key={session._id}>
+                                <TableCell>
+                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
+                                  </TableCell>
+                                <TableCell>${session.agreedPayment}/hr</TableCell>
+                                <TableCell align='left'>{session.clientRequestNote}</TableCell>
+                                <TableCell>
+                                <Button variant='outlined' value={session._id} onClick={handleAcceptClient}>
+                                  Accept
+                                </Button>
+                                </TableCell>
+                                <TableCell>
+                                <Button variant='outlined' value={session._id} onClick={handleDeclineClient}>
+                                  Decline
+                                </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                    </Table>
+
+                  )}
+
+                  {coachingSessionsAct.length > 0 ? (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      The following Clients are currently being Coached:
+                    </Typography>
+                  ) : (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      You have no clients being actively coached.
+                    </Typography>
+                  )}
+
+                  {coachingSessionsAct.length > 0 && coachingSessionsAct && (
+                    <Table size='small'>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Client</TableCell>
+                              <TableCell>Agreed Payment</TableCell>
+                            </TableRow>
+                          </TableHead>
+                      <TableBody>
+                            {coachingSessionsAct.map((session: any) => (
+                              <TableRow key={session._id}>
+                                <TableCell>
+                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
+                                  </TableCell>
+                                <TableCell>${session.agreedPayment}/hr</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                    </Table>
+
                   )}
                 </Paper>
               </Grid>
