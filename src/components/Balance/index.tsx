@@ -15,14 +15,12 @@ export default function Balance(props: any) {
       <Typography component='p' variant='h4'>
         ${props.amount.toFixed(2)}
       </Typography>
-      <Typography color='text.secondary' sx={{ flex: 1 }}>
+      <Typography
+        color='text.secondary'
+        sx={{ flex: 1, display: 'flex', alignItems: 'flex-end' }}
+      >
         on {today}
       </Typography>
-      <div>
-        <Link color='primary' href='#' onClick={preventDefault}>
-          View holdings
-        </Link>
-      </div>
     </React.Fragment>
   )
 }

@@ -2,7 +2,7 @@
 const   express =   require("express"),
         router  =   express.Router(),
         mongoose =  require("mongoose"),
-        axios    =   require('axios');;
+        axios    =   require('axios');
 
 module.exports  =   router;
 
@@ -89,8 +89,9 @@ async function getPricedStockInformation(stockDictionary) {
             for (const symbol of Object.keys(stockDictionary[index])) {
                 let currentSymbol = symbol;
                 let currentIndex = index;
-    
-                // Query price information
+                
+                /* - Might want to preserve this - not sure, so leave here for now. - Might want to use seperate API key for leaderboard calculation.
+                // Query price information - Through 12 data. But we instead want to only use or own API keys.
                 await axios({
                     method: 'get',
                     url: 'https://api.twelvedata.com/price',
@@ -109,6 +110,21 @@ async function getPricedStockInformation(stockDictionary) {
                         latestStockPrice = Number(priceResults["price"]);
                     }
                     
+                    stockDictionary[index][symbol] = latestStockPrice; // Set the found prices
+                });
+                */
+
+                // Query price information - Through our own API - We might add caching to it later.
+                await axios({
+                    method: 'get',
+                    url: process.env.local_route +
+                    'stock/price',
+                    params: {
+                        symbol: currentSymbol,
+                        exchange: currentIndex,
+                    },
+                }).then((result) => {
+                    let latestStockPrice = result.data.price; 
                     stockDictionary[index][symbol] = latestStockPrice; // Set the found prices
                 });
             }
