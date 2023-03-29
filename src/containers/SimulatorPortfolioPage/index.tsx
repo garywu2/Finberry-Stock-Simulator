@@ -101,8 +101,8 @@ const SimulatorPortfolioPage = () => {
       holdingsRows.push({
         id: data[i]._id,
         symbol: data[i].symbol,
-        // name: data[i].name,
-        price: data[i].price,
+        price: data[i].stockPrice,
+        totalValue: data[i].totalValue,
         quantity: data[i].quantity,
         exchange: data[i].index,
       })
@@ -112,6 +112,10 @@ const SimulatorPortfolioPage = () => {
   const handleSimulatorChange = (event: any) => {
     var sim = String(event.target.value)
     setSelectedSimulator(event.target.value)
+    setHoldingsItems([])
+    updateHoldingsRows([])
+    setTradeHistoryItems([])
+    updateRows([])
 
     if (
       sim &&
@@ -156,6 +160,7 @@ const SimulatorPortfolioPage = () => {
               email: String(user.email),
               simulatorID:
                 userItem.simulatorEnrollments[simIndex].simulator._id,
+              populatePriceAndValue: true,
             },
           })
           .then((response) => {
@@ -284,6 +289,7 @@ const SimulatorPortfolioPage = () => {
                   email: String(user.email),
                   simulatorID:
                     userItem.simulatorEnrollments[simIndex].simulator._id,
+                  populatePriceAndValue: true,
                 },
               })
               .then((response) => {
@@ -354,6 +360,7 @@ const SimulatorPortfolioPage = () => {
                   email: String(user.email),
                   simulatorID:
                     userItem.simulatorEnrollments[simIndex].simulator._id,
+                  populatePriceAndValue: true,
                 },
               })
               .then((response) => {
@@ -504,7 +511,7 @@ const SimulatorPortfolioPage = () => {
                     selectedSimulator &&
                     simulatorExists &&
                     userItem.simulatorEnrollments
-                      ? userItem.simulatorEnrollments[simIndex].balance
+                      ? userItem.simulatorEnrollments[simIndex]?.balance
                       : 0
                   }
                 />
@@ -537,7 +544,6 @@ const SimulatorPortfolioPage = () => {
                 {selectedSimulator && simulatorExists ? (
                   <>
                     <Holdings data={holdingsRows} />
-                    <Spinner area={areas.simulatorPortfolioHoldings} />
                   </>
                 ) : (
                   <Holdings data={undefined} />
@@ -548,7 +554,6 @@ const SimulatorPortfolioPage = () => {
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 {selectedSimulator && simulatorExists ? (
                   <>
-                    <Spinner area={areas.simulatorPortfolioTradeHistory} />
                     <Orders data={rows} />
                   </>
                 ) : (

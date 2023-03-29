@@ -106,9 +106,6 @@ const CoachCataloguePage = () => {
                 <TableCell align='left'>
                   <Spinner area={areas.coachCatalogue} />
                 </TableCell>
-                <TableCell>
-                  <Spinner area={areas.coachCatalogue} />{' '}
-                </TableCell>
               </TableRow>
             ) : (
               coaches.map(
@@ -141,9 +138,6 @@ const CoachCataloguePage = () => {
                     </TableCell>
                     <TableCell>{coach.lastName}</TableCell>
                     <TableCell align='left'>{coach.email}</TableCell>
-                    <TableCell>
-                      <Button></Button>
-                    </TableCell>
                   </TableRow>
                 )
               )
