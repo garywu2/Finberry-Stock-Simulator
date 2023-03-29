@@ -66,111 +66,124 @@ const CoachRegistrationPage = () => {
     }
 
     return (
-        <div>
-            <Container
-                sx={{
-                backgroundColor: "primary.main",
-                minHeight: "100vh",
-                minWidth: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: '0 0 3rem 3rem',
-                boxShadow: '0 4px 15px -6px black',
-                marginBottom: '1rem',
-                paddingTop: '5rem',
-                paddingBottom: '2rem'
-                }}>
-                {user ? (
-                <Box
-                    component='form'
-                    display={"flex"}
-                    sx={{
-                    backgroundColor: 'white',
-                    borderRadius: "1rem",
-                    width: { xs: "100%", sm: "100%", md: "75%", lg: "50%" },
-                    paddingBottom: "3rem",
-                    margin: { sm: "0rem", lg: "3rem" },
-                    }}
-                    noValidate
-                    autoComplete='off'
+      <div>
+        <Container
+          sx={{
+            backgroundColor: 'primary.main',
+            minHeight: '100vh',
+            minWidth: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '0 0 3rem 3rem',
+            boxShadow: '0 4px 15px -6px black',
+            marginBottom: '1rem',
+            paddingTop: '5rem',
+            paddingBottom: '2rem',
+          }}
+        >
+          {user ? (
+            <Box
+              component='form'
+              display={'flex'}
+              sx={{
+                backgroundColor: 'white',
+                borderRadius: '1rem',
+                width: { xs: '100%', sm: '100%', md: '75%', lg: '50%' },
+                paddingBottom: '3rem',
+                margin: { sm: '0rem', lg: '3rem' },
+              }}
+              noValidate
+              autoComplete='off'
+            >
+              <Grid container>
+                <Grid xs={2}></Grid>
+                <Grid
+                  xs={8}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                  }}
                 >
-                    <Grid container>
-                    <Grid xs={2}></Grid>
-                    <Grid xs={8} sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: 'center',
-                        justifyContent: "center",
-                        textAlign: "center"
-                    }}>
-                        <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
-                        Coaching Registration Request
-                        </Typography>
-                        <TextField
-                        required
-                        id='description'
-                        label='What services are you offering?'
-                        name='description'
-                        onChange={handleChange}
-                        margin="normal"
-                        sx={{
-                            width: '100%'
-                        }}
-                        color="primary"
-                        value={registerState.description}
-                        />
-                        <TextField
-                        required
-                        id='price'
-                        label='What would you like to charge for your services?'
-                        name='price'
-                        onChange={handleChange}
-                        margin="normal"
-                        sx={{
-                            width: '100%'
-                        }}
-                        color="primary"
-                        value={registerState.price}
-                        />
-                        <TextField
-                        required
-                        id='requestJustification'
-                        label='Let us know your background and experience and what will make you a good coach'
-                        name='requestJustification'
-                        onChange={handleChange}
-                        margin="normal"
-                        sx={{
-                            width: '100%'
-                        }}
-                        color="primary"
-                        value={registerState.requestJustification}
-                        />
-                        {error && <Typography color='red'>{error}</Typography>}
-                        <Button
-                        size='medium'
-                        fullWidth
-                        sx={{
-                            backgroundColor: "secondary.main",
-                            color: "white",
-                            marginY: "1rem",
-                            '&:hover': {
-                            backgroundColor: 'secondary.dark',
-                            }
-                        }}
-                        onClick={handleSumbit}
-                        >
-                        Submit Request
-                        </Button>
-                    </Grid>
-                    <Grid xs={2}></Grid>
-                    </Grid>
-                </Box>
-                ) : (
-                <Navigate to={'/profile/' + user.email}></Navigate>
-                )}
-            </Container>
-        </div>
+                  <Typography
+                    variant='h3'
+                    align='center'
+                    fontWeight={400}
+                    padding={'2rem 0'}
+                  >
+                    Coaching Registration Request
+                  </Typography>
+                  <TextField
+                    required
+                    id='price'
+                    label='Preferred price per session'
+                    name='price'
+                    onChange={handleChange}
+                    margin='normal'
+                    sx={{
+                      width: '100%',
+                    }}
+                    color='primary'
+                    value={registerState.price}
+                  />
+                  <TextField
+                    required
+                    id='description'
+                    label='Services are you offering'
+                    name='description'
+                    onChange={handleChange}
+                    margin='normal'
+                    sx={{
+                      width: '100%',
+                    }}
+                    color='primary'
+                    value={registerState.description}
+                    multiline
+                    rows={3}
+                  />
+                  <TextField
+                    required
+                    id='requestJustification'
+                    label='Background and experience'
+                    name='requestJustification'
+                    onChange={handleChange}
+                    margin='normal'
+                    sx={{
+                      width: '100%',
+                    }}
+                    color='primary'
+                    value={registerState.requestJustification}
+                    multiline
+                    rows={4}
+                  />
+                  {error && <Typography color='red'>{error}</Typography>}
+                  <Button
+                    size='medium'
+                    fullWidth
+                    sx={{
+                      backgroundColor: 'secondary.main',
+                      color: 'white',
+                      marginY: '1rem',
+                      '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                      },
+                    }}
+                    onClick={handleSumbit}
+                  >
+                    Submit Request
+                  </Button>
+                </Grid>
+                <Grid xs={2}></Grid>
+              </Grid>
+            </Box>
+          ) : (
+            <Navigate to={'/profile/' + user.email}></Navigate>
+          )}
+        </Container>
+      </div>
     )
 }
 
