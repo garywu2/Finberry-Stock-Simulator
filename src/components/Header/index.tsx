@@ -14,8 +14,8 @@ interface Props {
     isAuthenticated: boolean;
 };
 
-const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Leaderboards', url: '/Leaderboards' }, { title: 'Coach Catalogue', url: '/CoachCatalogue' }, { title: 'Coach Portal', url: '/CoachPortal' }, { title: 'Coach Registration', url: '/CoachRegistration' }, { title: 'Logout', url: '/logout' }];
-const links2 = [{ title: 'Login', url: '/login' }, { title: 'Register', url: '/register' }];
+const links = [{ title: 'Profile', url: '/profile' }, { title: 'Simulator', url: '/SimulatorPortfolio' }, { title: 'Leaderboards', url: '/Leaderboards' }, { title: 'Coach Catalogue', url: '/CoachCatalogue' }, { title: 'Coach Portal', url: '/CoachPortal' }, { title: 'Coach Registration', url: '/CoachRegistration' }, { title: 'Article Catalogue', url: '/articleCatalogue' }, { title: 'Logout', url: '/logout' }];
+const links2 = [{ title: 'Login', url: '/login' }, { title: 'Register', url: '/register'}, { title: 'Article Catalogue', url: '/articleCatalogue' }];
 
 const authLinks = (handleSubmit: any, error: any, email: String) => (
     <>
@@ -100,6 +100,19 @@ const authLinks = (handleSubmit: any, error: any, email: String) => (
                 component={Link} to='/CoachRegistration'>
                 Coach Registration
             </Button>
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/articleCatalogue'>
+                Article Catalogue
+            </Button>
             {error && <Typography color='red'>{error}</Typography>}
             <Button
                 size='small'
@@ -125,6 +138,19 @@ const authLinks = (handleSubmit: any, error: any, email: String) => (
 const guestLinks = (
     <>
         <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, justifyContent: 'flex-end' }}>
+            <Button
+                size='small'
+                sx={{
+                    backgroundColor: "secondary.main",
+                    color: "white",
+                    marginLeft: "1rem",
+                    '&:hover': {
+                        backgroundColor: 'secondary.dark',
+                    }
+                }}
+                component={Link} to='/articleCatalogue'>
+                Article Catalogue
+            </Button>
             <Button
                 size='small'
                 sx={{
