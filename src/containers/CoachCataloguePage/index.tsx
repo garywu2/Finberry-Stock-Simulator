@@ -23,41 +23,26 @@ import Spinner from '../../components/Spinner'
 import { areas } from '../../constants/areas'
 
 const CoachCataloguePage = () => {
-  const [coaches, setCoaches] = useState<any>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const route =
-    process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
-      ? 'http://localhost:5000/'
-      : 'https://finberry-stock-simulator-server.vercel.app/'
-  const { user } = useContext(UserContext)
-  const navigate = useNavigate()
+  const [coaches, setCoaches] = useState<any>([]);
+  const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/";
 
   useEffect(() => {
     trackPromise(
-      axios.get(route + 'account/user/').then((response) => {
-        setCoaches(response.data)
+      axios.get(
+        route +
+        'account/coaching',
+        {
+          params: {
+            populateUserEmailAndUsername: true,
+            status: 1
+          }
+        }
+      ).then((response) => {
+        setCoaches(response.data);
       }),
       areas.coachCatalogue
-    )
-  }, [])
-
-  //   const filteredCoaches = coaches.filter((coach: { firstname: string; }) => {
-  //     return coach.firstname.toLowerCase().includes(searchQuery.toLowerCase());
-  //   });
-
-  const getUser = (email: any) => {
-    axios
-      .get(route + 'account/user', {
-        params: {
-          email: email,
-          enforceSingleOutput: true,
-        },
-      })
-      .then((response: any) => {
-        navigate('/profile/' + response.email)
-        return
-      })
-  }
+    );
+  }, []);
 
   return (
     <Container
@@ -86,64 +71,43 @@ const CoachCataloguePage = () => {
           paddingTop: '1rem',
         }}
       >
-        <Table size='small'>
-          <TableHead>
-            <TableRow>
-              <TableCell>First Name</TableCell>
-              <TableCell>Last Name</TableCell>
-              <TableCell align='left'>Email</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {coaches.length === 0 ? (
-              <TableRow key={'spinner'}>
-                <TableCell>
-                  <Spinner area={areas.coachCatalogue} />
-                </TableCell>
-                <TableCell>
-                  <Spinner area={areas.coachCatalogue} />
-                </TableCell>
-                <TableCell align='left'>
-                  <Spinner area={areas.coachCatalogue} />
-                </TableCell>
+      <Table size='small'>
+            <TableHead>
+              <TableRow>
+                <TableCell>Display Name</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell align="left">Email</TableCell>
               </TableRow>
-            ) : (
-              coaches.map(
-                (coach: {
-                  firstName: React.Key | null | undefined
-                  lastName:
-                    | boolean
-                    | React.ReactChild
-                    | React.ReactFragment
-                    | React.ReactPortal
-                    | null
-                    | undefined
-                  bio:
-                    | boolean
-                    | React.ReactChild
-                    | React.ReactFragment
-                    | React.ReactPortal
-                    | null
-                    | undefined
-                  email: React.Key | null | undefined
-                }) => (
-                  <TableRow key={coach.email}>
-                    <TableCell>
-                      <Link
-                        style={{ fontFamily: 'Fredoka', margin: '10px' }}
-                        to={'/profile/' + coach.email}
-                      >
-                        {coach.firstName}
-                      </Link>
+            </TableHead>
+        <TableBody>
+              {coaches.length === 0 ? (
+                <TableRow key={'spinner'}>
+                  <TableCell>
+                    <Spinner area={areas.coachCatalogue} />
+                  </TableCell>
+                  <TableCell>
+                    <Spinner area={areas.coachCatalogue} />
+                  </TableCell>
+                  <TableCell align='left'>
+                    <Spinner area={areas.coachCatalogue} />
+                  </TableCell>
+                </TableRow>
+              ) : (
+              coaches.map((coach: any) => (
+                <TableRow key={coach._id}>
+                  <TableCell>
+                    <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to={'/CoachPortal/' + coach.user?.email}>{coach.user?.username}</Link>
                     </TableCell>
-                    <TableCell>{coach.lastName}</TableCell>
-                    <TableCell align='left'>{coach.email}</TableCell>
-                  </TableRow>
-                )
-              )
-            )}
-          </TableBody>
-        </Table>
+                  <TableCell>${coach.price}/hr</TableCell>
+                  <TableCell align='left'>{coach.user?.email}</TableCell>
+                  <TableCell>
+                    <Button> 
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )))}
+            </TableBody>
+      </Table>
       </Container>
     </Container>
   )
