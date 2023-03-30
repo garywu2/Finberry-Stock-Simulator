@@ -142,7 +142,7 @@ import { Navigate, useNavigate } from "react-router-dom";
                                       </CardContent>
                                       {tier.buttonText === "Get started" ? (
                                         <CardActions>
-                                          <a style={{ fontFamily: 'Fredoka', justifyContent: 'center', display: 'center', alignItems: 'center', width: '100%', textAlign: 'center', fontSize: '25px' }} href="https://buy.stripe.com/test_4gw7tpcX31xfcj6288">{tier.buttonText}</a>
+                                          <a style={{ fontFamily: 'Fredoka', justifyContent: 'center', display: 'center', alignItems: 'center', width: '100%', textAlign: 'center', fontSize: '25px' }} href="https://buy.stripe.com/test_4gw7tpcX31xfcj6288" target="_blank" rel="noreferrer">{tier.buttonText}</a>
                                         </CardActions>
                                       ) : (
                                         <CardActions>

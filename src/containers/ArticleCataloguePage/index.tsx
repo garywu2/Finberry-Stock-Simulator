@@ -126,11 +126,13 @@ const ArticleCataloguePage = () => {
                       <Link
                         style={{ fontFamily: 'Fredoka', margin: '10px' }}
                         to={'/article/' + article._id }
+                        target="_blank" 
+                        rel="noreferrer"
                       >
                         {article.title}
                       </Link>
                     ) : (
-                      <a style={{ fontFamily: 'Fredoka', margin: '10px' }} href={String(article.externalLink)}>{article.title}</a>
+                      <a style={{ fontFamily: 'Fredoka', margin: '10px' }} href={String(article.externalLink)} target="_blank" rel="noreferrer">{article.title}</a>
                     )}
                     </TableCell>
                     <TableCell>{article.description}</TableCell>
