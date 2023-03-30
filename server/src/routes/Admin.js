@@ -44,6 +44,7 @@ router.delete("/schemas", async (req, res) => {
             "tradetransactions",
             "users",
             "userbadges",
+            "marketmovers",
             ];
             
             let collectionList = await mongoose.connection.db.listCollections().toArray();
@@ -156,27 +157,41 @@ async function getPricedStockInformation(stockDictionary) {
             for (const symbol of Object.keys(stockDictionary[index])) {
                 let currentSymbol = symbol;
                 let currentIndex = index;
-    
-                // Query price information
+                
                 await axios({
                     method: 'get',
-                    url: 'https://api.twelvedata.com/price',
-                    params: {
-                        apikey: process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY,
-                        symbol: currentSymbol,
-                        exchange: currentIndex,
-                    },
-                }).then((result) => {
-                    let latestStockPrice = -1; 
-                    let priceResults = result.data; // Those are all the stocks we will need.
-                    let creditsLeft = Number(result.headers["api-credits-left"]);
-                    console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft);
+                    url: process.env.local_route +
+                    'stock/exist/' + currentSymbol,
+                    params: {},
+                }).then(async (result) => {
+                    let isAvailable = result.data;
+            
+                    if (isAvailable) {
+                        // Query price information
+                        await axios({
+                            method: 'get',
+                            url: 'https://api.twelvedata.com/price',
+                            params: {
+                                apikey: process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY,
+                                symbol: currentSymbol,
+                                // exchange: currentIndex,
+                            },
+                        }).then((result) => {
+                            let latestStockPrice = -1; 
+                            let priceResults = result.data; // Those are all the stocks we will need.
+                            let creditsLeft = Number(result.headers["api-credits-left"]);
+                            console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft);
 
-                    if (priceResults["price"]) {
-                        latestStockPrice = Number(priceResults["price"]);
+                            if (priceResults["price"]) {
+                                latestStockPrice = Number(priceResults["price"]);
+                            }
+                            
+                            stockDictionary[index][symbol] = latestStockPrice; // Set the found prices
+                        });
                     }
-                    
-                    stockDictionary[index][symbol] = latestStockPrice; // Set the found prices
+                    else {
+                        stockDictionary[index][symbol] = -1; // Cannot find price
+                    }
                 });
             }
         }
