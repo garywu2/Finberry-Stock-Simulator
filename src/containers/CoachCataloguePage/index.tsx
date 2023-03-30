@@ -21,17 +21,10 @@ import Title from '../../components/Title';
 
 const CoachCataloguePage = () => {
   const [coaches, setCoaches] = useState<any>([]);
-  const [realCoaches, setRealCoaches] = useState<any>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const route = process.env.REACT_APP_FINBERRY_DEVELOPMENT === "true" ? 'http://localhost:5000/' : "https://finberry-stock-simulator-server.vercel.app/";
-  const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(route + 'account/user/').then((response) => {
-        setCoaches(response.data)
-      })
-
     axios.get(
       route +
       'account/coaching',
@@ -42,25 +35,9 @@ const CoachCataloguePage = () => {
         }
       }
     ).then((response) => {
-      setRealCoaches(response.data);
+      setCoaches(response.data);
     });
   }, []);
-
-//   const filteredCoaches = coaches.filter((coach: { firstname: string; }) => {
-//     return coach.firstname.toLowerCase().includes(searchQuery.toLowerCase());
-//   });
-
-    const getUser = (email: any) => {
-        axios.get(route + 'account/user', {
-          params: {
-            email: email,
-            enforceSingleOutput: true
-          }
-        }).then((response: any) => {
-            navigate("/profile/" + response.email);
-            return;
-        })
-    };
 
   return (
     <Container
@@ -72,7 +49,7 @@ const CoachCataloguePage = () => {
         paddingTop: '5rem',
       }}>
 
-    <Title>Coach Catalogue (List of Coaches)</Title>
+    <Title>Coach Catalogue</Title>
     <Container
         sx={{
           backgroundColor: 'white',
@@ -98,7 +75,7 @@ const CoachCataloguePage = () => {
               </TableRow>
             </TableHead>
         <TableBody>
-              {realCoaches.map((coach: any) => (
+              {coaches.map((coach: any) => (
                 <TableRow key={coach._id}>
                   <TableCell>
                     <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to={'/CoachPortal/' + coach.user?.email}>{coach.user?.username}</Link>
