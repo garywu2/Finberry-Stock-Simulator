@@ -126,14 +126,24 @@ const LeaderboardsPage = () => {
                                   </TableCell>
                                   <TableCell>{row.user.username}</TableCell>
                                   <TableCell>
-                                    ${row.lastCalculatedTotal.toFixed(2)}
+                                    $
+                                    {row.lastCalculatedTotal.toLocaleString(
+                                      undefined,
+                                      {
+                                        maximumFractionDigits: 2,
+                                        minimumFractionDigits: 2,
+                                      }
+                                    )}
                                   </TableCell>
                                   <TableCell>
                                     $
                                     {(
                                       row.lastCalculatedTotal -
                                       item.userStartFund
-                                    ).toFixed(2)}
+                                    ).toLocaleString(undefined, {
+                                      maximumFractionDigits: 2,
+                                      minimumFractionDigits: 2,
+                                    })}
                                   </TableCell>
                                   <TableCell>
                                     {(
@@ -141,7 +151,10 @@ const LeaderboardsPage = () => {
                                         item.userStartFund) /
                                         item.userStartFund) *
                                       100
-                                    ).toFixed(2)}
+                                    ).toLocaleString(undefined, {
+                                      maximumFractionDigits: 2,
+                                      minimumFractionDigits: 2,
+                                    })}
                                     %
                                   </TableCell>
                                 </TableRow>

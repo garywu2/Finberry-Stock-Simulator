@@ -16,6 +16,7 @@ import { trackPromise } from 'react-promise-tracker'
 import Spinner from '../../components/Spinner'
 import { areas } from '../../constants/areas'
 
+const Av0 = require('../../images/avatars/a0.png')
 const Av1 = require('../../images/avatars/a1.png')
 const Av2 = require('../../images/avatars/a2.png')
 const Av3 = require('../../images/avatars/a3.png')
@@ -54,25 +55,26 @@ const route =
 var currImg: any
 
 const CoachPortalPage = () => {
-  const { user } = useContext(UserContext);
-  const [userItem, setUserItem] = React.useState<any>([]);
-  const [coachItem, setCoachItem] = React.useState<any>([]);
-  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([]);
-  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([]);
-  const [open, setOpen] = React.useState(false);
-  const [open2, setOpen2] = React.useState(false);
-  const [open3, setOpen3] = React.useState(false);
-  const [requestSubmitted, setRequestSubmitted] = React.useState(false);
-  const [activeClient, setActiveClient] = React.useState(false);
-  const [bioText, setBioText] = useState('');
-  const [requestText, setRequestText] = useState('');
-  const [isApprovedCoach, setIsApprovedCoach] = React.useState(false);
-  const [clientAorD, setClientAorD] = React.useState(false);
-  const { email } = useParams();
-  const theme = useTheme();
-  const { auth } = useContext(FirebaseContext);
+  const { user } = useContext(UserContext)
+  const [userItem, setUserItem] = React.useState<any>([])
+  const [coachItem, setCoachItem] = React.useState<any>([])
+  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([])
+  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([])
+  const [open, setOpen] = React.useState(false)
+  const [open2, setOpen2] = React.useState(false)
+  const [open3, setOpen3] = React.useState(false)
+  const [requestSubmitted, setRequestSubmitted] = React.useState(false)
+  const [activeClient, setActiveClient] = React.useState(false)
+  const [bioText, setBioText] = useState('')
+  const [requestText, setRequestText] = useState('')
+  const [isApprovedCoach, setIsApprovedCoach] = React.useState(false)
+  const [clientAorD, setClientAorD] = React.useState(false)
+  const { email } = useParams()
+  const theme = useTheme()
+  const { auth } = useContext(FirebaseContext)
 
   const avatars = [
+    { img: Av0, string: '../../images/avatars/a0.png' },
     { img: Av1, string: '../../images/avatars/a1.png' },
     { img: Av2, string: '../../images/avatars/a2.png' },
     { img: Av3, string: '../../images/avatars/a3.png' },
@@ -103,7 +105,7 @@ const CoachPortalPage = () => {
     { img: Av28, string: '../../images/avatars/a28.png' },
     { img: Av29, string: '../../images/avatars/a29.png' },
     { img: Av30, string: '../../images/avatars/a30.png' },
-  ];
+  ]
 
   const setCurrImg = (imgStr: any) => {
     for (var i = 0; i < avatars.length; i++) {
@@ -114,20 +116,20 @@ const CoachPortalPage = () => {
   }
 
   const handleClickOpen = () => {
-    setOpen(true);
+    setOpen(true)
   }
 
   const handleClickOpen2 = () => {
-    setOpen2(true);
+    setOpen2(true)
   }
 
   const handleClickOpen3 = () => {
-    setOpen3(true);
+    setOpen3(true)
   }
 
   const handleClose = (event: any) => {
-    setOpen(false);
-    setCurrImg(String(event.currentTarget.value));
+    setOpen(false)
+    setCurrImg(String(event.currentTarget.value))
 
     axios({
       method: 'put',
@@ -136,15 +138,15 @@ const CoachPortalPage = () => {
       data: {
         avatar: String(event.currentTarget.value),
       },
-    });
+    })
   }
 
   const handleClose2 = (event: any) => {
-    setOpen2(false);
+    setOpen2(false)
   }
 
   const handleClose3 = (event: any) => {
-    setOpen3(false);
+    setOpen3(false)
   }
 
   const handleBioSubmit = (event: any) => {
@@ -174,11 +176,11 @@ const CoachPortalPage = () => {
   }
 
   const handleCoachingRequestSubmit = (event: any) => {
-    console.log(email);
-    console.log(user.email);
-    console.log(coachItem);
+    console.log(email)
+    console.log(user.email)
+    console.log(coachItem)
 
-    if(coachItem) {
+    if (coachItem) {
       axios({
         method: 'post',
         url: route + 'account/coaching/' + coachItem._id,
@@ -186,38 +188,38 @@ const CoachPortalPage = () => {
         data: {
           email: String(user.email),
           clientRequestNote: requestText,
-        }
+        },
       }).then((res) => {
-        setRequestSubmitted(true);
-      });
+        setRequestSubmitted(true)
+      })
     }
-    
-    setOpen3(false);
+
+    setOpen3(false)
   }
 
-  const handleAcceptClient = (event: any) =>{
+  const handleAcceptClient = (event: any) => {
     axios({
       method: 'post',
       url: route + 'account/coachingsession/' + event.target.value,
       data: {
-        status: 1
-      }
-    });
+        status: 1,
+      },
+    })
 
-    setClientAorD(true);
-  };
+    setClientAorD(true)
+  }
 
-  const handleDeclineClient = (event: any) =>{
+  const handleDeclineClient = (event: any) => {
     axios({
       method: 'post',
       url: route + 'account/coachingsession/' + event.target.value,
       data: {
-        status: 3
-      }
-    });
+        status: 3,
+      },
+    })
 
-    setClientAorD(true);
-  };
+    setClientAorD(true)
+  }
 
   const handleRequestTextChange = (event: any) => {
     setRequestText(event.target.value)
@@ -269,38 +271,42 @@ const CoachPortalPage = () => {
       })
       .then((response) => {
         axios
-        .get(route + 'account/coachingsession', {
+          .get(route + 'account/coachingsession', {
+            params: {
+              coachingProfile: coachItem._id,
+              client: response?.data[0]?._id,
+            },
+          })
+          .then((res) => {
+            if (res?.data[0]?.status == 0) {
+              setRequestSubmitted(true)
+            } else if (res?.data[0]?.status == 1) {
+              setActiveClient(true)
+            }
+          })
+      })
+
+    axios
+      .get(route + 'account/coachingsession', {
         params: {
           coachingProfile: coachItem._id,
-          client: response?.data[0]?._id
-          }
-        }).then((res)=>{
-          if(res?.data[0]?.status == 0) {
-            setRequestSubmitted(true);
-          }
-          else if (res?.data[0]?.status == 1) {
-            setActiveClient(true);
-          }
-        });
-      });
+          status: 0,
+        },
+      })
+      .then((res) => {
+        setCoachingSessionsReq(res?.data)
+      })
 
-    axios.get(route + 'account/coachingsession', {
-      params: {
-        coachingProfile: coachItem._id,
-        status: 0
-      }
-    }).then((res) => {
-      setCoachingSessionsReq(res?.data);
-    });
-
-    axios.get(route + 'account/coachingsession', {
-      params: {
-        coachingProfile: coachItem._id,
-        status: 1
-      }
-    }).then((res) => {
-      setCoachingSessionsAct(res?.data);
-    });
+    axios
+      .get(route + 'account/coachingsession', {
+        params: {
+          coachingProfile: coachItem._id,
+          status: 1,
+        },
+      })
+      .then((res) => {
+        setCoachingSessionsAct(res?.data)
+      })
   }, [email, auth, user, clientAorD])
 
   return (
@@ -463,11 +469,17 @@ const CoachPortalPage = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant='h4' align='left' fontWeight={400}>
-                  Service Fee: ${coachItem.price}/hour
+                  Service Fee: $
+                  {coachItem.price.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  })}
+                  /hour
                 </Typography>
                 {user.email !== email && requestSubmitted && !activeClient && (
                   <Typography variant='h5' align='left' fontWeight={400}>
-                    -- You have already submitted a request to be coached by {userItem.username} -- 
+                    -- You have already submitted a request to be coached by{' '}
+                    {userItem.username} --
                   </Typography>
                 )}
                 {user.email !== email && !requestSubmitted && !activeClient && (
@@ -496,7 +508,9 @@ const CoachPortalPage = () => {
                     </DialogContentText>
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleCoachingRequestSubmit}>Submit Request</Button>
+                    <Button onClick={handleCoachingRequestSubmit}>
+                      Submit Request
+                    </Button>
                     <Button onClick={handleClose3}>Cancel</Button>
                   </DialogActions>
                 </Dialog>
@@ -540,38 +554,57 @@ const CoachPortalPage = () => {
 
                   {coachingSessionsReq.length > 0 && coachingSessionsReq && (
                     <Table size='small'>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Client</TableCell>
-                              <TableCell>Agreed Payment</TableCell>
-                              <TableCell align="left">Client's Request Note</TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                            </TableRow>
-                          </TableHead>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Client</TableCell>
+                          <TableCell>Agreed Payment</TableCell>
+                          <TableCell align='left'>
+                            Client's Request Note
+                          </TableCell>
+                          <TableCell></TableCell>
+                          <TableCell></TableCell>
+                        </TableRow>
+                      </TableHead>
                       <TableBody>
-                            {coachingSessionsReq.map((session: any) => (
-                              <TableRow key={session._id}>
-                                <TableCell>
-                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
-                                  </TableCell>
-                                <TableCell>${session.agreedPayment}/hr</TableCell>
-                                <TableCell align='left'>{session.clientRequestNote}</TableCell>
-                                <TableCell>
-                                <Button variant='outlined' value={session._id} onClick={handleAcceptClient}>
-                                  Accept
-                                </Button>
-                                </TableCell>
-                                <TableCell>
-                                <Button variant='outlined' value={session._id} onClick={handleDeclineClient}>
-                                  Decline
-                                </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
+                        {coachingSessionsReq.map((session: any) => (
+                          <TableRow key={session._id}>
+                            <TableCell>
+                              <Link
+                                style={{
+                                  fontFamily: 'Fredoka',
+                                  margin: '10px',
+                                }}
+                                to=''
+                              >
+                                {session.client}
+                              </Link>
+                            </TableCell>
+                            <TableCell>${session.agreedPayment}/hr</TableCell>
+                            <TableCell align='left'>
+                              {session.clientRequestNote}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant='outlined'
+                                value={session._id}
+                                onClick={handleAcceptClient}
+                              >
+                                Accept
+                              </Button>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant='outlined'
+                                value={session._id}
+                                onClick={handleDeclineClient}
+                              >
+                                Decline
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
                     </Table>
-
                   )}
 
                   {coachingSessionsAct.length > 0 ? (
@@ -586,24 +619,31 @@ const CoachPortalPage = () => {
 
                   {coachingSessionsAct.length > 0 && coachingSessionsAct && (
                     <Table size='small'>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Client</TableCell>
-                              <TableCell>Agreed Payment</TableCell>
-                            </TableRow>
-                          </TableHead>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Client</TableCell>
+                          <TableCell>Agreed Payment</TableCell>
+                        </TableRow>
+                      </TableHead>
                       <TableBody>
-                            {coachingSessionsAct.map((session: any) => (
-                              <TableRow key={session._id}>
-                                <TableCell>
-                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
-                                  </TableCell>
-                                <TableCell>${session.agreedPayment}/hr</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
+                        {coachingSessionsAct.map((session: any) => (
+                          <TableRow key={session._id}>
+                            <TableCell>
+                              <Link
+                                style={{
+                                  fontFamily: 'Fredoka',
+                                  margin: '10px',
+                                }}
+                                to=''
+                              >
+                                {session.client}
+                              </Link>
+                            </TableCell>
+                            <TableCell>${session.agreedPayment}/hr</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
                     </Table>
-
                   )}
                 </Paper>
               </Grid>
