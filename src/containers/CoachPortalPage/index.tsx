@@ -232,7 +232,7 @@ const CoachPortalPage = () => {
       axios
         .get(route + 'account/user', {
           params: {
-            email: String(user.email),
+            email: String(email),
           },
         })
         .then((response) => {
