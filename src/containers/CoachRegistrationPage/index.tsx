@@ -97,8 +97,9 @@ const CoachRegistrationPage = () => {
               autoComplete='off'
             >
               <Grid container>
-                <Grid xs={2}></Grid>
+                <Grid item xs={2}></Grid>
                 <Grid
+                  item
                   xs={8}
                   sx={{
                     display: 'flex',
@@ -176,7 +177,7 @@ const CoachRegistrationPage = () => {
                     Submit Request
                   </Button>
                 </Grid>
-                <Grid xs={2}></Grid>
+                <Grid item xs={2}></Grid>
               </Grid>
             </Box>
           ) : (

@@ -109,8 +109,9 @@ const RegisterPage = () => {
             autoComplete='off'
           >
             <Grid container>
-              <Grid xs={2}></Grid>
+              <Grid item xs={2}></Grid>
               <Grid
+                item
                 xs={8}
                 sx={{
                   display: 'flex',
@@ -231,7 +232,7 @@ const RegisterPage = () => {
                   Already have an account?
                 </Link>
               </Grid>
-              <Grid xs={2}></Grid>
+              <Grid item xs={2}></Grid>
             </Grid>
           </Box>
         ) : (

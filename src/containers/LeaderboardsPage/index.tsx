@@ -100,7 +100,7 @@ const LeaderboardsPage = () => {
           <Container maxWidth='xl' sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               {leaderboardsData.map((item: any) => (
-                <Grid item xs={12}>
+                <Grid item xs={12} key={item.title}>
                   <Paper
                     sx={{ p: 2, display: 'flex', flexDirection: 'column' }}
                   >

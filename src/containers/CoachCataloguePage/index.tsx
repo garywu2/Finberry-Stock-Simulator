@@ -106,9 +106,6 @@ const CoachCataloguePage = () => {
                 <TableCell align='left'>
                   <Spinner area={areas.coachCatalogue} />
                 </TableCell>
-                <TableCell>
-                  <Spinner area={areas.coachCatalogue} />{' '}
-                </TableCell>
               </TableRow>
             ) : (
               coaches.map(
@@ -128,9 +125,9 @@ const CoachCataloguePage = () => {
                     | React.ReactPortal
                     | null
                     | undefined
-                  email: String | null | undefined
+                  email: React.Key | null | undefined
                 }) => (
-                  <TableRow key={coach.firstName}>
+                  <TableRow key={coach.email}>
                     <TableCell>
                       <Link
                         style={{ fontFamily: 'Fredoka', margin: '10px' }}
@@ -141,9 +138,6 @@ const CoachCataloguePage = () => {
                     </TableCell>
                     <TableCell>{coach.lastName}</TableCell>
                     <TableCell align='left'>{coach.email}</TableCell>
-                    <TableCell>
-                      <Button></Button>
-                    </TableCell>
                   </TableRow>
                 )
               )

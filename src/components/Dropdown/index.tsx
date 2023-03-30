@@ -50,40 +50,65 @@ const Dropdown: React.FC<Props> = ({ links }) => {
     };
 
     return (
-        <div>
-            <IconButton
-                size="large"
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleMenu}
-                color="secondary"
+      <div>
+        <IconButton
+          size='large'
+          aria-label='account of current user'
+          aria-controls='menu-appbar'
+          aria-haspopup='true'
+          onClick={handleMenu}
+          color='secondary'
+        >
+          {user ? <AccountCircle /> : <MenuIcon />}
+        </IconButton>
+        <Menu
+          id='menu-appbar'
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          {links.map((link) =>
+            link.title === 'Logout' ? (
+              <MenuItem
+                onClick={handleSubmit}
+                component={Link}
+                to={link.url}
+                key={link.title}
               >
-                {user ? <AccountCircle /> : <MenuIcon />}
-              </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
+                {link.title}
+              </MenuItem>
+            ) : link.title === 'Profile' ? (
+              <MenuItem
+                onClick={handleClose}
+                component={Link}
+                to={link.url + `/${user.email}`}
+                key={link.title}
               >
-                {links.map((link) => (
-                    link.title === "Logout" ? <MenuItem onClick={handleSubmit} component={Link} to={link.url}>{link.title}</MenuItem> :
-                    link.title === "Profile" ? <MenuItem onClick={handleClose} component={Link} to={link.url + `/${user.email}` }>{link.title}</MenuItem> :
-                    <MenuItem onClick={handleClose} component={Link} to={link.url}>{link.title}</MenuItem>
-                ))}
-              </Menu>
-        </div>
-    );
+                {link.title}
+              </MenuItem>
+            ) : (
+              <MenuItem
+                onClick={handleClose}
+                component={Link}
+                to={link.url}
+                key={link.title}
+              >
+                {link.title}
+              </MenuItem>
+            )
+          )}
+        </Menu>
+      </div>
+    )
 };
 
 export default Dropdown;

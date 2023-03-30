@@ -274,6 +274,7 @@ const CoachPortalPage = () => {
                           <Button
                             variant='outlined'
                             value={avatar.string}
+                            key={avatar.string}
                             startIcon={
                               <Avatar
                                 sx={{
