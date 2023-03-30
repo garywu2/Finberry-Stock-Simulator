@@ -135,8 +135,8 @@ const ProfilePage = () => {
   };
 
   const handleCancel2 = () => {
-    setOpen(false);
-  };
+    setOpen2(false);
+  }
 
   const handleClickOpen = () => {
     setOpen(true);
