@@ -29,10 +29,7 @@ const ArticlePage = () => {
         _id: String(id),
       },
       }).then((response) => {
-        console.log("hello");
-        console.log(response.data[0]);
         setArticle(response.data[0]);
-        console.log(article.title);
       });
     }, [id]);
 
