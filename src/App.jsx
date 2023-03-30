@@ -18,6 +18,7 @@ import AboutPage from "./containers/AboutPage";
 import NotFoundPage from "./containers/NotFoundPage";
 import useAuthListener from "./hooks/use-auth";
 import ArticleCataloguePage from "./containers/ArticleCataloguePage";
+import BuyPremiumPage from "./containers/BuyPremiumPage";
 import UserContext from "./context/user";
 import {
   createTheme,
@@ -97,13 +98,14 @@ function App() {
                   element={<CoachCataloguePage />}
                 />
                 <Route path="/CoachRegistration" element={<CoachRegistrationPage />} />
+                <Route path="/BuyPremium" element={<BuyPremiumPage />} />
                 <Route path="/FAQ" element={<FaqPage />} />
                 <Route path="/Contact" element={<ContactPage />} />
                 <Route path="/About" element={<AboutPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </ScrollToTop>
-            <Footer />
+            <Footer isAuthenticated={user} />
           </div>
         </BrowserRouter>
       </UserContext.Provider>
