@@ -120,10 +120,9 @@ async function deepDeleteBadge(badgeID) {
 async function deepDeleteUserBadge(userBadgeID) {
     let userBadgeRemoved = await UserBadge.findByIdAndRemove(userBadgeID);
 
-    let userID = userBadgeRemoved.user;
-
-    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
     try {
+        let userID = userBadgeRemoved.user;
+
         const user = await User.findById(userID);
         if (!user) {
             return; 
@@ -141,11 +140,10 @@ async function deepDeleteUserBadge(userBadgeID) {
 async function deepDeleteCoachingProfile(coaching_profile_id) {
     let coachingProfileRemoved = await CoachingProfile.findByIdAndRemove(coaching_profile_id);
 
-    // Must remove the entry from the user as well
-    const ownerUserID = coachingProfileRemoved.user;
-
-    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
     try {
+        // Must remove the entry from the user as well
+        const ownerUserID = coachingProfileRemoved.user;
+
         const user = await User.findById(ownerUserID);
         if (!user) {
             return; // Then the user was already deleted (Somehow) then we do not need to do anything more.
@@ -170,10 +168,9 @@ async function deepDeleteCoachingProfile(coaching_profile_id) {
 async function deepDeleteReview(reviewID) {
     let reviewRemoved = await Review.findByIdAndRemove(reviewID);
 
-    let coachingProfileID = reviewRemoved.coachingProfile;
-
-    // **** Some issue with this following lines when trying to use the delete all. But works fine for individual deletion.
     try {
+        let coachingProfileID = reviewRemoved.coachingProfile;
+
         const coachingProfile = await CoachingProfile.findById(coachingProfileID);
         if (!coachingProfile) {
             return; 
@@ -934,10 +931,11 @@ router.post("/coaching", async (req, res) => {
         // Start creation coaching profile
         let newCoachingProfile = {
             user: user._id,
-            status: 0,
+            status: req.body.status || 0,
             price: req.body.price,
             description: req.body.description,
             requestJustification: req.body.requestJustification,
+            requestResponse: req.body.requestResponse,
             image: req.body.image,
             createdAt: Date.now(),
             dateLastUpdated: Date.now(),
