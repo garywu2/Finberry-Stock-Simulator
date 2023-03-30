@@ -229,7 +229,10 @@ const Header: React.FC<Props> = ({ isAuthenticated }) => {
     <AppBar position='fixed' color='inherit'>
       <Toolbar>
         <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-          <Link to='/' style={{ height: '2.5rem', alignContent: 'center' }}>
+          <Link
+            to={user ? `/profile/${user.email}` : '/'}
+            style={{ height: '2.5rem', alignContent: 'center' }}
+          >
             <img
               src={Logo}
               alt='Finberry Logo'
