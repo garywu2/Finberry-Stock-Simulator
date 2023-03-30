@@ -6,5 +6,5 @@ import { usePromiseTracker } from 'react-promise-tracker'
 export default function Spinner(props: any) {
   const { promiseInProgress } = usePromiseTracker({ area: props.area })
 
-  return promiseInProgress ? <CircularProgress /> : null
+  return promiseInProgress ? <CircularProgress size={20} /> : null
 }
