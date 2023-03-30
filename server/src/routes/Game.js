@@ -607,6 +607,7 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
                     simulatorEnrollment: simulatorEnrollmentID,
                     symbol: newTradeTransaction.symbol,
                     index: newTradeTransaction.index,
+                    averagePurchasePrice: 0,
                     quantity: 0,
                 }
 
@@ -615,9 +616,16 @@ router.post("/simulator/:simulatorID/:email", async (req, res) => {
                 simulatorEnrollment.holdings.push(desiredHolding);
             }
 
-            // Quantity purchase
-            desiredHolding.quantity = desiredHolding.quantity + newTradeTransaction.quantity;
+            let totalQuantity = desiredHolding.quantity + newTradeTransaction.quantity;
+            
+            // Average purchasing price recalculation
+            let existingAverageTotalValue = desiredHolding.averagePurchasePrice * desiredHolding.quantity;
+            let incomingNewValue = totalCost;
+            desiredHolding.averagePurchasePrice = (existingAverageTotalValue + incomingNewValue) / totalQuantity;
 
+            // Quantity purchase
+            desiredHolding.quantity = totalQuantity;
+            
             // Save the holdings
             await desiredHolding.save();
 

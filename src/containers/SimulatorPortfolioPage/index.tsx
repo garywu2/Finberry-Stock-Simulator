@@ -101,8 +101,8 @@ const SimulatorPortfolioPage = () => {
       holdingsRows.push({
         id: data[i]._id,
         symbol: data[i].symbol,
-        // name: data[i].name,
-        price: data[i].price,
+        price: data[i].stockPrice,
+        totalValue: data[i].totalValue,
         quantity: data[i].quantity,
         exchange: data[i].index,
       })
@@ -112,6 +112,10 @@ const SimulatorPortfolioPage = () => {
   const handleSimulatorChange = (event: any) => {
     var sim = String(event.target.value)
     setSelectedSimulator(event.target.value)
+    setHoldingsItems([])
+    updateHoldingsRows([])
+    setTradeHistoryItems([])
+    updateRows([])
 
     if (
       sim &&
@@ -156,6 +160,7 @@ const SimulatorPortfolioPage = () => {
               email: String(user.email),
               simulatorID:
                 userItem.simulatorEnrollments[simIndex].simulator._id,
+              populatePriceAndValue: true,
             },
           })
           .then((response) => {
@@ -284,6 +289,7 @@ const SimulatorPortfolioPage = () => {
                   email: String(user.email),
                   simulatorID:
                     userItem.simulatorEnrollments[simIndex].simulator._id,
+                  populatePriceAndValue: true,
                 },
               })
               .then((response) => {
@@ -354,6 +360,7 @@ const SimulatorPortfolioPage = () => {
                   email: String(user.email),
                   simulatorID:
                     userItem.simulatorEnrollments[simIndex].simulator._id,
+                  populatePriceAndValue: true,
                 },
               })
               .then((response) => {
@@ -450,7 +457,7 @@ const SimulatorPortfolioPage = () => {
                       ---
                     </option>
                     {simulators.map((item) => (
-                      <option>{item}</option>
+                      <option key={item}>{item}</option>
                     ))}
                   </select>
                 )}
@@ -504,7 +511,7 @@ const SimulatorPortfolioPage = () => {
                     selectedSimulator &&
                     simulatorExists &&
                     userItem.simulatorEnrollments
-                      ? userItem.simulatorEnrollments[simIndex].balance
+                      ? userItem.simulatorEnrollments[simIndex]?.balance
                       : 0
                   }
                 />
@@ -537,7 +544,6 @@ const SimulatorPortfolioPage = () => {
                 {selectedSimulator && simulatorExists ? (
                   <>
                     <Holdings data={holdingsRows} />
-                    <Spinner area={areas.simulatorPortfolioHoldings} />
                   </>
                 ) : (
                   <Holdings data={undefined} />
@@ -548,7 +554,6 @@ const SimulatorPortfolioPage = () => {
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 {selectedSimulator && simulatorExists ? (
                   <>
-                    <Spinner area={areas.simulatorPortfolioTradeHistory} />
                     <Orders data={rows} />
                   </>
                 ) : (
@@ -577,7 +582,7 @@ const SimulatorPortfolioPage = () => {
               display: 'flex',
             }}
           >
-            <Grid xs={12}>
+            <Grid item xs={12}>
               <Typography variant='h4' align='left' fontWeight={50}>
                 Simulate a trade.
               </Typography>
@@ -598,6 +603,7 @@ const SimulatorPortfolioPage = () => {
                   <TabPanel value='buy' sx={{ padding: '0rem' }}>
                     <Grid container>
                       <Grid
+                        item
                         lg={6}
                         xs={12}
                         sx={{
@@ -673,6 +679,7 @@ const SimulatorPortfolioPage = () => {
                       simulatorExists &&
                       selectedResult ? (
                         <Grid
+                          item
                           lg={6}
                           xs={12}
                           sx={{
@@ -707,6 +714,7 @@ const SimulatorPortfolioPage = () => {
                   <TabPanel value='sell' sx={{ padding: '0rem' }}>
                     <Grid container>
                       <Grid
+                        item
                         lg={6}
                         xs={12}
                         sx={{
@@ -782,6 +790,7 @@ const SimulatorPortfolioPage = () => {
                       simulatorExists &&
                       selectedResult ? (
                         <Grid
+                          item
                           lg={6}
                           xs={12}
                           sx={{

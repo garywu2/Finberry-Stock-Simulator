@@ -7,6 +7,8 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Title from '../Title'
 import { TableContainer } from '@mui/material'
+import Spinner from '../../components/Spinner'
+import { areas } from '../../constants/areas'
 
 function preventDefault(event: React.MouseEvent) {
   event.preventDefault()
@@ -20,7 +22,7 @@ export default function Holdings(data: any | undefined) {
         <TableHead>
           <TableRow>
             <TableCell>Symbol</TableCell>
-            <TableCell>Name</TableCell>
+            <TableCell>Exchange</TableCell>
             <TableCell>Price</TableCell>
             <TableCell>Quantity</TableCell>
             <TableCell>Total value</TableCell>
@@ -28,21 +30,40 @@ export default function Holdings(data: any | undefined) {
           </TableRow>
         </TableHead>
         <TableBody>
+          {data && data.data && data.data.length === 0 && (
+            <TableRow>
+              <TableCell>
+                <Spinner area={areas.simulatorPortfolioHoldings} />
+              </TableCell>
+              <TableCell>
+                <Spinner area={areas.simulatorPortfolioHoldings} />
+              </TableCell>
+              <TableCell>
+                <Spinner area={areas.simulatorPortfolioHoldings} />
+              </TableCell>
+              <TableCell>
+                <Spinner area={areas.simulatorPortfolioHoldings} />
+              </TableCell>
+              <TableCell>
+                <Spinner area={areas.simulatorPortfolioHoldings} />
+              </TableCell>
+              <TableCell align='right'>
+                <Spinner area={areas.simulatorPortfolioHoldings} />
+              </TableCell>
+            </TableRow>
+          )}
           {data?.data
             ?.slice(0)
             .reverse()
             .map((row: any) => (
               <TableRow key={row.id}>
                 <TableCell>{row.symbol}</TableCell>
-                <TableCell>{row.name}</TableCell>
-                {/* <TableCell>{`$${row.price.toFixed(2)}`}</TableCell> */}
+                <TableCell>{row.exchange}</TableCell>
+                <TableCell>{`$${row.price.toFixed(2)}`}</TableCell>
                 <TableCell>{row.quantity}</TableCell>
-                {/* <TableCell>{`$${(row.price * row.quantity).toLocaleString(
-                  undefined,
-                  {
-                    maximumFractionDigits: 2,
-                  }
-                )}`}</TableCell> */}
+                <TableCell>{`$${row.totalValue.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                })}`}</TableCell>
                 <TableCell align='right'>All time return</TableCell>
               </TableRow>
             ))}

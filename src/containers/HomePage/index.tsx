@@ -89,6 +89,7 @@ const HomePage = () => {
                 }}
               >
                 <Grid
+                  item
                   xs={12}
                   lg={6}
                   sx={{
@@ -139,6 +140,7 @@ const HomePage = () => {
                   </Button>
                 </Grid>
                 <Grid
+                  item
                   xs={12}
                   lg={6}
                   sx={{ paddingTop: { xs: '2rem', lg: '0rem' } }}
@@ -187,6 +189,7 @@ const HomePage = () => {
               }}
             >
               <Grid
+                item
                 xs={12}
                 lg={6}
                 sx={{
@@ -237,6 +240,7 @@ const HomePage = () => {
                 </Button>
               </Grid>
               <Grid
+                item
                 xs={12}
                 lg={6}
                 sx={{ paddingTop: { xs: '2rem', lg: '0rem' } }}
@@ -286,7 +290,9 @@ const HomePage = () => {
                           <TableCell>{stock?.name}</TableCell>
                           <TableCell>{stock?.exchange}</TableCell>
                           <TableCell align='right'>${stock?.high}</TableCell>
-                          <TableCell align='right'>%{stock?.percent_change}</TableCell>
+                          <TableCell align='right'>
+                            %{stock?.percent_change}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
