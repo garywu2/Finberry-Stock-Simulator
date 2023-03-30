@@ -2,7 +2,7 @@ import UserContext from "../../context/user";
 import { useContext, useState } from "react";
 import React from 'react';
 import axios from 'axios';
-import { Box, Button, Container, Grid, TextField, Typography, Paper, Avatar } from "@mui/material";
+import { Box, Button, Container, Grid, TextField, Typography, Paper, Avatar, Table,TableBody, TableCell, TableHead, TableRow, } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -55,6 +55,8 @@ const ProfilePage = () => {
   const [userItem, setUserItem] = React.useState<any>([])
   const [open, setOpen] = React.useState(false)
   const [open2, setOpen2] = React.useState(false)
+  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([]);
+  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([]);
   const [bioText, setBioText] = useState('')
   const { email } = useParams()
   const theme = useTheme()
@@ -167,6 +169,24 @@ const ProfilePage = () => {
           setCurrImg(response.data[0].avatar)
         }
       })
+
+      axios.get(route + 'account/coachingsession', {
+        params: {
+          coachingProfile: userItem.client,
+          status: 0
+        }
+      }).then((res) => {
+        setCoachingSessionsReq(res?.data);
+      });
+  
+      axios.get(route + 'account/coachingsession', {
+        params: {
+          coachingProfile: userItem.client,
+          status: 1
+        }
+      }).then((res) => {
+        setCoachingSessionsAct(res?.data);
+      });
   }, [email, auth, user]);
 
   return (
@@ -323,13 +343,91 @@ const ProfilePage = () => {
                 </Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                <Typography variant='h4' align='left' fontWeight={400}>
-                  Coaching Sessions:
-                </Typography>
-              </Paper>
-            </Grid>
+                  {user.email === email && (
+              <Grid item xs={12}>
+                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                  {userItem && userItem.coachingCoachs?.length > 0 ? (
+                    <Typography variant='h4' align='left' fontWeight={400}>
+                      Coaching Sessions:
+                    </Typography>
+                  ) : (
+                    <Typography variant='h4' align='left' fontWeight={400}>
+                      You currently have no coaches.
+                    </Typography>
+                  )}
+
+                  {coachingSessionsReq.length > 0 ? (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      You have submitted a request to be coached by the following:
+                    </Typography>
+                  ) : (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      You have no new coaching requests.
+                    </Typography>
+                  )}
+
+                  {coachingSessionsReq.length > 0 && coachingSessionsReq && (
+                    <Table size='small'>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Client</TableCell>
+                              <TableCell>Agreed Payment</TableCell>
+                              <TableCell align="left">Client's Request Note</TableCell>
+                              <TableCell></TableCell>
+                              <TableCell></TableCell>
+                            </TableRow>
+                          </TableHead>
+                      <TableBody>
+                            {coachingSessionsReq.map((session: any) => (
+                              <TableRow key={session._id}>
+                                <TableCell>
+                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
+                                  </TableCell>
+                                <TableCell>${session.agreedPayment}/hr</TableCell>
+                                <TableCell align='left'>{session.clientRequestNote}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                    </Table>
+
+                  )}
+
+                  {coachingSessionsAct.length > 0 ? (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      You are being coached by the following Coaches:
+                    </Typography>
+                  ) : (
+                    <Typography variant='h5' align='left' fontWeight={400}>
+                      You have no active coaching sessions.
+                    </Typography>
+                  )}
+
+                  {coachingSessionsAct.length > 0 && coachingSessionsAct && (
+                    <Table size='small'>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Client</TableCell>
+                              <TableCell>Agreed Payment</TableCell>
+                            </TableRow>
+                          </TableHead>
+                      <TableBody>
+                            {coachingSessionsAct.map((session: any) => (
+                              <TableRow key={session._id}>
+                                <TableCell>
+                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
+                                  </TableCell>
+                                <TableCell>${session.agreedPayment}/hr</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                    </Table>
+
+                  )}
+                </Paper>
+              </Grid>
+            )}
+
+            
           </Grid>
         ) : (
           <></>

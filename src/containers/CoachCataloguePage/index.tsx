@@ -139,7 +139,7 @@ const CoachCataloguePage = () => {
                 <TableCell align="left">Email</TableCell>
               </TableRow>
             </TableHead>
-      <TableBody>
+        <TableBody>
               {realCoaches.map((coach: any) => (
                 <TableRow key={coach._id}>
                   <TableCell>
@@ -154,7 +154,7 @@ const CoachCataloguePage = () => {
                 </TableRow>
               ))}
             </TableBody>
-            </Table>
+      </Table>
     </Container>
     </Container>
   );
