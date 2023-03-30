@@ -6,6 +6,12 @@ import {
   Grid,
   Paper,
   Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from '@mui/material'
@@ -72,16 +78,13 @@ const SimulatorPortfolioPage = () => {
       areas.simulatorPortfolioUserInfo
     )
 
-    simulators = [];
-    axios
-      .get(route + 'game/simulator')
-      .then((response) => {
-        console.log(response);
-        for(var i = 0; i < response?.data?.length; i++) {
-          simulators.push(response.data[i].title);
-        }
-      })
-    
+    simulators = []
+    axios.get(route + 'game/simulator').then((response) => {
+      console.log(response)
+      for (var i = 0; i < response?.data?.length; i++) {
+        simulators.push(response.data[i].title)
+      }
+    })
   }, [])
 
   function updateRows(data: any) {
@@ -206,7 +209,7 @@ const SimulatorPortfolioPage = () => {
   }
 
   const handleStockInputSubmit = (event: any, value: any) => {
-    const selectedValue = value.name
+    const selectedValue = value?.name
     setSelectedResult(value)
 
     const currDate = new Date(Date.now())
@@ -615,7 +618,7 @@ const SimulatorPortfolioPage = () => {
                     <Grid container>
                       <Grid
                         item
-                        lg={6}
+                        lg={3}
                         xs={12}
                         sx={{
                           display: 'flex',
@@ -686,6 +689,50 @@ const SimulatorPortfolioPage = () => {
                           Buy
                         </Button>
                       </Grid>
+                      <Grid
+                        item
+                        lg={3}
+                        xs={12}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          padding: {
+                            lg: '2rem',
+                            xs: '0rem',
+                          },
+                        }}
+                      >
+                        <TableContainer component={Paper}>
+                          <Table aria-label='stock info table'>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Stock:</TableCell>
+                                <TableCell align='right'>
+                                  {chartItems?.meta.symbol}
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell>Price:</TableCell>
+                                <TableCell align='right'>
+                                  ${realTimePrice?.price}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell>Quantity:</TableCell>
+                                <TableCell align='right'>
+                                  {buyQuantity}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell>Cost:</TableCell>
+                                <TableCell align='right'>total</TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Grid>
                       {selectedSimulator &&
                       simulatorExists &&
                       selectedResult ? (
@@ -702,10 +749,6 @@ const SimulatorPortfolioPage = () => {
                             },
                           }}
                         >
-                          <Typography variant='body1' fontWeight={400}>
-                            The price of ${chartItems?.meta.symbol} since{' '}
-                            {chartData[0]?.date}
-                          </Typography>
                           <Paper
                             sx={{
                               p: 2,
