@@ -152,7 +152,7 @@ const ProfilePage = () => {
 
     axios({
       method: "put",
-      url: route + "account/user/email/" + String(user.email),
+      url: route + "account/user/email/" + String(user?.email),
       headers: {},
       data: {
         avatar: String(event.currentTarget.value),
@@ -167,7 +167,7 @@ const ProfilePage = () => {
   const handleBioSubmit = (event: any) => {
     axios({
       method: "put",
-      url: route + "account/user/email/" + String(user.email),
+      url: route + "account/user/email/" + String(user?.email),
       headers: {},
       data: {
         bio: bioText,
@@ -177,7 +177,7 @@ const ProfilePage = () => {
         axios
           .get(route + "account/user", {
             params: {
-              email: String(user.email),
+              email: String(user?.email),
             },
           })
           .then((response) => {
@@ -284,7 +284,7 @@ const ProfilePage = () => {
                 <Typography variant="body1" align="center" fontWeight={400}>
                   {userItem.firstName} {userItem.lastName}
                 </Typography>
-                {user.email === email && (
+                {user?.email === email && (
                   <Button variant="outlined" onClick={handleClickOpen}>
                     Change Avatar
                   </Button>
@@ -351,7 +351,7 @@ const ProfilePage = () => {
                   <Spinner area={areas.profileUserBioSubmit} />
                   {userItem.bio}
                 </Typography>
-                {user.email === email && (
+                {user?.email === email && (
                   <Button variant="outlined" onClick={handleClickOpen2}>
                     Edit Bio
                   </Button>
@@ -402,7 +402,7 @@ const ProfilePage = () => {
                 </Tooltip>
               </Paper>
             </Grid>
-            {user.email === email && (
+            {user?.email === email && (
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
                   {userItem && userItem.coachingCoachs?.length > 0 ? (
