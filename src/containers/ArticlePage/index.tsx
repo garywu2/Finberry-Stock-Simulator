@@ -27,6 +27,7 @@ const ArticlePage = () => {
       axios.get(route + 'Educational/article', {
       params: {
         _id: String(id),
+        moreDetails: true
       },
       }).then((response) => {
         setArticle(response.data[0]);
