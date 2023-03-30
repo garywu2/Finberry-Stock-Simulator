@@ -11,9 +11,15 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Pricing from '../../components/Pricing'
+import UserContext from "../../context/user";
+import { useContext } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
   
   const BuyPremiumPage = () => {
+    const { user } = useContext(UserContext);
+    const navigate = useNavigate();
+
     const tiers = [
         {
           title: 'Plus',
@@ -63,6 +69,7 @@ import Pricing from '../../components/Pricing'
               padding: '2rem',
             }}
           >
+            {user ? (
               <React.Fragment>
                   <Container disableGutters maxWidth="sm" component="main" sx={{ pt: 8, pb: 6 }}>
                       <Typography
@@ -148,6 +155,9 @@ import Pricing from '../../components/Pricing'
                       </Grid>
                   </Container>
               </React.Fragment>
+              ) : (
+                <Navigate to='/login'></Navigate>
+              )}
               </Container>
           );
       }
