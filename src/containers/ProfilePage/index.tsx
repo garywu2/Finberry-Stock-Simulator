@@ -113,6 +113,14 @@ const ProfilePage = () => {
     }
   }
 
+  const handleCancel = () => {
+    setOpen(false);
+  }
+
+  const handleCancel2 = () => {
+    setOpen(false);
+  }
+
   const handleClickOpen = () => {
     setOpen(true)
   }
@@ -293,7 +301,7 @@ const ProfilePage = () => {
                     )}
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={handleCancel}>Cancel</Button>
                   </DialogActions>
                 </Dialog>
               </Paper>
@@ -350,7 +358,7 @@ const ProfilePage = () => {
                   </DialogContent>
                   <DialogActions>
                     <Button onClick={handleBioSubmit}>Confirm Edit</Button>
-                    <Button onClick={handleClose2}>Cancel</Button>
+                    <Button onClick={handleCancel2}>Cancel</Button>
                   </DialogActions>
                 </Dialog>
               </Paper>
