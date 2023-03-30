@@ -719,7 +719,7 @@ const SimulatorPortfolioPage = () => {
                                   $
                                   {isNaN(realTimePrice?.price * 1)
                                     ? 0
-                                    : (realTimePrice?.price * 1).toLocaleString(
+                                    : (realTimePrice?.price * 1)?.toLocaleString(
                                         undefined,
                                         {
                                           maximumFractionDigits: 2,
@@ -736,7 +736,7 @@ const SimulatorPortfolioPage = () => {
                                     ? 0
                                     : (
                                         realTimePrice?.price * buyQuantity
-                                      ).toLocaleString(undefined, {
+                                      )?.toLocaleString(undefined, {
                                         maximumFractionDigits: 2,
                                         minimumFractionDigits: 2,
                                       })}
@@ -751,7 +751,7 @@ const SimulatorPortfolioPage = () => {
                                   userItem.simulatorEnrollments
                                     ? userItem.simulatorEnrollments[
                                         simIndex
-                                      ]?.balance.toLocaleString(undefined, {
+                                      ]?.balance?.toLocaleString(undefined, {
                                         maximumFractionDigits: 2,
                                         minimumFractionDigits: 2,
                                       })
@@ -899,7 +899,7 @@ const SimulatorPortfolioPage = () => {
                                   $
                                   {isNaN(realTimePrice?.price * 1)
                                     ? 0
-                                    : (realTimePrice?.price * 1).toLocaleString(
+                                    : (realTimePrice?.price * 1)?.toLocaleString(
                                         undefined,
                                         {
                                           maximumFractionDigits: 2,
@@ -916,7 +916,7 @@ const SimulatorPortfolioPage = () => {
                                     ? 0
                                     : (
                                         realTimePrice?.price * sellQuantity
-                                      ).toLocaleString(undefined, {
+                                      )?.toLocaleString(undefined, {
                                         maximumFractionDigits: 2,
                                         minimumFractionDigits: 2,
                                       })}
