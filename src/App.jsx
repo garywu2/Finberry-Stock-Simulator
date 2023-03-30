@@ -3,7 +3,7 @@ import { useLayoutEffect } from "react";
 import HomePage from "./containers/HomePage";
 import LoginPage from "./containers/LoginPage";
 import RegisterPage from "./containers/RegisterPage";
-import ArticlesPage from "./containers/ArticlesPage";
+import ArticlePage from "./containers/ArticlePage";
 import PasswordResetPage from "./containers/PasswordResetPage";
 import ProfilePage from "./containers/ProfilePage";
 import SimulatorPortfolioPage from "./containers/SimulatorPortfolioPage";
@@ -17,6 +17,7 @@ import ContactPage from "./containers/ContactPage";
 import AboutPage from "./containers/AboutPage";
 import NotFoundPage from "./containers/NotFoundPage";
 import useAuthListener from "./hooks/use-auth";
+import ArticleCataloguePage from "./containers/ArticleCataloguePage";
 import UserContext from "./context/user";
 import {
   createTheme,
@@ -81,7 +82,8 @@ function App() {
                 <Route path="/Login" element={<LoginPage />} />
                 <Route path="/Register" element={<RegisterPage />} />
                 <Route path="/PasswordReset" element={<PasswordResetPage />} />
-                <Route path="/Articles" element={<ArticlesPage />} />
+                <Route path="/Article/:id" element={<ArticlePage />} />
+                <Route path="/ArticleCatalogue" element={<ArticleCataloguePage />} />
                 <Route path="/Profile/:email" element={<ProfilePage />} />
                 <Route
                   path="/SimulatorPortfolio"

@@ -4,6 +4,7 @@ const articleSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
+        unique: true,
     },
     description: {
         type: String,
@@ -21,7 +22,10 @@ const articleSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
-
+    author: {
+        type: String,
+        required: true,
+    },
     // Last updated date
     dateLastUpdated: {
         type: Date,

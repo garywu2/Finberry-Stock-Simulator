@@ -9,7 +9,6 @@ interface Link {
 
 const links: Link[] = [
     { url: '/about', name: 'About Us' },
-    { url: '/article', name: 'Articles' },
     { url: '/faq', name: 'FAQ' },
     { url: '/contact', name: 'Contact Us' },
 ];
