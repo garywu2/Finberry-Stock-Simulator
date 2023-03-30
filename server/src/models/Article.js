@@ -16,6 +16,7 @@ const articleSchema = new mongoose.Schema({
     externalLink: {
         type: String,
         required: false,
+        default: "N/A",
     },
     firstPosted: {
         type: Date,

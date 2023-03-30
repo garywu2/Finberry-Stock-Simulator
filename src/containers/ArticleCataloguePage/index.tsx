@@ -118,23 +118,23 @@ const ArticleCataloguePage = () => {
                     | undefined
                   externalLink:
                     | String
-                    | React.ReactChild
-                    | React.ReactFragment
-                    | React.ReactPortal
-                    | null
-                    | undefined
+                    
                 }) => (
                   <TableRow key={article.title}>
                     <TableCell>
+                    {article.externalLink === "N/A" ? (
                       <Link
                         style={{ fontFamily: 'Fredoka', margin: '10px' }}
-                        to={'/article/' + article._id}
+                        to={'/article/' + article._id }
                       >
                         {article.title}
                       </Link>
+                    ) : (
+                      <a style={{ fontFamily: 'Fredoka', margin: '10px' }} href={String(article.externalLink)}>{article.title}</a>
+                    )}
                     </TableCell>
                     <TableCell>{article.description}</TableCell>
-                    <TableCell>{article.externalLink === "N/A" ? "Made in House" : article.externalLink}</TableCell>
+                    <TableCell>{article.externalLink === "N/A" ? "Made by Finberry" : "Made by Trusted Source"}</TableCell>
                     <TableCell align='left'>{article.author}</TableCell>
                     <TableCell>
                       <Button></Button>
