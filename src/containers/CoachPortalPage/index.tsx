@@ -248,7 +248,7 @@ const CoachPortalPage = () => {
       axios
         .get(route + 'account/coaching', {
           params: {
-            email: String(user.email),
+            email: String(email),
             moreDetails: true,
           },
         })
