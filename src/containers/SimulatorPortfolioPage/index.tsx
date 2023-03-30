@@ -72,6 +72,7 @@ const SimulatorPortfolioPage = () => {
       areas.simulatorPortfolioUserInfo
     )
 
+    simulators = [];
     axios
       .get(route + 'game/simulator')
       .then((response) => {
