@@ -13,7 +13,11 @@ export default function Balance(props: any) {
     <React.Fragment>
       <Title>{props.title}</Title>
       <Typography component='p' variant='h4'>
-        ${props.amount.toFixed(2)}
+        $
+        {props.amount.toLocaleString(undefined, {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        })}
       </Typography>
       <Typography
         color='text.secondary'
