@@ -34,6 +34,7 @@ var simIndex = 0
 var rows: any[] = []
 var chartData: any[] = []
 var holdingsRows: any[] = []
+var simulators: any[] = []
 
 const SimulatorPortfolioPage = () => {
   const { user } = useContext(UserContext)
@@ -56,7 +57,7 @@ const SimulatorPortfolioPage = () => {
     { name: 'GOOG', company: 'Google' },
   ]
 
-  const simulators = ['All Time', 'Monthly', 'Weekly']
+  
 
   React.useEffect(() => {
     trackPromise(
@@ -72,6 +73,16 @@ const SimulatorPortfolioPage = () => {
         }),
       areas.simulatorPortfolioUserInfo
     )
+
+    axios
+      .get(route + 'game/simulator')
+      .then((response) => {
+        console.log(response);
+        for(var i = 0; i < response?.data?.length; i++) {
+          simulators.push(response.data[i].title);
+        }
+      })
+    
   }, [])
 
   function updateRows(data: any) {
