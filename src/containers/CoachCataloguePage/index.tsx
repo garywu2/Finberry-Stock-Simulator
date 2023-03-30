@@ -71,48 +71,6 @@ const CoachCataloguePage = () => {
         marginBottom: '1rem',
         paddingTop: '5rem',
       }}>
-    <Title>Coach Catalogue (Showing List of Users Right now)</Title>
-    <Container
-        sx={{
-          backgroundColor: 'white',
-          minHeight: '100vh',
-          minWidth: '100%',
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'flex-start',
-          borderRadius: '3rem',
-          boxShadow: '0 4px 15px -6px black',
-          marginBottom: '1rem',
-          paddingBottom: '2rem',
-          overflow: 'auto',
-          paddingTop: '1rem',
-        }}
-      >
-      <Table size='small'>
-            <TableHead>
-              <TableRow>
-                <TableCell>First Name</TableCell>
-                <TableCell>Last Name</TableCell>
-                <TableCell align="left">Email</TableCell>
-              </TableRow>
-            </TableHead>
-      <TableBody>
-              {coaches.map((coach: { firstName: React.Key | null | undefined; lastName: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; bio: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; email: String | null | undefined }) => (
-                <TableRow key={coach.firstName}>
-                  <TableCell>
-                    <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to={'/profile/' + coach.email}>{coach.firstName}</Link>
-                    </TableCell>
-                  <TableCell>{coach.lastName}</TableCell>
-                  <TableCell align='left'>{coach.email}</TableCell>
-                  <TableCell>
-                    <Button> 
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-            </Table>
-    </Container>
 
     <Title>Coach Catalogue (List of Coaches)</Title>
     <Container

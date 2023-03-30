@@ -370,7 +370,7 @@ const ProfilePage = () => {
                     <Table size='small'>
                           <TableHead>
                             <TableRow>
-                              <TableCell>Client</TableCell>
+                              <TableCell>Coach</TableCell>
                               <TableCell>Agreed Payment</TableCell>
                               <TableCell align="left">Client's Request Note</TableCell>
                               <TableCell></TableCell>
@@ -406,7 +406,7 @@ const ProfilePage = () => {
                     <Table size='small'>
                           <TableHead>
                             <TableRow>
-                              <TableCell>Client</TableCell>
+                              <TableCell>Coach</TableCell>
                               <TableCell>Agreed Payment</TableCell>
                             </TableRow>
                           </TableHead>
