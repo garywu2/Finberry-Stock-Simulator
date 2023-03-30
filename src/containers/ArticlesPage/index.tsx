@@ -22,7 +22,7 @@ import { trackPromise } from 'react-promise-tracker'
 import Spinner from '../../components/Spinner'
 import { areas } from '../../constants/areas'
 
-const ArticleCataloguePage = () => {
+const ArticlesPage = () => {
   const route =
     process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
       ? 'http://localhost:5000/'
@@ -33,17 +33,19 @@ const ArticleCataloguePage = () => {
   React.useEffect(() => {
     trackPromise(
       axios.get(route + 'Educational/article').then((response) => {
-        setArticles(response.data);
+        setArticles(response.data)
       }),
-      areas.articleCatalogue
+      areas.articlesPage
     )
-  }, []);
+  }, [])
 
   const getArticleId = async (id: React.Key | null | undefined) => {
-    await axios.get(route + 'Educational/article?_id=' + id).then((response) => {
-      return response.data._id;
-    }) 
-  };
+    await axios
+      .get(route + 'Educational/article?_id=' + id)
+      .then((response) => {
+        return response.data._id
+      })
+  }
 
   return (
     <Container
@@ -55,7 +57,7 @@ const ArticleCataloguePage = () => {
         paddingTop: '5rem',
       }}
     >
-      <Title>Article Catalogue</Title>
+      <Title>Articles</Title>
       <Container
         sx={{
           backgroundColor: 'white',
@@ -85,16 +87,16 @@ const ArticleCataloguePage = () => {
             {articles.length === 0 ? (
               <TableRow key={'spinner'}>
                 <TableCell>
-                  <Spinner area={areas.articleCatalogue} />
+                  <Spinner area={areas.articlesPage} />
                 </TableCell>
                 <TableCell>
-                  <Spinner area={areas.articleCatalogue} />
+                  <Spinner area={areas.articlesPage} />
                 </TableCell>
                 <TableCell align='left'>
-                  <Spinner area={areas.articleCatalogue} />
+                  <Spinner area={areas.articlesPage} />
                 </TableCell>
                 <TableCell>
-                  <Spinner area={areas.articleCatalogue} />{' '}
+                  <Spinner area={areas.articlesPage} />{' '}
                 </TableCell>
               </TableRow>
             ) : (
@@ -109,34 +111,43 @@ const ArticleCataloguePage = () => {
                     | React.ReactPortal
                     | null
                     | undefined
-                   author:
+                  author:
                     | String
                     | React.ReactChild
                     | React.ReactFragment
                     | React.ReactPortal
                     | null
                     | undefined
-                  externalLink:
-                    | String
-                    
+                  externalLink: String
                 }) => (
                   <TableRow key={article.title}>
                     <TableCell>
-                    {article.externalLink === "N/A" ? (
-                      <Link
-                        style={{ fontFamily: 'Fredoka', margin: '10px' }}
-                        to={'/article/' + article._id }
-                        target="_blank" 
-                        rel="noreferrer"
-                      >
-                        {article.title}
-                      </Link>
-                    ) : (
-                      <a style={{ fontFamily: 'Fredoka', margin: '10px' }} href={String(article.externalLink)} target="_blank" rel="noreferrer">{article.title}</a>
-                    )}
+                      {article.externalLink === 'N/A' ? (
+                        <Link
+                          style={{ fontFamily: 'Fredoka', margin: '10px' }}
+                          to={'/article/' + article._id}
+                          target='_blank'
+                          rel='noreferrer'
+                        >
+                          {article.title}
+                        </Link>
+                      ) : (
+                        <a
+                          style={{ fontFamily: 'Fredoka', margin: '10px' }}
+                          href={String(article.externalLink)}
+                          target='_blank'
+                          rel='noreferrer'
+                        >
+                          {article.title}
+                        </a>
+                      )}
                     </TableCell>
                     <TableCell>{article.description}</TableCell>
-                    <TableCell>{article.externalLink === "N/A" ? "Made by Finberry" : "Made by Trusted Source"}</TableCell>
+                    <TableCell>
+                      {article.externalLink === 'N/A'
+                        ? 'Made by Finberry'
+                        : 'Made by Trusted Source'}
+                    </TableCell>
                     <TableCell align='left'>{article.author}</TableCell>
                     <TableCell>
                       <Button></Button>
@@ -152,4 +163,4 @@ const ArticleCataloguePage = () => {
   )
 }
 
-export default ArticleCataloguePage; 
+export default ArticlesPage 

@@ -17,7 +17,7 @@ import ContactPage from "./containers/ContactPage";
 import AboutPage from "./containers/AboutPage";
 import NotFoundPage from "./containers/NotFoundPage";
 import useAuthListener from "./hooks/use-auth";
-import ArticleCataloguePage from "./containers/ArticleCataloguePage";
+import ArticlesPage from "./containers/ArticlesPage";
 import BuyPremiumPage from "./containers/BuyPremiumPage";
 import UserContext from "./context/user";
 import {
@@ -84,7 +84,7 @@ function App() {
                 <Route path="/Register" element={<RegisterPage />} />
                 <Route path="/PasswordReset" element={<PasswordResetPage />} />
                 <Route path="/Article/:id" element={<ArticlePage />} />
-                <Route path="/ArticleCatalogue" element={<ArticleCataloguePage />} />
+                <Route path="/Articles" element={<ArticlesPage />} />
                 <Route path="/Profile/:email" element={<ProfilePage />} />
                 <Route
                   path="/SimulatorPortfolio"

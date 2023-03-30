@@ -59,7 +59,7 @@ const Dropdown: React.FC<Props> = ({ links }) => {
           onClick={handleMenu}
           color='secondary'
         >
-          {user ? <AccountCircle /> : <MenuIcon />}
+          <MenuIcon />
         </IconButton>
         <Menu
           id='menu-appbar'
