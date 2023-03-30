@@ -48,6 +48,8 @@ const Av28 = require('../../images/avatars/a28.png')
 const Av29 = require('../../images/avatars/a29.png')
 const Av30 = require('../../images/avatars/a30.png')
 
+const Ba1 = require('../../images/badges/welcome.png')
+
 const route =
   process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
     ? 'http://localhost:5000/'
@@ -95,6 +97,10 @@ const ProfilePage = () => {
     { img: Av28, string: '../../images/avatars/a28.png' },
     { img: Av29, string: '../../images/avatars/a29.png' },
     { img: Av30, string: '../../images/avatars/a30.png' },
+  ]
+
+  const badges = [
+    { img: Ba1, name: 'welcome', string: '../../images/badges/Ba1.png' },
   ]
 
   const setCurrImg = (imgStr: any) => {
@@ -334,6 +340,15 @@ const ProfilePage = () => {
                 <Typography variant='h4' align='left' fontWeight={400}>
                   Badges:
                 </Typography>
+                <Avatar
+                  sx={{
+                    bgcolor: theme.palette.secondary.main,
+                    width: 120,
+                    height: 120,
+                  }}
+                  alt={'Welcome Badge'}
+                  src={Ba1}
+                ></Avatar>
               </Paper>
             </Grid>
             <Grid item xs={12}>
