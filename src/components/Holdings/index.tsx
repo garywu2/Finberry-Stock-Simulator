@@ -59,7 +59,11 @@ export default function Holdings(data: any | undefined) {
               <TableRow key={row.id}>
                 <TableCell>{row.symbol}</TableCell>
                 <TableCell>{row.exchange}</TableCell>
-                <TableCell>{`$${row.price.toFixed(2)}`}</TableCell>
+                {row.price < 0 ? (
+                  <TableCell>N/A</TableCell>
+                ) : (
+                  <TableCell>{`$${row.price.toFixed(2)}`}</TableCell>
+                )}
                 <TableCell>{row.quantity}</TableCell>
                 <TableCell>{`$${row.totalValue.toLocaleString(undefined, {
                   maximumFractionDigits: 2,

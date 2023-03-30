@@ -57,8 +57,6 @@ const SimulatorPortfolioPage = () => {
     { name: 'GOOG', company: 'Google' },
   ]
 
-  
-
   React.useEffect(() => {
     trackPromise(
       axios
