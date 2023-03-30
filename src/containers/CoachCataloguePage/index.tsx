@@ -125,9 +125,9 @@ const CoachCataloguePage = () => {
                     | React.ReactPortal
                     | null
                     | undefined
-                  email: String | null | undefined
+                  email: React.Key | null | undefined
                 }) => (
-                  <TableRow key={coach.firstName}>
+                  <TableRow key={coach.email}>
                     <TableCell>
                       <Link
                         style={{ fontFamily: 'Fredoka', margin: '10px' }}

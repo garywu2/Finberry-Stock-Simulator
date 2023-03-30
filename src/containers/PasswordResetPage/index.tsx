@@ -53,8 +53,9 @@ const LoginPage = () => {
           autoComplete='off'
         >
           <Grid container>
-            <Grid xs={2}></Grid>
+            <Grid item xs={2}></Grid>
             <Grid
+              item
               xs={8}
               sx={{
                 display: 'flex',
@@ -110,7 +111,7 @@ const LoginPage = () => {
               </Link>
               {emailSent && <Typography color='green'>{emailSent}</Typography>}
             </Grid>
-            <Grid xs={2}></Grid>
+            <Grid item xs={2}></Grid>
           </Grid>
         </Box>
       </Container>

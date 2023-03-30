@@ -88,8 +88,8 @@ const AboutPage = () => {
           }}
         >
           <Grid container sx={{ margin: '2rem' }}>
-            <Grid xs={1}></Grid>
-            <Grid xs={10}>
+            <Grid item xs={1}></Grid>
+            <Grid item xs={10}>
               <Typography
                 variant='h3'
                 align='center'
@@ -110,7 +110,7 @@ const AboutPage = () => {
                 your own money.
               </Typography>
             </Grid>
-            <Grid xs={1}></Grid>
+            <Grid item xs={1}></Grid>
             <Grid item xs={12}>
               <Card
                 sx={{

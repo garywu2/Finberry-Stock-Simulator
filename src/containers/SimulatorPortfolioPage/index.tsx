@@ -457,7 +457,7 @@ const SimulatorPortfolioPage = () => {
                       ---
                     </option>
                     {simulators.map((item) => (
-                      <option>{item}</option>
+                      <option key={item}>{item}</option>
                     ))}
                   </select>
                 )}
@@ -582,7 +582,7 @@ const SimulatorPortfolioPage = () => {
               display: 'flex',
             }}
           >
-            <Grid xs={12}>
+            <Grid item xs={12}>
               <Typography variant='h4' align='left' fontWeight={50}>
                 Simulate a trade.
               </Typography>
@@ -603,6 +603,7 @@ const SimulatorPortfolioPage = () => {
                   <TabPanel value='buy' sx={{ padding: '0rem' }}>
                     <Grid container>
                       <Grid
+                        item
                         lg={6}
                         xs={12}
                         sx={{
@@ -678,6 +679,7 @@ const SimulatorPortfolioPage = () => {
                       simulatorExists &&
                       selectedResult ? (
                         <Grid
+                          item
                           lg={6}
                           xs={12}
                           sx={{
@@ -712,6 +714,7 @@ const SimulatorPortfolioPage = () => {
                   <TabPanel value='sell' sx={{ padding: '0rem' }}>
                     <Grid container>
                       <Grid
+                        item
                         lg={6}
                         xs={12}
                         sx={{
@@ -787,6 +790,7 @@ const SimulatorPortfolioPage = () => {
                       simulatorExists &&
                       selectedResult ? (
                         <Grid
+                          item
                           lg={6}
                           xs={12}
                           sx={{
