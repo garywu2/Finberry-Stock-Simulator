@@ -469,7 +469,12 @@ const CoachPortalPage = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant='h4' align='left' fontWeight={400}>
-                  Service Fee: ${coachItem.price}/hour
+                  Service Fee: $
+                  {coachItem.price.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  })}
+                  /hour
                 </Typography>
                 {user.email !== email && requestSubmitted && !activeClient && (
                   <Typography variant='h5' align='left' fontWeight={400}>
