@@ -24,7 +24,7 @@ const ArticlePage = () => {
     const { id } = useParams();
 
     React.useEffect(() => {
-      axios.get('http://localhost:5000/Educational/article', {
+      axios.get(route + 'Educational/article', {
       params: {
         _id: String(id),
       },
