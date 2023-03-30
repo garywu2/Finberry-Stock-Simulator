@@ -18,7 +18,7 @@ const linksAuth: Link[] = [
     { url: '/about', name: 'About Us' },
     { url: '/faq', name: 'FAQ' },
     { url: '/contact', name: 'Contact Us' },
-    { url: '/BuyPremium', name: 'Upgrade to Premium'}
+    { url: '/BuyPremium', name: 'Memberships'}
 ];
 
 const links: Link[] = [
@@ -37,7 +37,7 @@ const Footer: React.FC<Props> = ({ isAuthenticated }) => {
         sx={{ top: 'auto', bottom: 0, boxShadow: 'none', display: "flex" }}
       >
          {isAuthenticated ? (
-        <Toolbar>
+        <Toolbar sx={{justifyContent: { xs: 'center', lg: 'left'}}}>
           {linksAuth.map((link) => (
             <Button
               size='small'
@@ -54,7 +54,7 @@ const Footer: React.FC<Props> = ({ isAuthenticated }) => {
           ))}
         </Toolbar>
          ) : (
-        <Toolbar>
+        <Toolbar sx={{justifyContent: { xs: 'center', lg: 'left'}}}>
           {links.map((link) => (
             <Button
               size='small'
