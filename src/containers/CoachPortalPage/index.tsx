@@ -12,6 +12,10 @@ import { Link, useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles'
 import FirebaseContext from "../../context/firebase";
 
+import { trackPromise } from 'react-promise-tracker'
+import Spinner from '../../components/Spinner'
+import { areas } from '../../constants/areas'
+
 const Av1 = require('../../images/avatars/a1.png')
 const Av2 = require('../../images/avatars/a2.png')
 const Av3 = require('../../images/avatars/a3.png')
@@ -152,18 +156,20 @@ const CoachPortalPage = () => {
         description: bioText,
       },
     }).then((result: any) => {
-      axios
-        .get(route + 'account/coaching', {
-          params: {
-            email: String(user.email),
-            moreDetails: true,
-          },
-        })
-        .then((response) => {
-          setCoachItem(response?.data[0])
-        })
+      trackPromise(
+        axios
+          .get(route + 'account/coaching', {
+            params: {
+              email: String(user.email),
+              moreDetails: true,
+            },
+          })
+          .then((response) => {
+            setCoachItem(response.data[0])
+          }),
+        areas.coachPortalBioSubmit
+      )
     })
-
     setOpen2(false)
   }
 
@@ -213,41 +219,47 @@ const CoachPortalPage = () => {
     setClientAorD(true);
   };
 
-  const handleBioTextChange = (event: any) => {
-    setBioText(event.target.value)
-  }
-
   const handleRequestTextChange = (event: any) => {
     setRequestText(event.target.value)
   }
 
-  React.useEffect(() => {
-    axios
-      .get(route + 'account/user', {
-        params: {
-          email: String(email),
-        },
-      })
-      .then((response) => {
-        if (response?.data[0]) {
-          setUserItem(response.data[0])
-          setCurrImg(response.data[0].avatar)
-        }
-      })
+  const handleBioTextChange = (event: any) => {
+    setBioText(event.target.value)
+  }
 
+  React.useEffect(() => {
+    trackPromise(
       axios
-      .get(route + 'account/coaching', {
-        params: {
-          email: String(email),
-          moreDetails: true,
-        },
-      })
-      .then((response) => {
-        if (response?.data[0].status == 1) {
-          setCoachItem(response?.data[0])
-          setIsApprovedCoach(true)
-        }
-      })
+        .get(route + 'account/user', {
+          params: {
+            email: String(user.email),
+          },
+        })
+        .then((response) => {
+          if (response.data[0]) {
+            setUserItem(response.data[0])
+            setCurrImg(response.data[0].avatar)
+          }
+        }),
+      areas.coachPortalUserImage
+    )
+
+    trackPromise(
+      axios
+        .get(route + 'account/coaching', {
+          params: {
+            email: String(user.email),
+            moreDetails: true,
+          },
+        })
+        .then((response) => {
+          if (response.data[0].status == 1) {
+            setCoachItem(response.data[0])
+            setIsApprovedCoach(true)
+          }
+        }),
+      areas.coachPortalUserInfo
+    )
 
     axios
       .get(route + 'account/user', {
@@ -289,7 +301,6 @@ const CoachPortalPage = () => {
     }).then((res) => {
       setCoachingSessionsAct(res?.data);
     });
-
   }, [email, auth, user, clientAorD])
 
   return (
@@ -341,6 +352,8 @@ const CoachPortalPage = () => {
                   Approved Coach
                 </Typography>
 
+                <Spinner area={areas.coachPortalUserInfo} />
+
                 <Typography variant='body1' align='center' fontWeight={400}>
                   {userItem.username}
                 </Typography>
@@ -367,6 +380,7 @@ const CoachPortalPage = () => {
                           <Button
                             variant='outlined'
                             value={avatar.string}
+                            key={avatar.string}
                             startIcon={
                               <Avatar
                                 sx={{
@@ -411,6 +425,7 @@ const CoachPortalPage = () => {
                   marginBottom={2}
                 >
                   {coachItem.description}
+                  <Spinner area={areas.coachPortalBioSubmit} />
                 </Typography>
                 {user.email === email && (
                   <Button variant='outlined' onClick={handleClickOpen2}>

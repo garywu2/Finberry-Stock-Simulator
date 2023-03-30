@@ -37,11 +37,9 @@ const RegisterPage = () => {
       signupState.firstName &&
       signupState.lastName &&
       signupState.email &&
-      signupState.phoneNumber &&
       signupState.password &&
       signupState.username
     ) {
-      console.log(signupState);
       createUserWithEmailAndPassword(
         auth,
         signupState.email,
@@ -73,7 +71,7 @@ const RegisterPage = () => {
           setError(e.message)
         })
     } else {
-      setError("One of the required fields is missing!");
+      setError('One of the required fields is missing!')
     }
   };
 
@@ -109,8 +107,9 @@ const RegisterPage = () => {
             autoComplete='off'
           >
             <Grid container>
-              <Grid xs={2}></Grid>
+              <Grid item xs={2}></Grid>
               <Grid
+                item
                 xs={8}
                 sx={{
                   display: 'flex',
@@ -231,7 +230,7 @@ const RegisterPage = () => {
                   Already have an account?
                 </Link>
               </Grid>
-              <Grid xs={2}></Grid>
+              <Grid item xs={2}></Grid>
             </Grid>
           </Box>
         ) : (

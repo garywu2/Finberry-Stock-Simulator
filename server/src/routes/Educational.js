@@ -73,6 +73,7 @@ router.post("/article", async (req, res) => {
     content: req.body.content,
     externalLink: req.body.externalLink,
     firstPosted: req.body.firstPosted,
+    author: req.body.author,
     dateLastUpdated: Date.now(),
   };
 
@@ -81,6 +82,7 @@ router.post("/article", async (req, res) => {
     !article.description ||
     !article.content ||
     !article.externalLink ||
+    !article.author ||
     !article.firstPosted
   ) {
     return res.status(400).json({ msg: "Article is missing one or more required field(s)" });

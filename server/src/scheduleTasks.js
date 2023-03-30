@@ -7,8 +7,8 @@ const   express  =   require("express"),
 
 module.exports  =   router;
 
-// Schedule job every hour 
-schedule.scheduleJob('**/1 * * *', function(){
+// Schedule job at every hour when the clock just turned the hour
+schedule.scheduleJob('0 30 * * * *', function(){
   // For leaderboard calculation - also getting data from the real time stock API
   axios({
     method: 'post',
@@ -32,3 +32,29 @@ schedule.scheduleJob('0 22 * * *', function(){
     data: {},
   });
 });
+
+
+
+// The following regions will all achievement (Including helper functions)
+
+/* #region Achievements - Helper Functions */
+
+// Number 1 on a simulator ending!
+async function simulatorEndRankingAwards() {
+  // Check if Badge of this type
+  
+}
+
+
+
+/* #endregion */
+
+
+
+/* #region Achievements */
+
+
+
+
+
+/* #endregion */

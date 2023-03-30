@@ -88,7 +88,7 @@ async function updateMarketMovers() {
       )
       .then(async (res) => {
         let creditsLeft = Number(res.headers["api-credits-left"]);
-        console.log("Credits left for the minute: " + creditsLeft);
+        console.log("Market Mover - Credits left for the minute: " + creditsLeft);
 
         await axios({
             method: 'delete',
@@ -170,7 +170,7 @@ async function getPricedStockInformation(stockDictionary) {
                     let latestStockPrice = -1; 
                     let priceResults = result.data; // Those are all the stocks we will need.
                     let creditsLeft = Number(result.headers["api-credits-left"]);
-                    console.log("Credits left for the minute: " + creditsLeft);
+                    console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft);
 
                     if (priceResults["price"]) {
                         latestStockPrice = Number(priceResults["price"]);
@@ -182,7 +182,7 @@ async function getPricedStockInformation(stockDictionary) {
         }
 
         resolve(stockDictionary);
-    })
+    });
 }
 
 // Perform Leaderboard Calculation
@@ -271,5 +271,108 @@ router.post("/leaderboard/:simulatorID", async (req, res) => {
     }
 });
 
+
+/* #endregion */
+
+
+/* #region Create mock data */
+
+// Mock Coaches.
+router.post("/mock/coach", async (req, res) => {
+    let outputLog = [];
+    for (const newEntry of req.body) {
+        try {
+            let userProperty = newEntry.user;
+            let coachingProfileProperty = newEntry.coachingProfile;
+
+            await axios({
+                method: 'post',
+                url:
+                process.env.local_route +
+                    'account/user',
+                headers: {},
+                data: userProperty,
+            }).then(async (result) => {
+                let newUser = result.data;
+                coachingProfileProperty.email = newUser.email;
+
+                await axios({
+                    method: 'post',
+                    url:
+                    process.env.local_route +
+                        'account/coaching',
+                    headers: {},
+                    data: coachingProfileProperty,
+                }).then(async (result) => {
+                    let newCoachingProfile = result.data;
+                    newCoachingProfile.user = newUser;
+                    outputLog.push(newCoachingProfile);
+                }).catch((error) => {
+                    outputLog.push("Coaching Profile Creation Failure: " + error.message);
+                });
+            }).catch((error) => {
+                outputLog.push("User Creation Failure: " + error.message);
+            });
+        } catch (e) {
+            outputLog.push("Invalid Input Style");
+        }
+    }
+    
+    res.json(outputLog);
+});
+
+// Mock Simulators.
+router.post("/mock/simulator", async (req, res) => {
+    let outputLog = [];
+    for (const newEntry of req.body) {
+        try {
+            let simulator = newEntry.simulator;
+            await axios({
+                method: 'post',
+                url:
+                process.env.local_route +
+                    'game/simulator',
+                headers: {},
+                data: simulator,
+            }).then(async (result) => {
+                let newSimulator = result.data;
+                outputLog.push(newSimulator);
+            }).catch((error) => {
+                outputLog.push("Simulator Creation Failure: " + error.message);
+            });
+        } catch (e) {
+            outputLog.push("Invalid Input Style.");
+        }
+    }
+    
+    res.json(outputLog);
+});
+
+// Mock Articles.
+router.post("/mock/article", async (req, res) => {
+    let outputLog = [];
+    for (const newEntry of req.body) {
+        try {
+            let article = newEntry.article;
+            await axios({
+                method: 'post',
+                url:
+                process.env.local_route +
+                    'educational/article',
+                headers: {},
+                data: article,
+            }).then(async (result) => {
+                let newArticle = result.data;
+                outputLog.push(newArticle);
+            }).catch((error) => {
+                outputLog.push("Article Creation Failure: " + error.message);
+            });
+        } catch (e) {
+            outputLog.push("Invalid Input Style.");
+        }
+    }
+    
+    res.json(outputLog);
+});
 
 /* #endregion */

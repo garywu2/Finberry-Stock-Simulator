@@ -53,42 +53,52 @@ const LoginPage = () => {
     <div>
       <Container
         sx={{
-          backgroundColor: "primary.main",
-          minHeight: "100vh",
-          minWidth: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          backgroundColor: 'primary.main',
+          minHeight: '100vh',
+          minWidth: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           borderRadius: '0 0 3rem 3rem',
           boxShadow: '0 4px 15px -6px black',
           marginBottom: '1rem',
           paddingTop: '5rem',
-          paddingBottom: '2rem'
-        }}>
+          paddingBottom: '2rem',
+        }}
+      >
         {!user ? (
           <Box
             component='form'
-            display={"flex"}
+            display={'flex'}
             sx={{
               backgroundColor: 'white',
-              borderRadius: "1rem",
-              width: { xs: "100%", sm: "100%", md: "75%", lg: "50%" },
-              paddingBottom: "3rem",
-              margin: { sm: "0rem", lg: "3rem" },
+              borderRadius: '1rem',
+              width: { xs: '100%', sm: '100%', md: '75%', lg: '50%' },
+              paddingBottom: '3rem',
+              margin: { sm: '0rem', lg: '3rem' },
             }}
             noValidate
             autoComplete='off'
           >
             <Grid container>
-              <Grid xs={2}></Grid>
-              <Grid xs={8} sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: 'center',
-                justifyContent: "center",
-                textAlign: "center"
-              }}>
-                <Typography variant="h3" align="center" fontWeight={400} padding={"2rem 0"}>
+              <Grid item xs={2}></Grid>
+              <Grid
+                item
+                xs={8}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant='h3'
+                  align='center'
+                  fontWeight={400}
+                  padding={'2rem 0'}
+                >
                   Log In
                 </Typography>
                 <TextField
@@ -96,11 +106,11 @@ const LoginPage = () => {
                   id='login-email'
                   label='Email'
                   name='email'
-                  margin="normal"
+                  margin='normal'
                   sx={{
-                    width: '100%'
+                    width: '100%',
                   }}
-                  color="primary"
+                  color='primary'
                   value={loginState.email}
                   onChange={handleChange}
                 />
@@ -110,11 +120,11 @@ const LoginPage = () => {
                   label='Password'
                   type='password'
                   name='password'
-                  margin="normal"
+                  margin='normal'
                   sx={{
-                    width: '100%'
+                    width: '100%',
                   }}
-                  color="primary"
+                  color='primary'
                   value={loginState.password}
                   onChange={handleChange}
                 />
@@ -123,21 +133,31 @@ const LoginPage = () => {
                   size='medium'
                   fullWidth
                   sx={{
-                    backgroundColor: "secondary.main",
-                    color: "white",
-                    marginY: "1rem",
+                    backgroundColor: 'secondary.main',
+                    color: 'white',
+                    marginY: '1rem',
                     '&:hover': {
                       backgroundColor: 'secondary.dark',
-                    }
+                    },
                   }}
                   onClick={handleSumbit}
                 >
                   Log In
                 </Button>
-                <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="/register">Create an account</Link>
-                <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="/PasswordReset">Reset Password</Link>
+                <Link
+                  style={{ fontFamily: 'Fredoka', margin: '10px' }}
+                  to='/register'
+                >
+                  Create an account
+                </Link>
+                <Link
+                  style={{ fontFamily: 'Fredoka', margin: '10px' }}
+                  to='/PasswordReset'
+                >
+                  Reset Password
+                </Link>
               </Grid>
-              <Grid xs={2}></Grid>
+              <Grid item xs={2}></Grid>
             </Grid>
           </Box>
         ) : (
@@ -145,6 +165,6 @@ const LoginPage = () => {
         )}
       </Container>
     </div>
-  );
+  )
 };
 export default LoginPage;
