@@ -452,7 +452,7 @@ const ProfilePage = () => {
                                 }}
                                 to=""
                               >
-                                {session.client}
+                                {session.coach}
                               </Link>
                             </TableCell>
                             <TableCell>${session.agreedPayment}/hr</TableCell>
