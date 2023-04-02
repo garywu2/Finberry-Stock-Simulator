@@ -84,6 +84,9 @@ export default function Holdings(data: any | undefined) {
                   maximumFractionDigits: 2,
                   minimumFractionDigits: 2,
                 })}`}</TableCell>
+                {row.price < 0 ? (
+                  <TableCell align='right'>-100.0%</TableCell>
+                ) : (
                 <TableCell align='right'>
                   {(
                     ((row.price - row.avgPrice) / row.avgPrice) *
@@ -94,6 +97,7 @@ export default function Holdings(data: any | undefined) {
                   })}
                   %
                 </TableCell>
+                )}
               </TableRow>
             ))}
         </TableBody>

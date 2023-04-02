@@ -175,6 +175,7 @@ const SimulatorPortfolioPage = () => {
               simulatorID:
                 userItem.simulatorEnrollments[simIndex].simulator._id,
               populatePriceAndValue: true,
+              greaterThanZero: true
             },
           })
           .then((response) => {
@@ -304,6 +305,7 @@ const SimulatorPortfolioPage = () => {
                   simulatorID:
                     userItem.simulatorEnrollments[simIndex].simulator._id,
                   populatePriceAndValue: true,
+                  greaterThanZero: true
                 },
               })
               .then((response) => {
@@ -375,6 +377,7 @@ const SimulatorPortfolioPage = () => {
                   simulatorID:
                     userItem.simulatorEnrollments[simIndex].simulator._id,
                   populatePriceAndValue: true,
+                  greaterThanZero: true
                 },
               })
               .then((response) => {
