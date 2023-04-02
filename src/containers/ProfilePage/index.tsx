@@ -206,31 +206,33 @@ const ProfilePage = () => {
             setUserItem(response.data[0]);
             setCurrImg(response.data[0].avatar);
           }
+
+          axios
+          .get(route + "account/coachingsession", {
+            params: {
+              client: response?.data[0]._id,
+              status: 0,
+            },
+          })
+          .then((res) => {
+            setCoachingSessionsReq(res?.data);
+          });
+
+        axios
+          .get(route + "account/coachingsession", {
+            params: {
+              client: response?.data[0]._id,
+              status: 1,
+            },
+          })
+          .then((res) => {
+            setCoachingSessionsAct(res?.data);
+          });
         }),
       areas.profileUserInfo
     );
 
-    axios
-      .get(route + "account/coachingsession", {
-        params: {
-          coachingProfile: userItem.client,
-          status: 0,
-        },
-      })
-      .then((res) => {
-        setCoachingSessionsReq(res?.data);
-      });
-
-    axios
-      .get(route + "account/coachingsession", {
-        params: {
-          coachingProfile: userItem.client,
-          status: 1,
-        },
-      })
-      .then((res) => {
-        setCoachingSessionsAct(res?.data);
-      });
+    
   }, [email, auth, user]);
 
   return (

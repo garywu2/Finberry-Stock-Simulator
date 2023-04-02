@@ -246,6 +246,7 @@ const CoachPortalPage = () => {
       areas.coachPortalUserImage
     )
 
+    var tempCoachItem: any;
     trackPromise(
       axios
         .get(route + 'account/coaching', {
@@ -256,57 +257,64 @@ const CoachPortalPage = () => {
         })
         .then((response) => {
           if (response.data[0].status == 1) {
+            tempCoachItem = response.data[0];
             setCoachItem(response.data[0])
             setIsApprovedCoach(true)
+
+            if(tempCoachItem) {
+              axios
+              .get(route + 'account/user', {
+                params: {
+                  email: String(user.email),
+                },
+              })
+              .then((response) => {
+                axios
+                  .get(route + 'account/coachingsession', {
+                    params: {
+                      coachingProfile: tempCoachItem?._id,
+                      client: response?.data[0]?._id,
+                    },
+                  })
+                  .then((res) => {
+                    if (res?.data[0]?.status == 0) {
+                      setRequestSubmitted(true)
+                    } else if (res?.data[0]?.status == 1) {
+                      setActiveClient(true)
+                    }
+                  })
+              })
+        
+            axios
+              .get(route + 'account/coachingsession', {
+                params: {
+                  coachingProfile: tempCoachItem?._id,
+                  status: 0,
+                },
+              })
+              .then((res) => {
+                setCoachingSessionsReq(res?.data)
+              })
+        
+            axios
+              .get(route + 'account/coachingsession', {
+                params: {
+                  coachingProfile: tempCoachItem?._id,
+                  status: 1,
+                },
+              })
+              .then((res) => {
+                setCoachingSessionsAct(res?.data)
+              })
+            }
           }
         }),
       areas.coachPortalUserInfo
     )
+    
+    
 
-    axios
-      .get(route + 'account/user', {
-        params: {
-          email: String(user.email),
-        },
-      })
-      .then((response) => {
-        axios
-          .get(route + 'account/coachingsession', {
-            params: {
-              coachingProfile: coachItem._id,
-              client: response?.data[0]?._id,
-            },
-          })
-          .then((res) => {
-            if (res?.data[0]?.status == 0) {
-              setRequestSubmitted(true)
-            } else if (res?.data[0]?.status == 1) {
-              setActiveClient(true)
-            }
-          })
-      })
-
-    axios
-      .get(route + 'account/coachingsession', {
-        params: {
-          coachingProfile: coachItem._id,
-          status: 0,
-        },
-      })
-      .then((res) => {
-        setCoachingSessionsReq(res?.data)
-      })
-
-    axios
-      .get(route + 'account/coachingsession', {
-        params: {
-          coachingProfile: coachItem._id,
-          status: 1,
-        },
-      })
-      .then((res) => {
-        setCoachingSessionsAct(res?.data)
-      })
+    
   }, [email, auth, user, clientAorD])
 
   return (
