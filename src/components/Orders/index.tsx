@@ -62,12 +62,16 @@ export default function Orders(data: any | undefined) {
                 </TableCell>
                 <TableCell>{row.action}</TableCell>
                 <TableCell>{row.symbol}</TableCell>
-                <TableCell>{`$${row.price.toFixed(2)}`}</TableCell>
+                <TableCell>{`$${row.price.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
+                })}`}</TableCell>
                 <TableCell>{row.quantity}</TableCell>
                 <TableCell align='right'>{`$${(
                   row.price * row.quantity
                 ).toLocaleString(undefined, {
                   maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
                 })}`}</TableCell>
               </TableRow>
             ))}

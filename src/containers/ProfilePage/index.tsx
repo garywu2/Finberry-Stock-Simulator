@@ -17,6 +17,7 @@ import { trackPromise } from 'react-promise-tracker'
 import Spinner from '../../components/Spinner'
 import { areas } from '../../constants/areas'
 
+const Av0 = require('../../images/avatars/a0.png')
 const Av1 = require('../../images/avatars/a1.png')
 const Av2 = require('../../images/avatars/a2.png')
 const Av3 = require('../../images/avatars/a3.png')
@@ -61,14 +62,15 @@ const ProfilePage = () => {
   const [userItem, setUserItem] = React.useState<any>([])
   const [open, setOpen] = React.useState(false)
   const [open2, setOpen2] = React.useState(false)
-  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([]);
-  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([]);
+  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([])
+  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([])
   const [bioText, setBioText] = useState('')
   const { email } = useParams()
   const theme = useTheme()
   const { auth } = useContext(FirebaseContext)
 
   const avatars = [
+    { img: Av0, string: '../../images/avatars/a0.png' },
     { img: Av1, string: '../../images/avatars/a1.png' },
     { img: Av2, string: '../../images/avatars/a2.png' },
     { img: Av3, string: '../../images/avatars/a3.png' },
@@ -111,6 +113,14 @@ const ProfilePage = () => {
         currImg = avatars[i].img
       }
     }
+  }
+
+  const handleCancel = () => {
+    setOpen(false);
+  }
+
+  const handleCancel2 = () => {
+    setOpen(false);
   }
 
   const handleClickOpen = () => {
@@ -182,27 +192,31 @@ const ProfilePage = () => {
             setCurrImg(response.data[0].avatar)
           }
         }),
-        areas.profileUserInfo
+      areas.profileUserInfo
     )
 
-      axios.get(route + 'account/coachingsession', {
+    axios
+      .get(route + 'account/coachingsession', {
         params: {
           coachingProfile: userItem.client,
-          status: 0
-        }
-      }).then((res) => {
-        setCoachingSessionsReq(res?.data);
-      });
-  
-      axios.get(route + 'account/coachingsession', {
+          status: 0,
+        },
+      })
+      .then((res) => {
+        setCoachingSessionsReq(res?.data)
+      })
+
+    axios
+      .get(route + 'account/coachingsession', {
         params: {
           coachingProfile: userItem.client,
-          status: 1
-        }
-      }).then((res) => {
-        setCoachingSessionsAct(res?.data);
-      });
-  }, [email, auth, user]);
+          status: 1,
+        },
+      })
+      .then((res) => {
+        setCoachingSessionsAct(res?.data)
+      })
+  }, [email, auth, user])
 
   return (
     <Container
@@ -293,7 +307,7 @@ const ProfilePage = () => {
                     )}
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={handleCancel}>Cancel</Button>
                   </DialogActions>
                 </Dialog>
               </Paper>
@@ -350,7 +364,7 @@ const ProfilePage = () => {
                   </DialogContent>
                   <DialogActions>
                     <Button onClick={handleBioSubmit}>Confirm Edit</Button>
-                    <Button onClick={handleClose2}>Cancel</Button>
+                    <Button onClick={handleCancel2}>Cancel</Button>
                   </DialogActions>
                 </Dialog>
               </Paper>
@@ -371,7 +385,7 @@ const ProfilePage = () => {
                 ></Avatar>
               </Paper>
             </Grid>
-                  {user.email === email && (
+            {user.email === email && (
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                   {userItem && userItem.coachingCoachs?.length > 0 ? (
@@ -386,7 +400,8 @@ const ProfilePage = () => {
 
                   {coachingSessionsReq.length > 0 ? (
                     <Typography variant='h5' align='left' fontWeight={400}>
-                      You have submitted a request to be coached by the following:
+                      You have submitted a request to be coached by the
+                      following:
                     </Typography>
                   ) : (
                     <Typography variant='h5' align='left' fontWeight={400}>
@@ -396,28 +411,39 @@ const ProfilePage = () => {
 
                   {coachingSessionsReq.length > 0 && coachingSessionsReq && (
                     <Table size='small'>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Coach</TableCell>
-                              <TableCell>Agreed Payment</TableCell>
-                              <TableCell align="left">Client's Request Note</TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                            </TableRow>
-                          </TableHead>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Coach</TableCell>
+                          <TableCell>Agreed Payment</TableCell>
+                          <TableCell align='left'>
+                            Client's Request Note
+                          </TableCell>
+                          <TableCell></TableCell>
+                          <TableCell></TableCell>
+                        </TableRow>
+                      </TableHead>
                       <TableBody>
-                            {coachingSessionsReq.map((session: any) => (
-                              <TableRow key={session._id}>
-                                <TableCell>
-                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
-                                  </TableCell>
-                                <TableCell>${session.agreedPayment}/hr</TableCell>
-                                <TableCell align='left'>{session.clientRequestNote}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
+                        {coachingSessionsReq.map((session: any) => (
+                          <TableRow key={session._id}>
+                            <TableCell>
+                              <Link
+                                style={{
+                                  fontFamily: 'Fredoka',
+                                  margin: '10px',
+                                }}
+                                to=''
+                              >
+                                {session.client}
+                              </Link>
+                            </TableCell>
+                            <TableCell>${session.agreedPayment}/hr</TableCell>
+                            <TableCell align='left'>
+                              {session.clientRequestNote}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
                     </Table>
-
                   )}
 
                   {coachingSessionsAct.length > 0 ? (
@@ -432,30 +458,35 @@ const ProfilePage = () => {
 
                   {coachingSessionsAct.length > 0 && coachingSessionsAct && (
                     <Table size='small'>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Coach</TableCell>
-                              <TableCell>Agreed Payment</TableCell>
-                            </TableRow>
-                          </TableHead>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Coach</TableCell>
+                          <TableCell>Agreed Payment</TableCell>
+                        </TableRow>
+                      </TableHead>
                       <TableBody>
-                            {coachingSessionsAct.map((session: any) => (
-                              <TableRow key={session._id}>
-                                <TableCell>
-                                  <Link style={{ fontFamily: 'Fredoka', margin: "10px" }} to="">{session.client}</Link>
-                                  </TableCell>
-                                <TableCell>${session.agreedPayment}/hr</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
+                        {coachingSessionsAct.map((session: any) => (
+                          <TableRow key={session._id}>
+                            <TableCell>
+                              <Link
+                                style={{
+                                  fontFamily: 'Fredoka',
+                                  margin: '10px',
+                                }}
+                                to=''
+                              >
+                                {session.client}
+                              </Link>
+                            </TableCell>
+                            <TableCell>${session.agreedPayment}/hr</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
                     </Table>
-
                   )}
                 </Paper>
               </Grid>
             )}
-
-            
           </Grid>
         ) : (
           <></>

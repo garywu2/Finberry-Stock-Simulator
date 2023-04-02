@@ -72,6 +72,7 @@ const SimulatorPortfolioPage = () => {
       areas.simulatorPortfolioUserInfo
     )
 
+    simulators = [];
     axios
       .get(route + 'game/simulator')
       .then((response) => {
@@ -114,6 +115,7 @@ const SimulatorPortfolioPage = () => {
         totalValue: data[i].totalValue,
         quantity: data[i].quantity,
         exchange: data[i].index,
+        avgPrice: data[i].averagePurchasePrice,
       })
     }
   }

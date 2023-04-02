@@ -23,6 +23,7 @@ export default function Holdings(data: any | undefined) {
           <TableRow>
             <TableCell>Symbol</TableCell>
             <TableCell>Exchange</TableCell>
+            <TableCell>Average Price</TableCell>
             <TableCell>Price</TableCell>
             <TableCell>Quantity</TableCell>
             <TableCell>Total value</TableCell>
@@ -32,6 +33,9 @@ export default function Holdings(data: any | undefined) {
         <TableBody>
           {data && data.data && data.data.length === 0 && (
             <TableRow>
+              <TableCell>
+                <Spinner area={areas.simulatorPortfolioHoldings} />
+              </TableCell>
               <TableCell>
                 <Spinner area={areas.simulatorPortfolioHoldings} />
               </TableCell>
@@ -59,16 +63,37 @@ export default function Holdings(data: any | undefined) {
               <TableRow key={row.id}>
                 <TableCell>{row.symbol}</TableCell>
                 <TableCell>{row.exchange}</TableCell>
+                {row.avgPrice < 0 ? (
+                  <TableCell>N/A</TableCell>
+                ) : (
+                  <TableCell>{`$${row.avgPrice.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  })}`}</TableCell>
+                )}
                 {row.price < 0 ? (
                   <TableCell>N/A</TableCell>
                 ) : (
-                  <TableCell>{`$${row.price.toFixed(2)}`}</TableCell>
+                  <TableCell>{`$${row.price.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  })}`}</TableCell>
                 )}
                 <TableCell>{row.quantity}</TableCell>
                 <TableCell>{`$${row.totalValue.toLocaleString(undefined, {
                   maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
                 })}`}</TableCell>
-                <TableCell align='right'>All time return</TableCell>
+                <TableCell align='right'>
+                  {(
+                    ((row.price - row.avgPrice) / row.avgPrice) *
+                    100
+                  ).toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  })}
+                  %
+                </TableCell>
               </TableRow>
             ))}
         </TableBody>
