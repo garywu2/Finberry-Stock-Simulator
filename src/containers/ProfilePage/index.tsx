@@ -21,7 +21,8 @@ import {
   ListItem,
   Divider,
   ListItemAvatar,
-  ListItemText
+  ListItemText,
+  useMediaQuery
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -92,6 +93,7 @@ const ProfilePage = () => {
   const { email } = useParams();
   const theme = useTheme();
   const { auth } = useContext(FirebaseContext);
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const avatars = [
     { img: Av0, string: '../../images/avatars/a0.png' },
@@ -578,6 +580,7 @@ const ProfilePage = () => {
                                 Open Chat
                               </Button>
                               <Dialog
+                                fullScreen={fullScreen}
                                 open={open3}
                                 onClose={handleClose3}
                                 fullWidth={true}
