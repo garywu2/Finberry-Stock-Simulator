@@ -288,6 +288,7 @@ const CoachPortalPage = () => {
         .then((response) => {
           if (response.data[0]) {
             setUserItem(response.data[0])
+            setBioText(response.data[0].bio)
             setCurrImg(response.data[0].avatar)
           }
         }),
