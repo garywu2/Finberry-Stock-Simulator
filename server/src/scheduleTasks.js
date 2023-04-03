@@ -35,7 +35,7 @@ schedule.scheduleJob('0 */1 * * *', async function(){
     console.log("Total Badge Calulation failed.");
   });
 
-}).invoke();
+});
 
 // Scheduling job to run every day at 10 pm
 // “At 22:00.” - https://crontab.guru/#0_22_*_*_*
@@ -52,4 +52,4 @@ schedule.scheduleJob('0 22 * * *', function(){
   }).catch((error) => {
     console.log("Market Mover update failed.");
   });
-}).invoke();
+});
