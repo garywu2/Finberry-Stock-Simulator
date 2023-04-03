@@ -89,7 +89,7 @@ async function updateMarketMovers() {
       )
       .then(async (res) => {
         let creditsLeft = Number(res.headers["api-credits-left"]);
-        console.log("Market Mover - Credits left for the minute: " + creditsLeft);
+        console.log("Market Mover - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
 
         await axios({
             method: 'delete',
@@ -180,7 +180,7 @@ async function getPricedStockInformation(stockDictionary) {
                             let latestStockPrice = -1; 
                             let priceResults = result.data; // Those are all the stocks we will need.
                             let creditsLeft = Number(result.headers["api-credits-left"]);
-                            console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft);
+                            console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
 
                             if (priceResults["price"]) {
                                 latestStockPrice = Number(priceResults["price"]);
@@ -286,6 +286,36 @@ router.post("/leaderboard/:simulatorID", async (req, res) => {
     }
 });
 
+
+
+
+
+
+// // Perform Badge Calculation and assignment - For top members of said leaderboard
+// router.post("/badge/top", async (req, res) => {
+//     try {
+//         console.log("Top badge calculation started");
+
+//         await axios({
+//             method: 'post',
+//             url:
+//             process.env.local_route +
+//                 'game/balancecalculation/balance/learderboard',
+//             headers: {},
+//             data: {
+//                 stockInformationTime: Date.now(),
+//                 stockDictionary: stockDictionary
+//             },
+//         }).then(async (result) => {
+//             resultLog["leaderboardCalculationLog"] = result.data;
+//         });
+
+//         // console.log("Leaderboard Update Started.");
+
+//     } catch (e) {
+//         return res.status(400).json({ msg: e.message });
+//     }
+// });
 
 /* #endregion */
 
