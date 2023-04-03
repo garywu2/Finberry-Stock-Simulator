@@ -58,6 +58,7 @@ const CoachPortalPage = () => {
   const { user } = useContext(UserContext)
   const [userItem, setUserItem] = React.useState<any>([])
   const [coachItem, setCoachItem] = React.useState<any>([])
+  const [currCoachingSesh, setCurrCoachingSesh] = React.useState(null);
   const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([])
   const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([])
   const [open, setOpen] = React.useState(false)
@@ -234,9 +235,11 @@ const CoachPortalPage = () => {
 
   const handleCancel4 = () => {
     setOpen4(false);
+    setCurrCoachingSesh(null);
   }
   const handleClickOpen4 = (e: any) => {
     setOpen4(true);
+    setCurrCoachingSesh(e.target.value);
 
     axios({
       method: "get",
@@ -250,6 +253,7 @@ const CoachPortalPage = () => {
   };
   const handleClose4 = (event: any) => {
     setOpen4(false);
+    setCurrCoachingSesh(null);
   };
 
   const handleChatMsgSubmit = (event: any) => {
@@ -276,6 +280,23 @@ const CoachPortalPage = () => {
   const handleChatMsgTextChange = (event: any) => {
     setChatMsgText(event.target.value);
   };
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      if(currCoachingSesh) {
+        axios({
+          method: "get",
+          url: route + 'account/chatmessage',
+          params: {
+            coachingSession: currCoachingSesh
+          }
+        }).then((response) => {
+          setChatItems(response?.data?.reverse())
+        });
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [chatItems]);
 
   React.useEffect(() => {
     trackPromise(

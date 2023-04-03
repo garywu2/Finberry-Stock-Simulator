@@ -84,6 +84,7 @@ const ProfilePage = () => {
   const [open, setOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
   const [open3, setOpen3] = React.useState(false);
+  const [currCoachingSesh, setCurrCoachingSesh] = React.useState(null);
   const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([]);
   const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([]);
   const [bioText, setBioText] = useState("");
@@ -148,6 +149,7 @@ const ProfilePage = () => {
 
   const handleCancel3 = () => {
     setOpen3(false);
+    setCurrCoachingSesh(null);
   }
 
   const handleClickOpen = () => {
@@ -160,6 +162,7 @@ const ProfilePage = () => {
 
   const handleClickOpen3 = (e: any) => {
     setOpen3(true);
+    setCurrCoachingSesh(e.target.value);
 
     axios({
       method: "get",
@@ -192,6 +195,7 @@ const ProfilePage = () => {
 
   const handleClose3 = (event: any) => {
     setOpen3(false);
+    setCurrCoachingSesh(null);
   };
 
   const handleChatMsgSubmit = (event: any) => {
@@ -250,6 +254,23 @@ const ProfilePage = () => {
   };
 
   React.useEffect(() => {
+    const interval = setInterval(() => {
+      if(currCoachingSesh) {
+        axios({
+          method: "get",
+          url: route + 'account/chatmessage',
+          params: {
+            coachingSession: currCoachingSesh
+          }
+        }).then((response) => {
+          setChatItems(response?.data?.reverse())
+        });
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [chatItems]);
+
+  React.useEffect(() => {
     trackPromise(
       axios
         .get(route + 'account/user', {
@@ -289,7 +310,7 @@ const ProfilePage = () => {
         }),
       areas.profileUserInfo
     )
-  }, [email, auth, user])
+  }, [email, auth, user]);
 
   return (
     <Container
