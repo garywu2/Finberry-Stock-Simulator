@@ -206,28 +206,32 @@ const ProfilePage = () => {
             setUserItem(response.data[0])
             setCurrImg(response.data[0].avatar)
           }
-
-          axios
-            .get(route + 'account/coachingsession', {
-              params: {
-                client: response?.data[0]._id,
-                status: 0,
-              },
-            })
-            .then((res) => {
-              setCoachingSessionsReq(res?.data)
-            })
-
-          axios
-            .get(route + 'account/coachingsession', {
-              params: {
-                client: response?.data[0]._id,
-                status: 1,
-              },
-            })
-            .then((res) => {
-              setCoachingSessionsAct(res?.data)
-            })
+          trackPromise(
+            axios
+              .get(route + 'account/coachingsession', {
+                params: {
+                  client: response?.data[0]._id,
+                  status: 0,
+                },
+              })
+              .then((res) => {
+                setCoachingSessionsReq(res?.data)
+              }),
+            areas.profileCoachInfo
+          )
+          trackPromise(
+            axios
+              .get(route + 'account/coachingsession', {
+                params: {
+                  client: response?.data[0]._id,
+                  status: 1,
+                },
+              })
+              .then((res) => {
+                setCoachingSessionsAct(res?.data)
+              }),
+            areas.profileCoachInfo
+          )
         }),
       areas.profileUserInfo
     )
@@ -337,7 +341,7 @@ const ProfilePage = () => {
                 }}
               >
                 <Typography variant='h4' align='left' fontWeight={400}>
-                  About Yourself:
+                  About:
                 </Typography>
                 <Typography
                   variant='body1'
@@ -407,14 +411,17 @@ const ProfilePage = () => {
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                   <Typography variant='h4' align='left' fontWeight={400}>
                     Coaching:
+                    <Spinner area={areas.profileCoachInfo} />
                   </Typography>
                   {coachingSessionsReq.length > 0 ? (
                     <Typography variant='h6' align='left' fontWeight={400}>
                       Pending requests:
+                      <Spinner area={areas.profileCoachInfo} />
                     </Typography>
                   ) : (
                     <Typography variant='body1' align='left' fontWeight={400}>
                       You have no pending requests.
+                      <Spinner area={areas.profileCoachInfo} />
                     </Typography>
                   )}
 
@@ -454,10 +461,12 @@ const ProfilePage = () => {
                   {coachingSessionsAct.length > 0 ? (
                     <Typography variant='h6' align='left' fontWeight={400}>
                       Active Sessions:
+                      <Spinner area={areas.profileCoachInfo} />
                     </Typography>
                   ) : (
                     <Typography variant='body1' align='left' fontWeight={400}>
                       You have no active coaching sessions.
+                      <Spinner area={areas.profileCoachInfo} />
                     </Typography>
                   )}
 
@@ -466,7 +475,7 @@ const ProfilePage = () => {
                       <TableHead>
                         <TableRow>
                           <TableCell>Coach</TableCell>
-                          <TableCell>Agreed Payment</TableCell>
+                          <TableCell>Rate</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
