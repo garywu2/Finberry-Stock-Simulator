@@ -1,8 +1,9 @@
 // Express and the routers
-const   express =   require("express"),
-        router  =   express.Router(),
-        mongoose =  require("mongoose"),
-        axios    =   require('axios');
+const   express     =   require("express"),
+        router      =   express.Router(),
+        mongoose    =   require("mongoose"),
+        NodeCache   =   require( "node-cache" ),
+        axios       =   require('axios');
 
 module.exports  =   router;
 
@@ -32,61 +33,85 @@ function parseRequestParams(reqParams, desiredSchemaKeys) {
 /* #endregion */
 
 
-/* #region Stock API calls - Basic */
 
+/* #region Stock API calls - Basic */
+// Cache for 5 minutes
+const priceCache = new NodeCache({
+    stdTTL: 300
+});
 // Get real time stock prices
 router.get('/price', function(req, res) {
-    let params = parseRequestParams(req.query, ['symbol', 'exchange', 'timezone'])
-    axios({
-        method: 'get',
-        url: process.env.local_route +
-        'stock/exist/' + params.symbol,
-        params: {},
-    }).then(async (result) => {
-        let isAvailable = result.data;
+    let params = parseRequestParams(req.query, ['symbol', 'exchange', 'timezone']);
+    let stringParams = JSON.stringify(params);
 
-        if (isAvailable) {
-            params.apikey = process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY;
-            
-            axios({
-                method: 'get',
-                url: 'https://api.twelvedata.com/price',
-                params: params,
-            }).then((result) => {
-                let latestStockPrice = -1;
-                let data = result.data; // Those are all the stocks we will need.
-                let creditsLeft = Number(result.headers["api-credits-left"]);
-                console.log("Realtime Price called - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
-            
-                if (data["price"]) {
-                    latestStockPrice = Number(data["price"]);
-                }
+    let value = priceCache.get(stringParams);
+    if (value == undefined){
+        axios({
+            method: 'get',
+            url: process.env.local_route +
+            'stock/exist/' + params.symbol,
+            params: {},
+        }).then(async (result) => {
+            let isAvailable = result.data;
 
-                res.json({price: latestStockPrice, creditsLeft: creditsLeft, data: data});
-            });
-        }
-        else {
-            res.json({price: -1});
-        }
-    });
+            if (isAvailable) {
+                params.apikey = process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY;
+                
+                axios({
+                    method: 'get',
+                    url: 'https://api.twelvedata.com/price',
+                    params: params,
+                }).then((result) => {
+                    let latestStockPrice = -1;
+                    let data = result.data; // Those are all the stocks we will need.
+                    let creditsLeft = Number(result.headers["api-credits-left"]);
+                    console.log("Realtime Price called - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
+                
+                    if (data["price"]) {
+                        latestStockPrice = Number(data["price"]);
+                    }
+
+                    priceCache.set(stringParams, {price: latestStockPrice});
+                    return res.json({price: latestStockPrice, creditsLeft: creditsLeft, data: data});
+                });
+            }
+            else {
+                priceCache.set(stringParams, {price: -1});
+                return res.json({price: -1});
+            }
+        });
+    } else {
+        return res.json(value);
+    }
 });
 
+// Cache for 1 hour
+const timeSeriesCache = new NodeCache({
+    stdTTL: 3600
+});
 // Get time series stock price
 router.get('/time_series', function(req, res) {
-    let params = parseRequestParams(req.query, ['symbol', 'exchange', 'interval', 'outputsize', 'date', 'start_date', 'end_date', 'timezone'])
-    params.apikey = process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY;
+    let params = parseRequestParams(req.query, ['symbol', 'exchange', 'interval', 'outputsize', 'date', 'start_date', 'end_date', 'timezone']);
+    let stringParams = JSON.stringify(params);
 
-    axios({
-        method: 'get',
-        url: 'https://api.twelvedata.com/time_series',
-        params: params,
-    }).then((result) => {
-        let data = result.data; // Those are all the stocks we will need.
-        let creditsLeft = Number(result.headers["api-credits-left"]);
-        console.log("Time Series called - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
-
-        res.json({creditsLeft: creditsLeft, data: data});
-    });
+    let value = timeSeriesCache.get(stringParams);
+    if (value == undefined){
+        params.apikey = process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY;
+        axios({
+            method: 'get',
+            url: 'https://api.twelvedata.com/time_series',
+            params: params,
+        }).then((result) => {
+            let data = result.data; // Those are all the stocks we will need.
+            let creditsLeft = Number(result.headers["api-credits-left"]);
+            console.log("Time Series called - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
+            
+            timeSeriesCache.set(stringParams, {data: data});
+            res.json({creditsLeft: creditsLeft, data: data});
+        });
+    } else {
+        return res.json(value);
+    }
 });
 
 

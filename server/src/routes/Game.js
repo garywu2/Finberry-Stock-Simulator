@@ -1430,7 +1430,7 @@ router.post("/balancecalculation/balance/learderboard/:simulatorID", async (req,
         }
 
         let stockDictionary = req.body.stockDictionary;
-        
+         
         let missingPrices = {};
         const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id });
         for (const simulatorEnrollment of simulatorEnrollments) {
