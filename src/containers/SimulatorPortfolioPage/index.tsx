@@ -131,6 +131,7 @@ const SimulatorPortfolioPage = () => {
     updateHoldingsRows([])
     setTradeHistoryItems([])
     updateRows([])
+    setError('')
 
     if (
       sim &&
@@ -204,10 +205,12 @@ const SimulatorPortfolioPage = () => {
 
   const handleBuyInputChange = (event: any) => {
     setBuyQuantity(event.target.value)
+    setError('')
   }
 
   const handleSellInputChange = (event: any) => {
     setSellQuantity(event.target.value)
+    setError('')
   }
 
   const handleStockInputSubmit = (event: any, value: any) => {
@@ -235,6 +238,7 @@ const SimulatorPortfolioPage = () => {
           },
         })
         .then((response) => {
+          setError('')
           setChartItems(response.data.data)
           var saveData = response.data.data
           chartData = []
@@ -281,6 +285,7 @@ const SimulatorPortfolioPage = () => {
           transactionTime: Date.now(),
         },
       }).then((result: any) => {
+        setError('')
         axios
           .get(route + 'account/user', {
             params: {
@@ -355,6 +360,7 @@ const SimulatorPortfolioPage = () => {
           transactionTime: Date.now(),
         },
       }).then((result: any) => {
+        setError('')
         axios
           .get(route + 'account/user', {
             params: {
