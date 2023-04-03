@@ -21,7 +21,8 @@ import {
   ListItem,
   Divider,
   ListItemAvatar,
-  ListItemText
+  ListItemText,
+  useMediaQuery
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -84,6 +85,7 @@ const ProfilePage = () => {
   const [open, setOpen] = React.useState(false);
   const [open2, setOpen2] = React.useState(false);
   const [open3, setOpen3] = React.useState(false);
+  const [currCoachingSesh, setCurrCoachingSesh] = React.useState(null);
   const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([]);
   const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([]);
   const [bioText, setBioText] = useState("");
@@ -91,6 +93,7 @@ const ProfilePage = () => {
   const { email } = useParams();
   const theme = useTheme();
   const { auth } = useContext(FirebaseContext);
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const avatars = [
     { img: Av0, string: '../../images/avatars/a0.png' },
@@ -148,6 +151,7 @@ const ProfilePage = () => {
 
   const handleCancel3 = () => {
     setOpen3(false);
+    setCurrCoachingSesh(null);
   }
 
   const handleClickOpen = () => {
@@ -160,6 +164,7 @@ const ProfilePage = () => {
 
   const handleClickOpen3 = (e: any) => {
     setOpen3(true);
+    setCurrCoachingSesh(e.target.value);
 
     axios({
       method: "get",
@@ -192,6 +197,7 @@ const ProfilePage = () => {
 
   const handleClose3 = (event: any) => {
     setOpen3(false);
+    setCurrCoachingSesh(null);
   };
 
   const handleChatMsgSubmit = (event: any) => {
@@ -250,6 +256,23 @@ const ProfilePage = () => {
   };
 
   React.useEffect(() => {
+    const interval = setInterval(() => {
+      if(currCoachingSesh) {
+        axios({
+          method: "get",
+          url: route + 'account/chatmessage',
+          params: {
+            coachingSession: currCoachingSesh
+          }
+        }).then((response) => {
+          setChatItems(response?.data?.reverse())
+        });
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [chatItems]);
+
+  React.useEffect(() => {
     trackPromise(
       axios
         .get(route + 'account/user', {
@@ -289,7 +312,7 @@ const ProfilePage = () => {
         }),
       areas.profileUserInfo
     )
-  }, [email, auth, user])
+  }, [email, auth, user]);
 
   return (
     <Container
@@ -557,6 +580,7 @@ const ProfilePage = () => {
                                 Open Chat
                               </Button>
                               <Dialog
+                                fullScreen={fullScreen}
                                 open={open3}
                                 onClose={handleClose3}
                                 fullWidth={true}
