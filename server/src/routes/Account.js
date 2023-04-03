@@ -1559,8 +1559,22 @@ router.post("/coachingSession/:coachingSessionID", async (req, res) => {
 // GET - coaching sessions based on parameters
 router.get("/coachingSession", async (req, res) => {
     try {
-        let coachingSessions = await CoachingSession.find(parseRequestParams(req.query, CoachingSession));
-
+        let coachingSessions;
+        if (requestingTrueFalseParam(req.query, "minorPopulateCoachAndUser") == true) {
+            coachingSessions = await CoachingSession.find(parseRequestParams(req.query, CoachingSession)).populate([{
+                path: "coach",
+                select: "_id email username"
+            },
+            {
+                path: "client",
+                select: "_id email username"
+            }
+        ]);
+        }
+        else {
+            coachingSessions = await CoachingSession.find(parseRequestParams(req.query, CoachingSession));
+        }
+        
         return autoManageOutput(res, req.query, coachingSessions, "CoachingSession");
     } catch (e) {
       return res.status(400).json({ msg: e.message });
