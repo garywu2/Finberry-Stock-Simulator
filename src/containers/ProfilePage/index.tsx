@@ -273,18 +273,18 @@ const ProfilePage = () => {
           .then((res) => {
             setCoachingSessionsReq(res?.data);
           });
-
-        axios
-          .get(route + "account/coachingsession", {
+        trackPromise(
+          axios.get(route + 'account/coachingsession', {
             params: {
               client: response?.data[0]._id,
               status: 1,
-              minorPopulateCoachAndUser: true
+              minorPopulateCoachAndUser: true,
             },
-          })
-          .then((res) => {
-            setCoachingSessionsAct(res?.data);
-          });
+          }),
+          areas.profileCoachInfo
+        ).then((res) => {
+          setCoachingSessionsAct(res?.data)
+        })
         }),
       areas.profileUserInfo
     )
