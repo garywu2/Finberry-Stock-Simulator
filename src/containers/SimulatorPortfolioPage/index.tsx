@@ -55,15 +55,15 @@ const SimulatorPortfolioPage = () => {
   const [sellQuantity, setSellQuantity] = useState(0);
   const [selectedResult, setSelectedResult] = useState<any>(null);
   const [selectedSimulator, setSelectedSimulator] = useState(null);
-
-  const mockStockData = [
-    { name: "AAPL", company: "Apple" },
-    { name: "TSLA", company: "Telsa" },
-    { name: "MSFT", company: "Microsoft" },
-    { name: "GOOG", company: "Google" },
-  ];
+  const [mockStockData, setMockStockData] = React.useState<any>([]);
 
   React.useEffect(() => {
+    axios
+      .get(route + 'stock/stocks')
+      .then((response) => {
+        setMockStockData(response?.data);
+      })
+
     trackPromise(
       axios
         .get(route + "account/user", {
@@ -210,7 +210,7 @@ const SimulatorPortfolioPage = () => {
   };
 
   const handleStockInputSubmit = (event: any, value: any) => {
-    const selectedValue = value?.name;
+    const selectedValue = value?.symbol;
     setSelectedResult(value);
 
     const currDate = new Date(Date.now());
@@ -639,7 +639,7 @@ const SimulatorPortfolioPage = () => {
                           }}
                           options={mockStockData}
                           value={selectedResult}
-                          getOptionLabel={(option) => option.name}
+                          getOptionLabel={(option) => option.symbol}
                           renderInput={(params) => (
                             <TextField
                               {...params}
@@ -819,7 +819,7 @@ const SimulatorPortfolioPage = () => {
                           }}
                           options={mockStockData}
                           value={selectedResult}
-                          getOptionLabel={(option) => option.name}
+                          getOptionLabel={(option) => option.symbol}
                           renderInput={(params) => (
                             <TextField
                               {...params}
