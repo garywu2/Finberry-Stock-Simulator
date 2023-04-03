@@ -41,6 +41,17 @@ const links3 = (user: any) => [
   { title: 'Coach Registration', url: '/CoachRegistration' },
 ]
 
+const links4 = (user: any) => [
+  { title: 'Profile', url: '/profile' },
+  { title: 'Simulator', url: '/SimulatorPortfolio' },
+  { title: 'Articles', url: '/articles' },
+  { title: 'Coach Portal', url: `/CoachPortal/${user.email}` },
+  { title: 'Leaderboards', url: '/Leaderboards' },
+  { title: 'Coach Catalogue', url: '/CoachCatalogue' },
+  { title: 'Coach Registration', url: '/CoachRegistration' },
+  { title: 'Logout', url: '/logout' },
+]
+
 const authLinks = (handleSubmit: any, error: any, user: any) => (
   <>
     <Box
@@ -136,7 +147,7 @@ const authLinks = (handleSubmit: any, error: any, user: any) => (
         justifyContent: 'flex-end',
       }}
     >
-      <Dropdown links={links} />
+      <Dropdown links={links4(user)} />
     </Box>
   </>
 )
