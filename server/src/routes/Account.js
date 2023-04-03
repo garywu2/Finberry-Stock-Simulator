@@ -118,22 +118,26 @@ async function deepDeleteBadge(badgeID) {
 
 // UserBadge
 async function deepDeleteUserBadge(userBadgeID) {
-    let userBadgeRemoved = await UserBadge.findByIdAndRemove(userBadgeID);
+    return new Promise(async (resolve) => {
+        let userBadgeRemoved = await UserBadge.findByIdAndRemove(userBadgeID);
 
-    try {
-        let userID = userBadgeRemoved.user;
+        try {
+            let userID = userBadgeRemoved.user;
 
-        const user = await User.findById(userID);
-        if (!user) {
-            return; 
+            const user = await User.findById(userID);
+            if (!user) {
+                return; 
+            }
+            const index = user.badges.indexOf(userBadgeID);
+            if (index > -1) { // only splice array when item is found
+                user.badges.splice(index, 1); // 2nd parameter means remove one item only
+            }
+            await user.save();
+        } catch (e) {
         }
-        const index = user.badges.indexOf(userBadgeID);
-        if (index > -1) { // only splice array when item is found
-            user.badges.splice(index, 1); // 2nd parameter means remove one item only
-        }
-        await user.save();
-    } catch (e) {
-    }
+
+        resolve(userBadgeRemoved);
+    });
 }
 
 // Coaching Profile
@@ -883,6 +887,88 @@ router.delete("/userbadge", async (req, res) => {
         return res.status(400).json({ msg: "You do not have permission to use development mode commands."});
     }
 });
+
+/* #endregion */
+
+
+
+/* #region Achievement - Combination of Badge and UserBadge */
+
+// Remove same achievement from any existing user, make badge if it does not exist.
+router.post("/achievement", async (req, res) => {
+    if (
+        !req.body.displayName ||
+        !req.body.type ||
+        !req.body.description ||
+        !req.body.rarity ||
+        !req.body.image ||
+        !req.body.acquisition ||
+        !req.body.dateEarned ||
+        !req.body.user
+    ) {
+        return res.status(400).json({ msg: "Achievement is missing one or more required field(s)" });
+    }
+
+    try {
+        const user = await User.findById(req.body.user);
+        if (!user) {
+            return res.status(400).json({ msg: "User of the input ID do not exist" });
+        }
+
+        let badge = await Badge.findOne({displayName: req.body.displayName});
+        if (badge) { // If Badge Exists - Remove UserBadge from any user that possesses it.
+            let userBadges = await UserBadge.find({badgeType: badge._id});
+            for (const userBadge of userBadges) {
+                if (userBadge.user.equals(user._id)) {
+                    await UserBadge.findByIdAndRemove(userBadge._id);
+
+                    const index = user.badges.indexOf(userBadge._id);
+                    if (index > -1) { // only splice array when item is found
+                        user.badges.splice(index, 1); // 2nd parameter means remove one item only
+                    }
+                } else { // Another ID
+                    await deepDeleteUserBadge(userBadge._id);
+                }
+            }
+        }
+        else { // If Badge doesnt exist, create said Badge.
+            let newBadge = {
+                displayName: req.body.displayName,
+                type: req.body.type,
+                rarity: req.body.rarity,
+                description: req.body.description,
+                image: req.body.image,
+                enabled: true
+            };
+
+            const badge = new Badge(newBadge);
+            await badge.save();
+        }
+
+        // At this point badge exists, and not assigned to any user badges.
+        // We can now make a user badges.
+        let newUserBadge = {
+            user: user._id,
+            badgeType: badge._id,
+            acquisition: req.body.acquisition,
+            retracted: false,
+            displayPosition: 1,
+            dateEarned: req.body.dateEarned
+        }
+
+        const userBadge = new UserBadge(newUserBadge);
+        await userBadge.save();
+        
+        // Save user with change
+        user.badges.push(userBadge);
+        await user.save();
+
+        return res.json({badge:badge, userBadge:userBadge, userBadgesList: user.badges});
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
 
 /* #endregion */
 
