@@ -28,6 +28,23 @@ const simulatorEnrollmentSchema = new mongoose.Schema({
         required: true,
         default: -1
     },
+
+    pastCalculatedTotal: {
+        type: [
+            {
+                balance: {
+                    type: Number,
+                    required: true,
+                },
+                datetime: {
+                    type: Date,
+                    required: true,
+                },
+            }
+        ],
+        default: []
+    },
+
     joinDate: {
         type: Date,
         required: true,
