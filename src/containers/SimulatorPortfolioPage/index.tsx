@@ -1164,10 +1164,6 @@ const SimulatorPortfolioPage = () => {
                                 },
                               }}
                             >
-                              <Typography variant='body1' fontWeight={400}>
-                                The price of ${chartItems?.meta.symbol} since{' '}
-                                {chartData[0]?.date}
-                              </Typography>
                               <Paper
                                 sx={{
                                   p: 2,
