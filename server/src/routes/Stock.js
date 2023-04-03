@@ -56,7 +56,7 @@ router.get('/price', function(req, res) {
                 let latestStockPrice = -1;
                 let data = result.data; // Those are all the stocks we will need.
                 let creditsLeft = Number(result.headers["api-credits-left"]);
-                console.log("Realtime Price called - Credits left for the minute: " + creditsLeft);
+                console.log("Realtime Price called - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
             
                 if (data["price"]) {
                     latestStockPrice = Number(data["price"]);
@@ -83,7 +83,7 @@ router.get('/time_series', function(req, res) {
     }).then((result) => {
         let data = result.data; // Those are all the stocks we will need.
         let creditsLeft = Number(result.headers["api-credits-left"]);
-        console.log("Time Series called - Credits left for the minute: " + creditsLeft);
+        console.log("Time Series called - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
 
         res.json({creditsLeft: creditsLeft, data: data});
     });

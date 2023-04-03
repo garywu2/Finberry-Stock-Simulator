@@ -18,7 +18,9 @@ const   User                    =   mongoose.model("User"),
         SimulatorEnrollment     =   mongoose.model("SimulatorEnrollment"),
         Holding                 =   mongoose.model("Holding"),
         TradeTransaction        =   mongoose.model("TradeTransaction"),
-        MarketMovers            =   mongoose.model("MarketMovers");
+        MarketMovers            =   mongoose.model("MarketMovers"),
+        Badge                   =   mongoose.model("Badge"),
+        UserBadge               =   mongoose.model("UserBadge");
 
 /* #region Helper Functions */
 
@@ -1516,6 +1518,179 @@ router.get("/balancecalculation/balance/learderboard", async (req, res) => {
     }
 });
 
+/* #endregion */
+
+
+
+/* #region Badge/achievement Assignment - Special Badge assignment per leaderboard */
+
+// Calculate badge achievement for all (visible) simulators
+router.post("/achievement", async (req, res) => {
+    try {
+        let timeNow = new Date();
+        let timeNowReadable = timeNow.toGMTString();
+        console.log("Calculating Badge Achievement(s) for all visible simulators attempted At: " + timeNowReadable);
+
+        const simulators = await Simulator.find({ hidden: false });
+
+        let attemptedList = []
+
+        for (const simulator of simulators) {
+            const simulatorID = simulator._id;
+
+            await axios({
+                method: 'post',
+                url:
+                    process.env.local_route +
+                    'game/achievement/' + simulatorID,
+                headers: {},
+                data: {},
+            }).catch((error) => {
+                console.log("Achievement Recalculation failed for simulator: " + simulatorID);
+            });
+
+            attemptedList.push({simulatorID: simulatorID, simulatorName: simulator.title})
+        }
+
+        return res.json({msg: "Calculating Badge Achievement(s) for all visible simulators attempted.", attemptedList: attemptedList});
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+
+// Calculate badge achievement for a specific simulator
+router.post("/achievement/:simulatorID", async (req, res) => {
+    if (!req.params.simulatorID) {
+        return res.status(400).json({ msg: "Simulator ID is missing" });
+    }
+
+    try {
+        const simulator = await Simulator.findById(req.params.simulatorID);
+        if (!simulator) {
+            return res.status(400).json({ msg: "Simulator with provided ID not found." });
+        }
+
+        // Current time: (In Readable format)
+        let timeNow = new Date();
+        let timeNowReadable = timeNow.toGMTString();
+
+        // For top 3
+        const topThreeSimulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } },
+        {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1},
+        { sort: { 'lastCalculatedRanking' : 1 } }
+        ).populate(
+            {
+                path: "user",
+                select: "_id email username",
+            }
+        ).limit(3);
+
+        // Award top 3
+        let ranking = 1;
+        for (const simulatorEnrollment of topThreeSimulatorEnrollments) {
+            // Perform a call to award ranking
+            if (ranking == 1) { // 0 - Common, 1 - Uncommon, 2 - Rare, 3 - Epic, 4 - Legendary, 5 - Mythic, 6 - Exotic
+                // Perform a call to award ranking
+                await axios({
+                    method: 'post',
+                    url:
+                        process.env.local_route +
+                        'account/achievement/',
+                    headers: {},
+                    data: {
+                        "displayName": "First on the leaderboard of the \"" + simulator.title + "\" Simulator",
+                        "type": "Achievement",
+                        "description": " \"" + simulator.title + "\" Simulator",
+                        "rarity": 4,
+                        "image": "../../images/badges/first.png",
+                        "acquisition": "Awarded for excellent performance on the \""+ simulator.title + "\" simulator as of " + timeNowReadable,
+                        "dateEarned": timeNow,
+                    
+                        "user": simulatorEnrollment.user._id
+                    }
+                });
+            }
+            else if (ranking == 2) {
+                await axios({
+                    method: 'post',
+                    url:
+                        process.env.local_route +
+                        'account/achievement/',
+                    headers: {},
+                    data: {
+                        "displayName": "Second Place on the leaderboard of the \"" + simulator.title + "\" Simulator",
+                        "type": "Achievement",
+                        "description": " \"" + simulator.title + "\" Simulator",
+                        "rarity": 3,
+                        "image": "../../images/badges/second.png",
+                        "acquisition": "Awarded for excellent performance on the \""+ simulator.title + "\" simulator as of " + timeNowReadable,
+                        "dateEarned": timeNow,
+                    
+                        "user": simulatorEnrollment.user._id
+                    }
+                });
+            }
+            else if (ranking == 3) {
+                await axios({
+                    method: 'post',
+                    url:
+                        process.env.local_route +
+                        'account/achievement/',
+                    headers: {},
+                    data: {
+                        "displayName": "Third Place on the leaderboard of the \"" + simulator.title + "\" Simulator",
+                        "type": "Achievement",
+                        "description": " \"" + simulator.title + "\" Simulator",
+                        "rarity": 2,
+                        "image": "../../images/badges/third.png",
+                        "acquisition": "Awarded for excellent performance on the \""+ simulator.title + "\" simulator as of " + timeNowReadable,
+                        "dateEarned": timeNow,
+                    
+                        "user": simulatorEnrollment.user._id
+                    }
+                });
+            }
+
+            ranking += 1;
+        }
+
+        // For last 1
+        const lastEnrollments = await SimulatorEnrollment.findOne({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } },
+         {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1},
+         { sort: { 'lastCalculatedRanking' : -1 } } ).populate(
+            {
+                path: "user",
+                select: "_id email username",
+            }
+        );
+        
+        // Award bottom 1
+        // Perform a call to award ranking
+        await axios({
+            method: 'post',
+            url:
+                process.env.local_route +
+                'account/achievement/',
+            headers: {},
+            data: {
+                "displayName": "Dead Last of the \"" + simulator.title + "\" Simulator",
+                "type": "Achievement",
+                "description": " \"" + simulator.title + "\" Simulator",
+                "rarity": 1,
+                "image": "../../images/badges/last.png",
+                "acquisition": "Awarded for \"interesting\" performance on the \""+ simulator.title + "\" simulator as of " + timeNowReadable,
+                "dateEarned": timeNow,
+            
+                "user": lastEnrollments.user._id
+            }
+        });
+
+        return res.json({ topThreeSimulatorEnrollments: topThreeSimulatorEnrollments, lastEnrollments: lastEnrollments, simulator: simulator});
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
 
 
 /* #endregion */
