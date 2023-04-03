@@ -3,7 +3,16 @@ import {
   Box,
   Button,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
   Grid,
+  List,
+  ListItem,
+  ListItemText,
   Paper,
   Tab,
   Table,
@@ -14,20 +23,22 @@ import {
   TableRow,
   TextField,
   Typography,
-} from "@mui/material";
-import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { Link } from "react-router-dom";
-import React, { useContext, useState } from "react";
-import axios from "axios";
-import { trackPromise } from "react-promise-tracker";
+  useMediaQuery,
+  useTheme,
+} from '@mui/material'
+import { TabContext, TabList, TabPanel } from '@mui/lab'
+import { Link } from 'react-router-dom'
+import React, { useContext, useState } from 'react'
+import axios from 'axios'
+import { trackPromise } from 'react-promise-tracker'
 
-import Title from "../../components/Title";
-import Chart from "../../components/Chart";
-import Balance from "../../components/Balance";
-import Holdings from "../../components/Holdings";
-import Orders from "../../components/Orders";
-import UserContext from "../../context/user";
-import Spinner from "../../components/Spinner";
+import Title from '../../components/Title'
+import Chart from '../../components/Chart'
+import Balance from '../../components/Balance'
+import Holdings from '../../components/Holdings'
+import Orders from '../../components/Orders'
+import UserContext from '../../context/user'
+import Spinner from '../../components/Spinner'
 import { areas } from '../../constants/areas'
 
 const route =
@@ -43,27 +54,61 @@ var holdingsRows: any[] = []
 var simulators: any[] = []
 
 const SimulatorPortfolioPage = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useContext(UserContext)
 
-  const [userItem, setUserItem] = React.useState<any>([]);
-  const [chartItems, setChartItems] = React.useState<any>();
-  const [portfolioValue, setPortfolioValue] = React.useState<any>();
-  const [realTimePrice, setRealTimePrice] = React.useState<any>(0);
-  const [tradeHistoryItems, setTradeHistoryItems] = React.useState<any>();
-  const [holdingsItems, setHoldingsItems] = React.useState<any>();
-  const [buyQuantity, setBuyQuantity] = useState(0);
-  const [sellQuantity, setSellQuantity] = useState(0);
-  const [selectedResult, setSelectedResult] = useState<any>(null);
-  const [selectedSimulator, setSelectedSimulator] = useState(null);
-  const [mockStockData, setMockStockData] = React.useState<any>([]);
+  const [userItem, setUserItem] = React.useState<any>([])
+  const [chartItems, setChartItems] = React.useState<any>()
+  const [portfolioValue, setPortfolioValue] = React.useState<any>()
+  const [realTimePrice, setRealTimePrice] = React.useState<any>(0)
+  const [tradeHistoryItems, setTradeHistoryItems] = React.useState<any>()
+  const [holdingsItems, setHoldingsItems] = React.useState<any>()
+  const [buyQuantity, setBuyQuantity] = useState(0)
+  const [sellQuantity, setSellQuantity] = useState(0)
+  const [selectedResult, setSelectedResult] = useState<any>(null)
+  const [selectedSimulator, setSelectedSimulator] = useState(null)
+  const [mockStockData, setMockStockData] = React.useState<any>([])
   const [error, setError] = useState('')
+  const [openBuy, setOpenBuy] = React.useState(false)
+  const [openSell, setOpenSell] = React.useState(false)
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
+
+  const handleCloseBuy = (event: any) => {
+    setOpenBuy(false)
+  }
+
+  const handleCancelBuy = () => {
+    setOpenBuy(false)
+  }
+
+  const handleClickOpenBuy = (e: any) => {
+    if (realTimePrice && buyQuantity > 0) {
+      setOpenBuy(true)
+    } else {
+      setError('One or more required fields are empty.')
+    }
+  }
+
+  const handleCloseSell = (event: any) => {
+    setOpenSell(false)
+  }
+
+  const handleCancelSell = () => {
+    setOpenSell(false)
+  }
+
+  const handleClickOpenSell = (e: any) => {
+    if (realTimePrice && sellQuantity > 0) {
+      setOpenSell(true)
+    } else {
+      setError('One or more required fields are empty.')
+    }
+  }
 
   React.useEffect(() => {
-    axios
-      .get(route + 'stock/stocks')
-      .then((response) => {
-        setMockStockData(response?.data);
-      })
+    axios.get(route + 'stock/stocks').then((response) => {
+      setMockStockData(response?.data)
+    })
 
     trackPromise(
       axios
@@ -286,6 +331,7 @@ const SimulatorPortfolioPage = () => {
         },
       }).then((result: any) => {
         setError('')
+        setOpenBuy(false)
         axios
           .get(route + 'account/user', {
             params: {
@@ -336,7 +382,7 @@ const SimulatorPortfolioPage = () => {
           })
       })
     } else {
-      setError('One of the required fields is missing!')
+      setError('One or more required fields are empty')
     }
   }
 
@@ -361,6 +407,7 @@ const SimulatorPortfolioPage = () => {
         },
       }).then((result: any) => {
         setError('')
+        setOpenSell(false)
         axios
           .get(route + 'account/user', {
             params: {
@@ -411,7 +458,7 @@ const SimulatorPortfolioPage = () => {
           })
       })
     } else {
-      setError('One of the required fields is missing!')
+      setError('One or more required fields are empty')
     }
   }
 
@@ -591,6 +638,161 @@ const SimulatorPortfolioPage = () => {
                 }}
               >
                 <Title>Trade Simulator</Title>
+                <Dialog
+                  fullScreen={fullScreen}
+                  open={openBuy}
+                  onClose={handleCloseBuy}
+                  fullWidth={true}
+                  maxWidth='lg'
+                >
+                  <DialogTitle>Trade Summary</DialogTitle>
+                  <DialogContent>
+                    <Table aria-label='stock info table'>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Stock</TableCell>
+                          <TableCell align='right'>
+                            {chartItems?.meta.symbol}
+                            <Spinner area={areas.simulatorPortfolioStockData} />
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>Price</TableCell>
+                          <TableCell align='right'>
+                            $
+                            {isNaN(realTimePrice?.price * 1)
+                              ? 0
+                              : (realTimePrice?.price * 1)?.toLocaleString(
+                                  undefined,
+                                  {
+                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 2,
+                                  }
+                                )}
+                            <Spinner area={areas.simulatorPortfolioStockData} />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Quantity</TableCell>
+                          <TableCell align='right'>{buyQuantity}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Order Cost</TableCell>
+                          <TableCell align='right'>
+                            $
+                            {isNaN(realTimePrice?.price * buyQuantity)
+                              ? 0
+                              : (
+                                  realTimePrice?.price * buyQuantity
+                                )?.toLocaleString(undefined, {
+                                  maximumFractionDigits: 2,
+                                  minimumFractionDigits: 2,
+                                })}
+                            <Spinner area={areas.simulatorPortfolioStockData} />
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      size='medium'
+                      sx={{
+                        backgroundColor: 'secondary.main',
+                        color: 'white',
+                        marginY: '1rem',
+                        '&:hover': {
+                          backgroundColor: 'secondary.dark',
+                        },
+                      }}
+                      onClick={handleBuyInputSubmit}
+                    >
+                      Confirm
+                    </Button>{' '}
+                    <Button onClick={handleCancelBuy}>Cancel</Button>
+                  </DialogActions>
+                </Dialog>
+                <Dialog
+                  fullScreen={fullScreen}
+                  open={openSell}
+                  onClose={handleCloseSell}
+                  fullWidth={true}
+                  maxWidth='lg'
+                >
+                  <DialogTitle>Trade Summary</DialogTitle>
+                  <DialogContent>
+                    <Table aria-label='stock info table'>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Stock</TableCell>
+                          <TableCell align='right'>
+                            {chartItems?.meta.symbol}
+                            <Spinner area={areas.simulatorPortfolioStockData} />
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>Price</TableCell>
+                          <TableCell align='right'>
+                            $
+                            {isNaN(realTimePrice?.price * 1)
+                              ? 0
+                              : (realTimePrice?.price * 1)?.toLocaleString(
+                                  undefined,
+                                  {
+                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 2,
+                                  }
+                                )}
+                            <Spinner area={areas.simulatorPortfolioStockData} />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Quantity</TableCell>
+                          <TableCell align='right'>
+                            {sellQuantity}
+                            <Spinner area={areas.simulatorPortfolioStockData} />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Order Value</TableCell>
+                          <TableCell align='right'>
+                            $
+                            {isNaN(realTimePrice?.price * sellQuantity)
+                              ? 0
+                              : (
+                                  realTimePrice?.price * sellQuantity
+                                )?.toLocaleString(undefined, {
+                                  maximumFractionDigits: 2,
+                                  minimumFractionDigits: 2,
+                                })}
+                            <Spinner area={areas.simulatorPortfolioStockData} />
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      size='medium'
+                      sx={{
+                        backgroundColor: 'secondary.main',
+                        color: 'white',
+                        marginY: '1rem',
+                        '&:hover': {
+                          backgroundColor: 'secondary.dark',
+                        },
+                      }}
+                      onClick={handleSellInputSubmit}
+                    >
+                      Confirm
+                    </Button>{' '}
+                    <Button onClick={handleCancelSell}>Cancel</Button>
+                  </DialogActions>
+                </Dialog>
                 {selectedSimulator && simulatorExists ? (
                   <Box sx={{ width: '100%' }}>
                     <TabContext value={tab}>
@@ -676,7 +878,7 @@ const SimulatorPortfolioPage = () => {
                                   backgroundColor: 'secondary.dark',
                                 },
                               }}
-                              onClick={handleBuyInputSubmit}
+                              onClick={handleClickOpenBuy}
                             >
                               Buy
                             </Button>
@@ -820,7 +1022,7 @@ const SimulatorPortfolioPage = () => {
                               onChange={(event, newValue) => {
                                 handleStockInputSubmit(event, newValue)
                               }}
-                              options={mockStockData}
+                              options={holdingsItems}
                               value={selectedResult}
                               getOptionLabel={(option) => option.symbol}
                               renderInput={(params) => (
@@ -870,7 +1072,7 @@ const SimulatorPortfolioPage = () => {
                                   backgroundColor: 'secondary.dark',
                                 },
                               }}
-                              onClick={handleSellInputSubmit}
+                              onClick={handleClickOpenSell}
                             >
                               Sell
                             </Button>
@@ -1008,4 +1210,4 @@ const SimulatorPortfolioPage = () => {
   )
 }
 
-export default SimulatorPortfolioPage;
+export default SimulatorPortfolioPage
