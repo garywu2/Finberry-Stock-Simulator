@@ -296,18 +296,18 @@ const SimulatorPortfolioPage = () => {
               chartData.push(temp)
             }
           }
-          axios
-            .get(route + 'stock/price', {
-              params: {
-                symbol: saveData.meta.symbol,
-              },
-            })
-            .then((response) => {
-              setRealTimePrice(response.data.data)
-            })
         }),
       areas.simulatorPortfolioStockData
     )
+    axios
+    .get(route + 'stock/price', {
+      params: {
+        symbol: value?.symbol,
+      },
+    })
+    .then((response) => {
+      setRealTimePrice(response.data)
+    })
   }
 
   const handleBuyInputSubmit = (event: any) => {
