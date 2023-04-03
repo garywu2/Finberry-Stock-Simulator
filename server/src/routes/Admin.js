@@ -192,7 +192,7 @@ async function getPricedStockInformation(stockDictionary) {
                             });
                         }
                         else {
-                            priceCache.set(stringParams, -1);
+                            // priceCache.set(stringParams, -1); No longer caching if retrieve -1 as it just means retrieval failed.
                             stockDictionary[index][symbol] = -1; // Cannot find price
                         }
                     });

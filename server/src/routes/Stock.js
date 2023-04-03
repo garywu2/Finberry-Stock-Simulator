@@ -76,7 +76,7 @@ router.get('/price', function(req, res) {
                 });
             }
             else {
-                priceCache.set(stringParams, {price: -1});
+                // priceCache.set(stringParams, {price: -1});  No longer caching if retrieve -1 as it just means retrieval failed.
                 return res.json({price: -1});
             }
         });
