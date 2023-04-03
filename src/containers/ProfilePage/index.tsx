@@ -17,16 +17,21 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-} from '@mui/material'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
-import DialogTitle from '@mui/material/DialogTitle'
-import { Link, useParams } from 'react-router-dom'
-import { useTheme } from '@mui/material/styles'
-import { width } from '@mui/system'
-import FirebaseContext from '../../context/firebase'
+  List,
+  ListItem,
+  Divider,
+  ListItemAvatar,
+  ListItemText
+} from "@mui/material";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { Link, useParams } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
+import { width } from "@mui/system";
+import FirebaseContext from "../../context/firebase";
 
 import { trackPromise } from 'react-promise-tracker'
 import Spinner from '../../components/Spinner'
@@ -73,16 +78,19 @@ const route =
 var currImg: any
 
 const ProfilePage = () => {
-  const { user } = useContext(UserContext)
-  const [userItem, setUserItem] = React.useState<any>([])
-  const [open, setOpen] = React.useState(false)
-  const [open2, setOpen2] = React.useState(false)
-  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([])
-  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([])
-  const [bioText, setBioText] = useState('')
-  const { email } = useParams()
-  const theme = useTheme()
-  const { auth } = useContext(FirebaseContext)
+  const { user } = useContext(UserContext);
+  const [userItem, setUserItem] = React.useState<any>([]);
+  const [chatItems, setChatItems] = React.useState<any>([]);
+  const [open, setOpen] = React.useState(false);
+  const [open2, setOpen2] = React.useState(false);
+  const [open3, setOpen3] = React.useState(false);
+  const [coachingSessionsReq, setCoachingSessionsReq] = React.useState<any>([]);
+  const [coachingSessionsAct, setCoachingSessionsAct] = React.useState<any>([]);
+  const [bioText, setBioText] = useState("");
+  const [chatMsgText, setChatMsgText] = useState("");
+  const { email } = useParams();
+  const theme = useTheme();
+  const { auth } = useContext(FirebaseContext);
 
   const avatars = [
     { img: Av0, string: '../../images/avatars/a0.png' },
@@ -138,6 +146,10 @@ const ProfilePage = () => {
     setOpen2(false)
   }
 
+  const handleCancel3 = () => {
+    setOpen3(false);
+  }
+
   const handleClickOpen = () => {
     setOpen(true)
   }
@@ -145,6 +157,20 @@ const ProfilePage = () => {
   const handleClickOpen2 = () => {
     setOpen2(true)
   }
+
+  const handleClickOpen3 = (e: any) => {
+    setOpen3(true);
+
+    axios({
+      method: "get",
+      url: route + 'account/chatmessage',
+      params: {
+        coachingSession: e.target.value
+      }
+    }).then((response) => {
+      setChatItems(response?.data?.reverse())
+    });
+  };
 
   const handleClose = (event: any) => {
     setOpen(false)
@@ -162,6 +188,32 @@ const ProfilePage = () => {
 
   const handleClose2 = (event: any) => {
     setOpen2(false)
+  }
+
+  const handleClose3 = (event: any) => {
+    setOpen3(false);
+  };
+
+  const handleChatMsgSubmit = (event: any) => {
+    axios({
+      method: 'post',
+      url: route + 'account/chatmessage' ,
+      data: {
+        coachingSession: event.target.value,
+        email: user.email,
+        message: chatMsgText
+      }
+    }).then((response) => {
+      axios({
+        method: "get",
+        url: route + 'account/chatmessage',
+        params: {
+          coachingSession: event.target.value
+        }
+      }).then((response) => {
+        setChatItems(response?.data?.reverse())
+      });
+    });
   }
 
   const handleBioSubmit = (event: any) => {
@@ -193,6 +245,10 @@ const ProfilePage = () => {
     setBioText(event.target.value)
   }
 
+  const handleChatMsgTextChange = (event: any) => {
+    setChatMsgText(event.target.value);
+  };
+
   React.useEffect(() => {
     trackPromise(
       axios
@@ -206,32 +262,29 @@ const ProfilePage = () => {
             setUserItem(response.data[0])
             setCurrImg(response.data[0].avatar)
           }
-          trackPromise(
-            axios
-              .get(route + 'account/coachingsession', {
-                params: {
-                  client: response?.data[0]._id,
-                  status: 0,
-                },
-              })
-              .then((res) => {
-                setCoachingSessionsReq(res?.data)
-              }),
-            areas.profileCoachInfo
-          )
-          trackPromise(
-            axios
-              .get(route + 'account/coachingsession', {
-                params: {
-                  client: response?.data[0]._id,
-                  status: 1,
-                },
-              })
-              .then((res) => {
-                setCoachingSessionsAct(res?.data)
-              }),
-            areas.profileCoachInfo
-          )
+          trackPromise(axios
+          .get(route + "account/coachingsession", {
+            params: {
+              client: response?.data[0]._id,
+              status: 0,
+              minorPopulateCoachAndUser: true
+            },
+          }),  areas.profileCoachInfo)
+          .then((res) => {
+            setCoachingSessionsReq(res?.data);
+          });
+
+        axios
+          .get(route + "account/coachingsession", {
+            params: {
+              client: response?.data[0]._id,
+              status: 1,
+              minorPopulateCoachAndUser: true
+            },
+          })
+          .then((res) => {
+            setCoachingSessionsAct(res?.data);
+          });
         }),
       areas.profileUserInfo
     )
@@ -443,9 +496,9 @@ const ProfilePage = () => {
                                   fontFamily: 'Fredoka',
                                   margin: '10px',
                                 }}
-                                to=''
+                                to={"/CoachPortal/" + session.coach?.email}
                               >
-                                {session.coach}
+                                {session.coach.username}
                               </Link>
                             </TableCell>
                             <TableCell>${session.agreedPayment}/hr</TableCell>
@@ -476,6 +529,7 @@ const ProfilePage = () => {
                         <TableRow>
                           <TableCell>Coach</TableCell>
                           <TableCell>Rate</TableCell>
+                          <TableCell align="left">Session</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -487,12 +541,73 @@ const ProfilePage = () => {
                                   fontFamily: 'Fredoka',
                                   margin: '10px',
                                 }}
-                                to=''
+                                to={"/CoachPortal/" + session.coach?.email}
                               >
-                                {session.client}
+                                {session.coach?.username}
                               </Link>
                             </TableCell>
                             <TableCell>${session.agreedPayment}/hr</TableCell>
+                            <TableCell align="left">
+                              <Button
+                                variant='outlined'
+                                value={session._id}
+                                onClick={handleClickOpen3}
+                              >
+                                Open Chat
+                              </Button>
+                              <Dialog
+                                open={open3}
+                                onClose={handleClose3}
+                                fullWidth={true}
+                                maxWidth="lg"
+                              >
+                                <DialogTitle>Chat</DialogTitle>
+                                <DialogContent>
+                                  <DialogContentText>
+                                    {chatItems && (
+                                      <Grid item xs={12}>
+                                        <List>
+                                            {chatItems.map((chatMsg: any) => (
+                                            <ListItem>
+                                                {chatMsg.user == session.client._id ? (
+                                                  <Grid container>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-end'}} primary={chatMsg.message}></ListItemText>
+                                                    </Grid>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-end'}} secondary={chatMsg.timeSend.slice(0,10) + ' at ' + chatMsg.timeSend.slice(11,16)}></ListItemText>
+                                                    </Grid>
+                                                  </Grid>
+                                                ):(
+                                                  <Grid container>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-start'}} primary={chatMsg.message}></ListItemText>
+                                                    </Grid>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-start'}} secondary={chatMsg.timeSend.slice(0,10) + ' at ' + chatMsg.timeSend.slice(11,16)}></ListItemText>
+                                                    </Grid>
+                                                  </Grid>
+                                                )}
+                                                
+                                            </ListItem>
+                                            ))}
+                                        </List>
+                                        <Divider />
+                                        <Grid container style={{padding: '20px'}}>
+                                        <Grid item xs={11}>
+                                            <TextField id="outlined-basic-email" label="Type Something" fullWidth value={chatMsgText} onChange={handleChatMsgTextChange}/>
+                                        </Grid>
+                                      </Grid>
+                                    </Grid>
+                                    )}
+                                  </DialogContentText>
+                                </DialogContent>
+                                <DialogActions>
+                                  <Button value={session._id} onClick={handleChatMsgSubmit}>Send Chat Message</Button>
+                                  <Button onClick={handleCancel3}>Cancel</Button>
+                                </DialogActions>
+                              </Dialog>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
