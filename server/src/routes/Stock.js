@@ -71,7 +71,9 @@ router.get('/price', function(req, res) {
                         latestStockPrice = Number(data["price"]);
                     }
 
-                    priceCache.set(stringParams, {price: latestStockPrice});
+                    if (latestStockPrice >= 0) { // Do not cache negative stock prices
+                        priceCache.set(stringParams, {price: latestStockPrice});
+                    }
                     return res.json({price: latestStockPrice, creditsLeft: creditsLeft, data: data});
                 });
             }
