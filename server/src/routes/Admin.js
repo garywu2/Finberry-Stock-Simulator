@@ -187,7 +187,9 @@ async function getPricedStockInformation(stockDictionary) {
                                     latestStockPrice = Number(priceResults["price"]);
                                 }
 
-                                priceCache.set(stringParams, latestStockPrice);
+                                if (latestStockPrice >= 0) { // Do not cache negative stock prices
+                                    priceCache.set(stringParams, latestStockPrice);
+                                }
                                 stockDictionary[index][symbol] = latestStockPrice; // Set the found prices
                             });
                         }
