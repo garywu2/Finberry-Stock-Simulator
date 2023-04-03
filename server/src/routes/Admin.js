@@ -1,8 +1,9 @@
 // Express and the routers
-const   express =   require("express"),
-        router  =   express.Router(),
-        mongoose =  require("mongoose"),
-        axios    =   require('axios');;
+const   express     =   require("express"),
+        router      =   express.Router(),
+        mongoose    =   require("mongoose"),
+        NodeCache   =   require( "node-cache" ),
+        axios       =   require('axios');
 
 module.exports  =   router;
 
@@ -10,17 +11,6 @@ module.exports  =   router;
 const   multer  =   require("multer"),
         storage =   multer.memoryStorage(),
         upload  =   multer({ storage: storage });
-
-// Relevant schemas
-const   User                    =   mongoose.model("User"),
-        Simulator               =   mongoose.model("Simulator"),
-        SimulatorEnrollment     =   mongoose.model("SimulatorEnrollment"),
-        Holding                 =   mongoose.model("Holding"),
-        TradeTransaction        =   mongoose.model("TradeTransaction"),
-        MarketMovers            =   mongoose.model("MarketMovers");
-
-
-
 
 /* #region Dangerous commands */
 
@@ -150,6 +140,10 @@ router.post("/marketmover", async (req, res) => {
     }
 });
 
+// Price cache - 5 minutes
+const priceCache = new NodeCache({
+    stdTTL: 300
+});
 // Wait for sequencial geting of price data.
 async function getPricedStockInformation(stockDictionary) {
     return new Promise(async (resolve) => {
@@ -158,41 +152,55 @@ async function getPricedStockInformation(stockDictionary) {
                 let currentSymbol = symbol;
                 let currentIndex = index;
                 
-                await axios({
-                    method: 'get',
-                    url: process.env.local_route +
-                    'stock/exist/' + currentSymbol,
-                    params: {},
-                }).then(async (result) => {
-                    let isAvailable = result.data;
-            
-                    if (isAvailable) {
-                        // Query price information
-                        await axios({
-                            method: 'get',
-                            url: 'https://api.twelvedata.com/price',
-                            params: {
-                                apikey: process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY,
-                                symbol: currentSymbol,
-                                // exchange: currentIndex,
-                            },
-                        }).then((result) => {
-                            let latestStockPrice = -1; 
-                            let priceResults = result.data; // Those are all the stocks we will need.
-                            let creditsLeft = Number(result.headers["api-credits-left"]);
-                            console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
-
-                            if (priceResults["price"]) {
-                                latestStockPrice = Number(priceResults["price"]);
-                            }
-                            
-                            stockDictionary[index][symbol] = latestStockPrice; // Set the found prices
-                        });
-                    }
-                    else {
-                        stockDictionary[index][symbol] = -1; // Cannot find price
-                    }
+                let stringParams = JSON.stringify({
+                    currentSymbol: symbol,
+                    currentIndex: index
                 });
+
+                let value = priceCache.get(stringParams);
+                if (value == undefined){
+                    await axios({
+                        method: 'get',
+                        url: process.env.local_route +
+                        'stock/exist/' + currentSymbol,
+                        params: {},
+                    }).then(async (result) => {
+                        let isAvailable = result.data;
+                
+                        if (isAvailable) {
+                            // Query price information
+                            await axios({
+                                method: 'get',
+                                url: 'https://api.twelvedata.com/price',
+                                params: {
+                                    apikey: process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY,
+                                    symbol: currentSymbol,
+                                    exchange: currentIndex,
+                                },
+                            }).then((result) => {
+                                let latestStockPrice = -1; 
+                                let priceResults = result.data; // Those are all the stocks we will need.
+                                let creditsLeft = Number(result.headers["api-credits-left"]);
+                                console.log("Leaderboard Price get - Credits left for the minute: " + creditsLeft + ". At: " + new Date().toGMTString());
+    
+                                if (priceResults["price"]) {
+                                    latestStockPrice = Number(priceResults["price"]);
+                                }
+
+                                priceCache.set(stringParams, latestStockPrice);
+                                stockDictionary[index][symbol] = latestStockPrice; // Set the found prices
+                            });
+                        }
+                        else {
+                            priceCache.set(stringParams, -1);
+                            stockDictionary[index][symbol] = -1; // Cannot find price
+                        }
+                    });
+                } else {
+                    stockDictionary[index][symbol] = value; // Set the found prices
+                }
+
+                
             }
         }
 
