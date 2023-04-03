@@ -1375,6 +1375,14 @@ router.post("/balancecalculation/balance/learderboard", async (req, res) => {
 
                     let totalBalance = Number(stockBalance) + Number(cashBalance);
 
+                    let difference = Math.abs(totalBalance - simulatorEnrollment.lastCalculatedTotal);
+                    if (simulatorEnrollment.pastCalculatedTotal.length == 0 || difference > 50) { // Only add an entry to last calculated IF different values are more than some value apart
+                        simulatorEnrollment.pastCalculatedTotal.push({ // Add an entry to the past calculated total prices
+                            balance: totalBalance,
+                            datetime: Date.now(),
+                        });
+                    }
+
                     simulatorEnrollment.lastCalculatedTotal = totalBalance;
                     simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;
 
@@ -1432,6 +1440,13 @@ router.post("/balancecalculation/balance/learderboard/:simulatorID", async (req,
                 let cashBalance =  priceInfo.cashBalance;
 
                 let totalBalance = Number(stockBalance) + Number(cashBalance);
+                let difference = Math.abs(totalBalance - simulatorEnrollment.lastCalculatedTotal);
+                if (simulatorEnrollment.pastCalculatedTotal.length == 0 || difference > 50) { // Only add an entry to last calculated IF different values are more than some value apart
+                    simulatorEnrollment.pastCalculatedTotal.push({ // Add an entry to the past calculated total prices
+                        balance: totalBalance,
+                        datetime: Date.now(),
+                    });
+                }
 
                 simulatorEnrollment.lastCalculatedTotal = totalBalance;
                 simulatorEnrollment.lastCalculatedTotalDate = stockInformationTime;

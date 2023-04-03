@@ -2,7 +2,7 @@ import UserContext from "../../context/user";
 import { useContext, useState } from "react";
 import React from 'react'
 import axios from 'axios'
-import { Box, Button, Container, Grid, TextField, Typography, Paper, Avatar, Table,TableBody, TableCell, TableHead, TableRow, } from "@mui/material";
+import { Box, Button, Container, Grid, TextField, Typography, Paper, Avatar, Table,TableBody, TableCell, TableHead, TableRow, List,ListItem,Divider,ListItemAvatar,ListItemText} from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -72,6 +72,9 @@ const CoachPortalPage = () => {
   const { email } = useParams()
   const theme = useTheme()
   const { auth } = useContext(FirebaseContext)
+  const [chatItems, setChatItems] = React.useState<any>([]);
+  const [open4, setOpen4] = React.useState(false);
+  const [chatMsgText, setChatMsgText] = useState("");
 
   const avatars = [
     { img: Av0, string: '../../images/avatars/a0.png' },
@@ -229,6 +232,51 @@ const CoachPortalPage = () => {
     setBioText(event.target.value)
   }
 
+  const handleCancel4 = () => {
+    setOpen4(false);
+  }
+  const handleClickOpen4 = (e: any) => {
+    setOpen4(true);
+
+    axios({
+      method: "get",
+      url: route + 'account/chatmessage',
+      params: {
+        coachingSession: e.target.value
+      }
+    }).then((response) => {
+      setChatItems(response?.data?.reverse())
+    });
+  };
+  const handleClose4 = (event: any) => {
+    setOpen4(false);
+  };
+
+  const handleChatMsgSubmit = (event: any) => {
+    axios({
+      method: 'post',
+      url: route + 'account/chatmessage' ,
+      data: {
+        coachingSession: event.target.value,
+        email: user.email,
+        message: chatMsgText
+      }
+    }).then((response) => {
+      axios({
+        method: "get",
+        url: route + 'account/chatmessage',
+        params: {
+          coachingSession: event.target.value
+        }
+      }).then((response) => {
+        setChatItems(response?.data?.reverse())
+      });
+    });
+  }
+  const handleChatMsgTextChange = (event: any) => {
+    setChatMsgText(event.target.value);
+  };
+
   React.useEffect(() => {
     trackPromise(
       axios
@@ -240,6 +288,7 @@ const CoachPortalPage = () => {
         .then((response) => {
           if (response.data[0]) {
             setUserItem(response.data[0])
+            setBioText(response.data[0].bio)
             setCurrImg(response.data[0].avatar)
           }
         }),
@@ -290,6 +339,7 @@ const CoachPortalPage = () => {
                 params: {
                   coachingProfile: tempCoachItem?._id,
                   status: 0,
+                  minorPopulateCoachAndUser: true
                 },
               })
               .then((res) => {
@@ -301,6 +351,7 @@ const CoachPortalPage = () => {
                 params: {
                   coachingProfile: tempCoachItem?._id,
                   status: 1,
+                  minorPopulateCoachAndUser: true
                 },
               })
               .then((res) => {
@@ -582,9 +633,9 @@ const CoachPortalPage = () => {
                                   fontFamily: 'Fredoka',
                                   margin: '10px',
                                 }}
-                                to=''
+                                to={"/profile/" + session.client?.email}
                               >
-                                {session.client}
+                                {session.client?.username}
                               </Link>
                             </TableCell>
                             <TableCell>${session.agreedPayment}/hr</TableCell>
@@ -631,6 +682,7 @@ const CoachPortalPage = () => {
                         <TableRow>
                           <TableCell>Client</TableCell>
                           <TableCell>Agreed Payment</TableCell>
+                          <TableCell align="left">Session</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -642,12 +694,73 @@ const CoachPortalPage = () => {
                                   fontFamily: 'Fredoka',
                                   margin: '10px',
                                 }}
-                                to=''
+                                to={"/profile/" + session.client?.email}
                               >
-                                {session.client}
+                                {session.client?.username}
                               </Link>
                             </TableCell>
                             <TableCell>${session.agreedPayment}/hr</TableCell>
+                            <TableCell align="left">
+                              <Button
+                                variant='outlined'
+                                value={session._id}
+                                onClick={handleClickOpen4}
+                              >
+                                Open Chat
+                              </Button>
+                              <Dialog
+                                open={open4}
+                                onClose={handleClose4}
+                                fullWidth={true}
+                                maxWidth="lg"
+                              >
+                                <DialogTitle>Chat</DialogTitle>
+                                <DialogContent>
+                                  <DialogContentText>
+                                    {chatItems && (
+                                      <Grid item xs={12}>
+                                        <List>
+                                            {chatItems.map((chatMsg: any) => (
+                                            <ListItem>
+                                                {chatMsg.user != session.client._id ? (
+                                                  <Grid container>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-end'}} primary={chatMsg.message}></ListItemText>
+                                                    </Grid>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-end'}} secondary={chatMsg.timeSend.slice(0,10) + ' at ' + chatMsg.timeSend.slice(11,16)}></ListItemText>
+                                                    </Grid>
+                                                  </Grid>
+                                                ):(
+                                                  <Grid container>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-start'}} primary={chatMsg.message}></ListItemText>
+                                                    </Grid>
+                                                    <Grid item xs={12}>
+                                                        <ListItemText sx={{display:'flex', justifyContent:'flex-start'}} secondary={chatMsg.timeSend.slice(0,10) + ' at ' + chatMsg.timeSend.slice(11,16)}></ListItemText>
+                                                    </Grid>
+                                                  </Grid>
+                                                )}
+                                                
+                                            </ListItem>
+                                            ))}
+                                        </List>
+                                        <Divider />
+                                        <Grid container style={{padding: '20px'}}>
+                                        <Grid item xs={11}>
+                                            <TextField id="outlined-basic-email" label="Type Something" fullWidth value={chatMsgText} onChange={handleChatMsgTextChange}/>
+                                        </Grid>
+                                      </Grid>
+                                    </Grid>
+                                    )}
+                                  </DialogContentText>
+                                </DialogContent>
+                                <DialogActions>
+                                  <Button value={session._id} onClick={handleChatMsgSubmit}>Send Chat Message</Button>
+                                  <Button onClick={handleCancel4}>Cancel</Button>
+                                </DialogActions>
+                              </Dialog>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
