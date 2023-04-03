@@ -77,9 +77,9 @@ const ArticlesPage = () => {
         <Table size='small'>
           <TableHead>
             <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell align='left'>Source</TableCell>
+              <TableCell>Article Title</TableCell>
+              <TableCell>Article Description</TableCell>
+              <TableCell align='left'>External</TableCell>
               <TableCell align='left'>Author</TableCell>
             </TableRow>
           </TableHead>
@@ -145,10 +145,13 @@ const ArticlesPage = () => {
                     <TableCell>{article.description}</TableCell>
                     <TableCell>
                       {article.externalLink === 'N/A'
-                        ? 'Finberry'
-                        : 'Trusted Source'}
+                        ? 'Made by Finberry'
+                        : 'Made by Trusted Source'}
                     </TableCell>
                     <TableCell align='left'>{article.author}</TableCell>
+                    <TableCell>
+                      <Button></Button>
+                    </TableCell>
                   </TableRow>
                 )
               )

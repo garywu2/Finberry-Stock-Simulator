@@ -48,48 +48,48 @@ const CoachCataloguePage = () => {
   return (
     <Container
       sx={{
-        minHeight: '100vh',
-        minWidth: '100%',
-        borderRadius: '3rem',
-        marginBottom: '1rem',
-        paddingTop: '5rem',
+        minHeight: "100vh",
+        minWidth: "100%",
+        borderRadius: "3rem",
+        marginBottom: "1rem",
+        paddingTop: "5rem",
       }}
     >
       <Title>Coach Catalogue</Title>
       <Container
         sx={{
-          backgroundColor: 'white',
-          minHeight: '100vh',
-          minWidth: '100%',
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'flex-start',
-          borderRadius: '3rem',
-          boxShadow: '0 4px 15px -6px black',
-          marginBottom: '1rem',
-          paddingBottom: '2rem',
-          overflow: 'auto',
-          paddingTop: '1rem',
+          backgroundColor: "white",
+          minHeight: "100vh",
+          minWidth: "100%",
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "flex-start",
+          borderRadius: "3rem",
+          boxShadow: "0 4px 15px -6px black",
+          marginBottom: "1rem",
+          paddingBottom: "2rem",
+          overflow: "auto",
+          paddingTop: "1rem",
         }}
       >
-        <Table size='small'>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Display Name</TableCell>
               <TableCell>Price</TableCell>
-              <TableCell align='left'>Email</TableCell>
+              <TableCell align="left">Email</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {coaches.length === 0 ? (
-              <TableRow key={'spinner'}>
+              <TableRow key={"spinner"}>
                 <TableCell>
                   <Spinner area={areas.coachCatalogue} />
                 </TableCell>
                 <TableCell>
                   <Spinner area={areas.coachCatalogue} />
                 </TableCell>
-                <TableCell align='left'>
+                <TableCell align="left">
                   <Spinner area={areas.coachCatalogue} />
                 </TableCell>
               </TableRow>
@@ -98,8 +98,8 @@ const CoachCataloguePage = () => {
                 <TableRow key={coach._id}>
                   <TableCell>
                     <Link
-                      style={{ fontFamily: 'Fredoka', margin: '10px' }}
-                      to={'/CoachPortal/' + coach.user?.email}
+                      style={{ fontFamily: "Fredoka", margin: "10px" }}
+                      to={"/CoachPortal/" + coach.user?.email}
                     >
                       {coach.user?.username}
                     </Link>
@@ -112,7 +112,10 @@ const CoachCataloguePage = () => {
                     })}
                     /hr
                   </TableCell>
-                  <TableCell align='left'>{coach.user?.email}</TableCell>
+                  <TableCell align="left">{coach.user?.email}</TableCell>
+                  <TableCell>
+                    <Button></Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -120,7 +123,7 @@ const CoachCataloguePage = () => {
         </Table>
       </Container>
     </Container>
-  )
+  );
 };
 
 export default CoachCataloguePage;
