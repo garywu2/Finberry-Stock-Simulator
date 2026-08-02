@@ -11,6 +11,9 @@ export default function useAuthListener() {
   const { auth } = useContext(FirebaseContext);
 
   useEffect(() => {
+    // auth is undefined when Firebase isn't configured (no .env); skip the
+    // listener so the app still renders instead of throwing.
+    if (!auth) return;
     const listener = onAuthStateChanged(auth, (authUser) => {
       // store auth in local storage when user signs in
       if (authUser) {

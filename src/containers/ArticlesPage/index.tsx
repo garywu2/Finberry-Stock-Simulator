@@ -102,23 +102,11 @@ const ArticlesPage = () => {
             ) : (
               articles.map(
                 (article: {
-                  title: React.Key | null | undefined
-                  _id: String | React.ReactChild | React.ReactFragment
-                  description:
-                    | String
-                    | React.ReactChild
-                    | React.ReactFragment
-                    | React.ReactPortal
-                    | null
-                    | undefined
-                  author:
-                    | String
-                    | React.ReactChild
-                    | React.ReactFragment
-                    | React.ReactPortal
-                    | null
-                    | undefined
-                  externalLink: String
+                  title: string
+                  _id: string
+                  description: string
+                  author: string
+                  externalLink: string
                 }) => (
                   <TableRow key={article.title}>
                     <TableCell>

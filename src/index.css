@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Berry Bright — shadcn semantic tokens (light mode only; see design-system.md).
+   HSL triplets approximate the brand palette so shadcn/ui and dither-kit
+   components render on-brand. Body background/font are intentionally NOT forced
+   globally here while MUI pages still own their own layout. */
+@layer base {
+  :root {
+    --background: 264 56% 96%; /* #F5F1FB */
+    --foreground: 258 37% 14%; /* #1E1630 */
+    --card: 0 0% 100%;
+    --card-foreground: 258 37% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 258 37% 14%;
+    --primary: 262 83% 58%; /* #7C3AED */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 260 60% 96%; /* #F3EFFB */
+    --secondary-foreground: 258 37% 14%;
+    --muted: 260 60% 96%;
+    --muted-foreground: 257 17% 40%; /* #5F5577 */
+    --accent: 260 60% 96%;
+    --accent-foreground: 258 37% 14%;
+    --destructive: 350 70% 52%; /* #DA2F4D */
+    --destructive-foreground: 0 0% 100%;
+    --border: 266 44% 93%; /* #ECE5F5 */
+    --input: 266 44% 93%;
+    --ring: 262 83% 58%;
+    --radius: 0.75rem;
+  }
+}
