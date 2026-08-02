@@ -17,7 +17,7 @@ const api = axios.create({ baseURL });
 // Phase 3; until then this header is harmless. Requests proceed unauthenticated
 // when no user is signed in.
 api.interceptors.request.use(async (config) => {
-  const current = auth.currentUser;
+  const current = auth?.currentUser;
   if (current) {
     try {
       const token = await current.getIdToken();
