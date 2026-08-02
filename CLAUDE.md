@@ -7,7 +7,7 @@ Guidance for AI agents (and humans) working in this repo. Read this before makin
 Finberry is a beginner-friendly **stock-trading simulator / finance-education** web app: users get paper money, trade real-symbol stocks against live prices, and compete on leaderboards. It is undergoing a visual redesign ("Berry Bright", see `docs/redesign/`) plus a code-quality and security remediation.
 
 **Monorepo layout** (single git repo):
-- **Client** — Create React App at the repo root (`src/`, `public/`). React 18 + TypeScript + MUI v5 + react-router v6 + Firebase Auth + axios. Migrating to Tailwind + shadcn/ui (see redesign docs).
+- **Client** — Vite + React 18 + TypeScript at the repo root (`index.html`, `src/`, `public/`). MUI v5 (being replaced) + Tailwind + shadcn/ui + react-router v6 + Firebase Auth + axios. MUI and Tailwind coexist during the migration; new UI is Tailwind/shadcn (see redesign docs).
 - **Server** — Express + Mongoose (MongoDB) in `server/`. Plain CommonJS JavaScript. Stock data from Twelve Data. Deployed to Vercel (`finberry-stock-simulator-server.vercel.app`).
 
 The redesign direction, tokens, and screen specs are captured in `docs/redesign/`.
@@ -18,9 +18,12 @@ The redesign direction, tokens, and screen specs are captured in `docs/redesign/
 npm install          # root: installs client deps
 cd server && npm install && cd ..
 
-npm start            # runs client (CRA, :3000) + server (nodemon, :5000) via concurrently
-npm run startClient  # client only
-npm run build        # production client build
+npm start            # runs client (Vite, :3000) + server (nodemon, :5000) via concurrently
+npm run dev          # client only (Vite dev server, :3000)
+npm run build        # production client build (Vite → build/)
+npm run preview      # serve the production build locally
+npm run lint         # ESLint
+npm run format       # Prettier --write over src/
 
 cd server
 npm run dev-server-development   # server only, nodemon
@@ -28,8 +31,8 @@ npm run dev-server               # server only, plain node
 npm run populate                 # ⚠️ seeds the DB — DROPS the entire database first (see Pitfalls)
 ```
 
-**Environment**: `.env` is gitignored and **there is no `.env.example` yet** — you must obtain values from the maintainer. Required vars:
-- Client (CRA inlines `REACT_APP_*` into the bundle): six `REACT_APP_FINBERRY_*` Firebase keys (`src/config.tsx`), `REACT_APP_FINBERRY_DEVELOPMENT` (`true` → talk to `localhost:5000`, else the Vercel prod URL).
+**Environment**: copy `.env.example` to `.env` (gitignored) and fill in values from the maintainer. Required vars:
+- Client (Vite inlines `REACT_APP_*` into the bundle via the `process.env` shim in `vite.config.ts`): six `REACT_APP_FINBERRY_*` Firebase keys (`src/config.tsx`), `REACT_APP_FINBERRY_DEVELOPMENT` (`true` → talk to `localhost:5000`, else the Vercel prod URL).
 - Server: `REACT_APP_DB` (Mongo connection string; falls back to `mongodb://localhost/finberry`), `REACT_APP_FINBERRY_TWELVEDATA_API_KEY`, `REACT_APP_DEVELOPMENT` (gates dev-only/admin commands), `PORT`.
 - Note the two **separate** dev flags: `REACT_APP_FINBERRY_DEVELOPMENT` (base-URL select) vs `REACT_APP_DEVELOPMENT` (dev-command gate). Setting one is not setting the other.
 
@@ -61,11 +64,12 @@ The codebase is inconsistent today; **new and modified code should follow these*
 - Handlers named semantically: `handleSubmit`, `handleBuy` — not `handleClose2`/`handleClose3`. (Also: the correct spelling is `handleSubmit`, not the legacy `handleSumbit`.)
 - All HTTP goes through a **central API client** (`src/api/client.ts`, `axios.create` with an env-driven `baseURL`) — do **not** re-declare the base-URL ternary per file. Attach the Firebase ID token via an interceptor.
 - Guard authenticated routes with `<ProtectedRoute>`; null-check `user` before dereferencing `user.email`.
-- `===`/`!==` only; no `var`; single-quote + Prettier formatting (once configured).
+- `===`/`!==` only; no `var`. Formatting is Prettier (`.prettierrc.json`: single quotes, semicolons, 100 cols) — run `npm run format` on touched files.
 
 **Styling / redesign:**
 - The **Berry Bright** design tokens are the source of truth — documented in `docs/redesign/design-system.md`.
 - New UI is **Tailwind + shadcn/ui**; charts use **dither-kit** (real price data, not the mock's random walk). **Do not add new MUI usage** — MUI is being removed page-by-page.
+- shadcn is scaffolded (`components.json`, `src/lib/utils.ts` `cn()`, `@/` → `src/` alias); add components with `npx shadcn@latest add <name>` (lands in `src/components/ui/`). Tailwind Preflight is **off** while MUI coexists — don't rely on Tailwind's global reset. Brand tokens are Tailwind utilities (`bg-violet`, `text-ink`, `shadow-card`, `font-display`); semantic shadcn CSS-variable colors get wired in Phase 1.
 - Fonts: **Bricolage Grotesque** (display), **Hanken Grotesk** (body), **JetBrains Mono** (numbers). Not Fredoka.
 - Use the reference screenshots as the visual acceptance target (see `docs/redesign/design-system.md`).
 
