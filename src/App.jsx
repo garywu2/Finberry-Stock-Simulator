@@ -79,7 +79,14 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/Leaderboards" element={<LeaderboardsPage />} />
+                <Route
+                  path="/Leaderboards"
+                  element={
+                    <ProtectedRoute>
+                      <LeaderboardsPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/CoachPortal/:email"
                   element={
