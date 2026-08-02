@@ -66,12 +66,14 @@ The codebase is inconsistent today; **new and modified code should follow these*
 - Guard authenticated routes with `<ProtectedRoute>`; null-check `user` before dereferencing `user.email`.
 - `===`/`!==` only; no `var`. Formatting is Prettier (`.prettierrc.json`: single quotes, semicolons, 100 cols) — run `npm run format` on touched files.
 
-**Styling / redesign:**
+**Styling / redesign:** (progress + full guidance in `docs/redesign/implementation-roadmap.md`)
 - The **Berry Bright** design tokens are the source of truth — documented in `docs/redesign/design-system.md`.
-- New UI is **Tailwind + shadcn/ui**; charts use **dither-kit** (real price data, not the mock's random walk). **Do not add new MUI usage** — MUI is being removed page-by-page.
-- shadcn is scaffolded (`components.json`, `src/lib/utils.ts` `cn()`, `@/` → `src/` alias); add components with `npx shadcn@latest add <name>` (lands in `src/components/ui/`). Tailwind Preflight is **off** while MUI coexists — don't rely on Tailwind's global reset. Brand tokens are Tailwind utilities (`bg-violet`, `text-ink`, `shadow-card`, `font-display`); semantic shadcn CSS-variable colors get wired in Phase 1.
+- New UI is **Tailwind + shadcn/ui**. **Do not add new MUI usage** — MUI is removed page-by-page.
+- Reusable pieces exist: **brand primitives** in `src/components/brand/` (`Logo`, `Avatar`, `Pill`, `Caret`, `StatCard`, `TopNav`, `BrandFooter`, `Field`, `AreaChart`, `Sparkline`; barrel `index.ts`) and **shadcn UI** in `src/components/ui/` (`Button`, `Card`). Import via the `@/` alias. Add shadcn components with `npx shadcn@latest add <name>`.
+- **Charts**: use the brand `AreaChart`/`Sparkline` (SVG, take a real `number[]` series). dither-kit is still blocked (CLI 404s on shadcn's registry) — same data interface when it's swapped in.
+- Brand tokens are Tailwind utilities (`bg-violet`, `text-ink`, `shadow-card`, `font-display`, `rounded-card`); shadcn semantic colors are CSS-variable-driven (`src/index.css`). Tailwind **Preflight is off** while MUI coexists — don't rely on its global reset.
+- **When redesigning a page**: rebuild it with brand components, wire real data through `src/api/client.ts`, and add its route to `REDESIGNED_ROUTES` in `src/App.jsx` so the legacy MUI `Header`/`Footer` are suppressed (the page renders its own `TopNav`/`BrandFooter`). Verify in-browser vs `design_handoff_finberry_redesign/screenshots/` before committing.
 - Fonts: **Bricolage Grotesque** (display), **Hanken Grotesk** (body), **JetBrains Mono** (numbers). Not Fredoka.
-- Use the reference screenshots as the visual acceptance target (see `docs/redesign/design-system.md`).
 
 **Server (Node/Express):**
 - **Verify identity server-side** — mutating endpoints must check a Firebase ID token (Admin SDK) and derive the user from it, never trust an `:email` in the URL.
@@ -90,6 +92,8 @@ The codebase is inconsistent today; **new and modified code should follow these*
 - Cron jobs (`scheduleTasks.js`) rely on a long-lived process and **won't run on Vercel serverless**; NodeCache is per-instance so the Twelve Data rate limit gets hit harder than the TTLs imply.
 - `GamePortfolioPage` is a live route serving a placeholder ("sus"); `ContactPage`'s submit is commented out; `BuyPremiumPage` links a Stripe **test** URL. Don't treat these as working features.
 - Route paths are declared capitalized (`/Login`) but linked lowercase (`/login`) — works only because react-router v6 is case-insensitive.
+- No `.env` in the working tree → Firebase auth is **disabled** (handled gracefully, logs a warning) and `src/api/client.ts` falls back to the **production** API. To run against a local server, set `REACT_APP_FINBERRY_DEVELOPMENT=true` in `.env` (see `.env.example`).
+- The live `game/marketmovers` feed can repeat a symbol — key list rows by index, not by symbol.
 
 ## Where to look
 

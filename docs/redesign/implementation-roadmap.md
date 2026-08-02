@@ -1,6 +1,33 @@
 # Redesign & Remediation Roadmap
 
-_Phased plan for executing the Berry Bright redesign and the backend remediation. Written after the audit; nothing here has been implemented. Companion docs: `design-system.md`, `../audit/frontend-audit.md`, `../audit/backend-audit.md`._
+_Phased plan for executing the Berry Bright redesign and the backend remediation. Companion docs: `design-system.md`, `../audit/frontend-audit.md`, `../audit/backend-audit.md`._
+
+## Progress log
+
+_Last updated: 2026-08-02. Update this section as work lands._
+
+- **Phase 0 — Tooling** ✅ done (merged into `redesign`). CRA→Vite, Tailwind + shadcn scaffold, ESLint/Prettier, `.env.example`, junk deps removed, standardized on `package-lock.json`.
+- **Phase 1 — Foundations** ✅ done (merged). `src/api/client.ts`, `ProtectedRoute` (applied to Simulator/Profile/CoachPortal/CoachRegistration/GamePortfolio/**Leaderboards**), `src/theme.ts`, shadcn CSS vars, brand fonts, primitives in `src/components/brand/` + `src/components/ui/`, `/Preview` gallery route. Also made Firebase init resilient to a missing `.env` (no more white-screen).
+- **Phase 2 — Page redesigns** 🔶 in progress.
+  - ✅ **Landing** (`HomePage`) — merged. Verified in-browser vs the mock.
+  - ⬜ Remaining pages, in order: **Simulator → Leaderboards → My Profile → Learn hub → Stock detail (new) → User Profile (new)**.
+- **Phase 3 — Backend security** ⬜ not started.
+- **Phase 4 — Backend refactor** ⬜ not started.
+
+### How to continue (for a fresh session)
+
+- **Integration branch is `redesign`** (off `master`). `master` is untouched. Do redesign work on feature branches merged into `redesign`.
+- **Branch naming: use flat names** like `redesign-phase-2-simulator`. Do **not** use `redesign/...` — a `redesign/foo` ref can't be created while the `redesign` branch exists (git ref conflict).
+- **Established conventions** (follow these; also in `CLAUDE.md`):
+  - Brand primitives live in `src/components/brand/` (barrel `index.ts`); shadcn-style UI in `src/components/ui/`. Import via the `@/` alias.
+  - Berry Bright tokens are Tailwind utilities (`bg-violet`, `text-ink`, `shadow-card`, `font-display`, `rounded-card`, …); shadcn semantic colors are CSS-variable-driven. Tailwind **Preflight is off** while MUI coexists.
+  - When redesigning a page, add its route to `REDESIGNED_ROUTES` in `src/App.jsx` so the legacy MUI `Header`/`Footer` are suppressed and the page renders its own brand `TopNav`/`BrandFooter`.
+  - All HTTP goes through `src/api/client.ts` (not the old per-file base-URL ternary).
+  - Charts: `AreaChart`/`Sparkline` in `src/components/brand` are SVG ports taking a real `number[]` series. **dither-kit is still blocked** (its CLI 404s on shadcn's `colors/violet.json`); swap later, same data interface.
+- **Runtime gotchas**:
+  - No `.env` in the working tree → Firebase auth is disabled (handled gracefully) and the API base URL falls back to the **production** server. To use a local server, set `REACT_APP_FINBERRY_DEVELOPMENT=true`.
+  - The live `game/marketmovers` feed can repeat a symbol — key list rows by index, not symbol.
+- Verify each page in-browser via the `claude-in-chrome` tools against `design_handoff_finberry_redesign/screenshots/` before committing; keep `tsc --noEmit` and `npm run build` clean.
 
 ## Confirmed decisions
 
