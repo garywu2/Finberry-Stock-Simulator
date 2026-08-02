@@ -3,6 +3,7 @@ import App from "./App";
 import FirebaseContext from "./context/firebase";
 import { auth } from "./lib/firebase";
 import { CssBaseline } from "@mui/material";
+import "./index.css";
 
 
 //Have to add redux here for state 
