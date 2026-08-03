@@ -5,7 +5,7 @@ import { BrandFooter, TopNav } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { displayName, greeting, usd } from './format';
+import { displayName, greeting, usd } from '@/lib/format';
 import HoldingsTable from './HoldingsTable';
 import PortfolioHero from './PortfolioHero';
 import QuickTrade from './QuickTrade';

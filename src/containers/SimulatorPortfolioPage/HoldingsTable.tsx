@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Sparkline } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { signedPct, usd, usdWhole } from './format';
+import { signedPct, usd, usdWhole } from '@/lib/format';
 import type { HoldingRow } from './types';
 
 const COLS = 'grid-cols-[1.7fr_.9fr_.9fr_88px_1fr_1fr]';

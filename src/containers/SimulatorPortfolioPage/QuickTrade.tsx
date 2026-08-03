@@ -3,7 +3,7 @@ import api from '@/api/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { usd } from './format';
+import { usd } from '@/lib/format';
 import type { HoldingRow, StockListItem, TradeResponse, TransactionType } from './types';
 
 type Side = 'buy' | 'sell';

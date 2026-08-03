@@ -1,7 +1,7 @@
 import { AreaChart, Caret } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { signedPct, signedUsd, usd } from './format';
+import { signedPct, signedUsd, usd } from '@/lib/format';
 import { TIMEFRAMES, type Timeframe } from './types';
 
 export function PortfolioHero({

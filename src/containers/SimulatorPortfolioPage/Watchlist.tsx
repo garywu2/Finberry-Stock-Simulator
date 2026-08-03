@@ -1,7 +1,7 @@
 import { Sparkline } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { signedPct, usd } from './format';
+import { signedPct, usd } from '@/lib/format';
 import type { WatchRow } from './types';
 
 export function Watchlist({ rows }: { rows: WatchRow[] }) {

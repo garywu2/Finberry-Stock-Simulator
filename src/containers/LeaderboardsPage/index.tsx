@@ -1,180 +1,188 @@
-import { Container, Grid, Paper } from '@mui/material'
-import React, { useContext, useState } from 'react'
-import axios from 'axios'
+import { useContext, useEffect, useMemo, useState } from 'react';
+import api from '@/api/client';
+import UserContext from '@/context/user';
+import { BrandFooter, TopNav } from '@/components/brand';
+import { cn } from '@/lib/utils';
+import { usd } from '@/lib/format';
+import Podium from './Podium';
+import RankTable from './RankTable';
+import { toRows } from './league';
+import type { Leaderboard } from './types';
 
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
-import { TableContainer } from '@mui/material'
-import { trackPromise } from 'react-promise-tracker'
+const PAGE_SIZE = 8;
 
-import Title from '../../components/Title'
-import Spinner from '../../components/Spinner'
-import { areas } from '../../constants/areas'
+// The designed scope switcher (Global / Friends / My league) needs a follow
+// graph and a league model, neither of which exists. The tabs are rendered so
+// the surface matches the design, but only Global is selectable.
+// TODO(phase-3/4): wire Friends and My league to a real social layer.
+const SCOPES = [
+  { label: 'Global', enabled: true },
+  { label: 'Friends', enabled: false },
+  { label: 'My league', enabled: false },
+];
 
-const route =
-  process.env.REACT_APP_FINBERRY_DEVELOPMENT === 'true'
-    ? 'http://localhost:5000/'
-    : 'https://finberry-stock-simulator-server.vercel.app/'
-
-const LeaderboardsPage = () => {
-  const [leaderboardsData, setLeaderBoardsData] = React.useState<any>([])
-
-  React.useEffect(() => {
-    trackPromise(
-      axios
-        .get(route + 'game/balancecalculation/balance/learderboard')
-        .then((response) => {
-          setLeaderBoardsData(response.data)
-        }),
-      areas.leaderboardsPage
-    )
-  }, [])
-
-  return (
-    <div>
-      <Container
-        sx={{
-          backgroundColor: 'primary.main',
-          minHeight: '100vh',
-          minWidth: '100%',
-          display: 'flex',
-          //   alignItems: 'center',
-          //   justifyContent: 'center',
-          borderRadius: '3rem',
-          boxShadow: '0 4px 15px -6px black',
-          marginBottom: '1rem',
-          paddingTop: '5rem',
-          paddingBottom: '2rem',
-          overflow: 'auto',
-        }}
-      >
-        {/* empty table */}
-        {leaderboardsData.length === 0 && (
-          <Container maxWidth='xl' sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <TableContainer>
-                    <Title>
-                      <Spinner area={areas.leaderboardsPage} />
-                    </Title>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Rank</TableCell>
-                          <TableCell>Display Name</TableCell>
-                          <TableCell>Total Value</TableCell>
-                          <TableCell>Total Profit</TableCell>
-                          <TableCell>Percent Change</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                            <Spinner area={areas.leaderboardsPage} />
-                          </TableCell>
-                          <TableCell>
-                            {' '}
-                            <Spinner area={areas.leaderboardsPage} />
-                          </TableCell>
-                          <TableCell>
-                            <Spinner area={areas.leaderboardsPage} />
-                          </TableCell>
-                          <TableCell>
-                            <Spinner area={areas.leaderboardsPage} />
-                          </TableCell>
-                          <TableCell>
-                            <Spinner area={areas.leaderboardsPage} />
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                    </Table>
-                  </TableContainer>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Container>
-        )}
-        {leaderboardsData.length !== 0 && (
-          <Container maxWidth='xl' sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              {leaderboardsData.map((item: any) => (
-                <Grid item xs={12} key={item.title}>
-                  <Paper
-                    sx={{ p: 2, display: 'flex', flexDirection: 'column' }}
-                  >
-                    {item ? (
-                      <TableContainer>
-                        <Title>{item.title} Challenge Leaderboard</Title>
-                        <Table size='small'>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Rank</TableCell>
-                              <TableCell>Display Name</TableCell>
-                              <TableCell>Total Value</TableCell>
-                              <TableCell>Total Profit</TableCell>
-                              <TableCell>Percent Change</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {item.orderedSimulatorEnrollments?.map(
-                              (row: any) => (
-                                <TableRow key={row._id}>
-                                  <TableCell>
-                                    #{row.lastCalculatedRanking}
-                                  </TableCell>
-                                  <TableCell>{row.user.username}</TableCell>
-                                  <TableCell>
-                                    $
-                                    {row.lastCalculatedTotal.toLocaleString(
-                                      undefined,
-                                      {
-                                        maximumFractionDigits: 2,
-                                        minimumFractionDigits: 2,
-                                      }
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    $
-                                    {(
-                                      row.lastCalculatedTotal -
-                                      item.userStartFund
-                                    ).toLocaleString(undefined, {
-                                      maximumFractionDigits: 2,
-                                      minimumFractionDigits: 2,
-                                    })}
-                                  </TableCell>
-                                  <TableCell>
-                                    {(
-                                      ((row.lastCalculatedTotal -
-                                        item.userStartFund) /
-                                        item.userStartFund) *
-                                      100
-                                    ).toLocaleString(undefined, {
-                                      maximumFractionDigits: 2,
-                                      minimumFractionDigits: 2,
-                                    })}
-                                    %
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            )}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    ) : (
-                      <></>
-                    )}
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          </Container>
-        )}
-      </Container>
-    </div>
-  )
+function serverMessage(e: unknown, fallback: string) {
+  const msg = (e as { response?: { data?: { msg?: string } } })?.response?.data?.msg;
+  return typeof msg === 'string' && msg ? msg : fallback;
 }
 
-export default LeaderboardsPage
+const LeaderboardsPage = () => {
+  const { user } = useContext(UserContext) ?? { user: null };
+  const email: string | null = user?.email ?? null;
+
+  const [boards, setBoards] = useState<Leaderboard[]>([]);
+  const [boardId, setBoardId] = useState<string | null>(null);
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<Leaderboard[]>('game/balancecalculation/balance/learderboard')
+      .then((res) => {
+        if (cancelled) return;
+        const list = Array.isArray(res.data) ? res.data : [];
+        setBoards(list);
+        setBoardId((prev) => prev ?? list[0]?.simulatorID ?? null);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setError(serverMessage(e, 'Could not load the leaderboards.'));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const board = useMemo(
+    () => boards.find((b) => b.simulatorID === boardId) ?? null,
+    [boards, boardId]
+  );
+
+  const rows = useMemo(() => toRows(board, email), [board, email]);
+  const me = useMemo(() => rows.find((r) => r.isMe) ?? null, [rows]);
+
+  /**
+   * Rankings are written by the hourly cron, which does not fire on Vercel —
+   * the standings can be months old, so the date is stated up front rather
+   * than implied to be live.
+   */
+  const asOf = useMemo(() => {
+    const stamps = (board?.orderedSimulatorEnrollments ?? [])
+      .map((e) => e.lastCalculatedTotalDate)
+      .filter((d): d is string => !!d)
+      .sort();
+    const latest = stamps[stamps.length - 1];
+    return latest ? new Date(latest) : null;
+  }, [board]);
+
+  return (
+    <div className="min-h-screen bg-bg font-sans text-ink">
+      <TopNav
+        active="Leaderboards"
+        user={me?.name ?? email ?? 'Guest'}
+        balance={usd(me?.total ?? 0)}
+      />
+
+      <main className="p-6 md:p-[30px]">
+        {/* HEADER */}
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <div className="text-[13px] font-semibold uppercase tracking-[.04em] text-ink-3">
+              {board ? board.title : 'All simulators'}
+              {asOf &&
+                ` · as of ${asOf.toLocaleDateString(undefined, {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}`}
+            </div>
+            <h1 className="m-0 mt-1.5 font-display text-[34px] font-bold tracking-[-.025em] text-ink">
+              Leaderboards
+            </h1>
+          </div>
+
+          <div
+            className="flex gap-0.5 rounded-field border border-line bg-surface-2 p-[3px]"
+            role="group"
+            aria-label="Leaderboard scope"
+          >
+            {SCOPES.map((s) => (
+              <button
+                key={s.label}
+                type="button"
+                disabled={!s.enabled}
+                aria-pressed={s.enabled}
+                title={s.enabled ? undefined : 'Coming soon'}
+                className={cn(
+                  'cursor-pointer rounded-[9px] border-0 px-4 py-2 text-[13.5px] font-semibold transition-colors',
+                  s.enabled
+                    ? 'bg-violet text-white'
+                    : 'cursor-not-allowed bg-transparent text-ink-3 opacity-50'
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* BOARD SWITCHER — the four real simulators */}
+        {boards.length > 1 && (
+          <div
+            className="mb-6 flex flex-wrap gap-0.5 self-start rounded-field border border-line bg-surface-2 p-[3px]"
+            role="group"
+            aria-label="Select leaderboard"
+          >
+            {boards.map((b) => (
+              <button
+                key={b.simulatorID}
+                type="button"
+                aria-pressed={b.simulatorID === boardId}
+                onClick={() => {
+                  setBoardId(b.simulatorID);
+                  setVisible(PAGE_SIZE);
+                }}
+                className={cn(
+                  'cursor-pointer rounded-[9px] border-0 px-4 py-2 text-[13.5px] font-semibold transition-colors',
+                  b.simulatorID === boardId
+                    ? 'bg-violet text-white'
+                    : 'bg-transparent text-ink-3 hover:text-ink'
+                )}
+              >
+                {b.title}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <p className="mb-4 rounded-field border border-down/30 bg-down-soft px-4 py-3 text-[13.5px] font-medium text-down">
+            {error}
+          </p>
+        )}
+
+        {loading ? (
+          <div className="h-[420px] animate-pulse rounded-card border border-line bg-surface-2" />
+        ) : !rows.length ? (
+          <p className="rounded-card border border-line bg-surface px-6 py-16 text-center text-[14px] text-ink-3">
+            No rankings have been calculated yet.
+          </p>
+        ) : (
+          <>
+            <Podium rows={rows} />
+            <RankTable rows={rows} visible={visible} onShowAll={() => setVisible(rows.length)} />
+          </>
+        )}
+      </main>
+
+      <BrandFooter />
+    </div>
+  );
+};
+
+export default LeaderboardsPage;

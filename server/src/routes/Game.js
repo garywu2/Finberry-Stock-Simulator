@@ -1485,7 +1485,7 @@ router.get("/balancecalculation/balance/learderboard/:simulatorID", async (req, 
             return res.status(400).json({ msg: "Simulator with provided ID not found." });
         }
 
-        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } }, {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1}).populate(
+        const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } }, {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1, pastCalculatedTotal:1}).populate(
             {
                 path: "user",
                 select: "_id email username",
@@ -1510,7 +1510,7 @@ router.get("/balancecalculation/balance/learderboard", async (req, res) => {
 
         const simulators = await Simulator.find();
         for (const simulator of simulators) {
-            const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } }, {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1}).populate(
+            const simulatorEnrollments = await SimulatorEnrollment.find({ simulator: simulator._id, "lastCalculatedTotal": { $ne: null }, "lastCalculatedRanking": { $gt : -1 } }, {user:1, lastCalculatedRanking:1, lastCalculatedTotal:1, lastCalculatedTotalDate:1, joinDate:1, pastCalculatedTotal:1}).populate(
                 {
                     path: "user",
                     select: "_id email username",
