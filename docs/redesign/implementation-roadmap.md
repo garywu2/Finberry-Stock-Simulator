@@ -22,7 +22,19 @@ _Last updated: 2026-08-02. Update this section as work lands._
     streak/challenge card is flagged placeholder; trade confirmation is inline (no modal designed).
     **Deferred**: the mock's "Reset run" button — no endpoint exists and resetting balance without
     clearing holdings would corrupt a portfolio, so it is intentionally not rendered.
-  - ⬜ Remaining pages, in order: **Leaderboards → My Profile → Learn hub → Stock detail (new) → User Profile (new)**.
+  - ✅ **Leaderboards** (`LeaderboardsPage`) — rebuilt on branch `redesign-phase-2-leaderboards`.
+    Podium (2-1-3), ranked table with the "You" row state, expandable ranking. Decisions taken:
+    the designed Global/Friends/My-league tabs are rendered but **disabled** (no follow graph or
+    league model), with a second switcher bound to the four **real** boards (All Time / Monthly /
+    Weekly / Daily); leagues are **derived from rank percentile with per-tier head-count floors**
+    (a pure percentile leaves the top tier unused on small boards — the floors also reproduce the
+    mock's 1-3 / 4-5 / rest banding); the eyebrow states the real "as of" date because
+    `lastCalculatedTotal` is cron-written and the cron does not fire on Vercel (production data is
+    currently ~4 months stale). **Server change**: `pastCalculatedTotal` added to the projection of
+    both `learderboard` routes so the TREND sparkline has a real series — this needs a deploy
+    before sparklines appear in production. **Deferred**: the podium's per-player streak line (no
+    streak model).
+  - ⬜ Remaining pages, in order: **My Profile → Learn hub → Stock detail (new) → User Profile (new)**.
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 

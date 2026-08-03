@@ -1,5 +1,5 @@
 import { Caret, Pill, StatCard } from '@/components/brand';
-import { signedPct, signedUsd, usd } from './format';
+import { signedPct, signedUsd, usd } from '@/lib/format';
 
 export function StatRow({
   cashBalance,
