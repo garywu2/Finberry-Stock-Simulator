@@ -32,7 +32,7 @@ import Footer from './components/Footer';
 // Routes that have been migrated to the Berry Bright design and render their own
 // chrome (brand TopNav/Footer). The legacy MUI Header/Footer are suppressed on
 // these so the two chrome systems don't stack. Add routes here as pages migrate.
-const REDESIGNED_ROUTES = ['/', '/Preview'];
+const REDESIGNED_ROUTES = ['/', '/Preview', '/SimulatorPortfolio'];
 
 function Shell({ user }) {
   const location = useLocation();

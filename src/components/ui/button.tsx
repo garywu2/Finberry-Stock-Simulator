@@ -6,7 +6,9 @@ import { cn } from '@/lib/utils';
 // `buy` = the green trade-action button. Ported from fb-shared.jsx btnPrimary/
 // btnGhost plus the Buy variant used on the Simulator/Stock order tickets.
 export const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-btn font-sans font-semibold cursor-pointer transition-[filter,background-color] disabled:opacity-50 disabled:pointer-events-none',
+  // border-0 is explicit because Tailwind Preflight is disabled while MUI
+  // coexists, so buttons would otherwise keep the user-agent border.
+  'inline-flex items-center justify-center gap-2 rounded-btn border-0 font-sans font-semibold cursor-pointer transition-[filter,background-color] disabled:opacity-50 disabled:pointer-events-none',
   {
     variants: {
       variant: {
@@ -14,6 +16,7 @@ export const buttonVariants = cva(
           'text-white shadow-btn bg-[linear-gradient(135deg,#9B6BFF,#7C3AED)] hover:brightness-105',
         ghost: 'bg-surface-2 text-ink border border-line-2 hover:bg-surface-3',
         buy: 'bg-up-btn text-[#063521] font-bold shadow-buy hover:brightness-105',
+        sell: 'bg-down text-white font-bold hover:brightness-105',
       },
       size: {
         default: 'px-[18px] py-[9px] text-[14.5px]',
