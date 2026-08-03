@@ -10,7 +10,19 @@ _Last updated: 2026-08-02. Update this section as work lands._
 - **Phase 1 — Foundations** ✅ done (merged). `src/api/client.ts`, `ProtectedRoute` (applied to Simulator/Profile/CoachPortal/CoachRegistration/GamePortfolio/**Leaderboards**), `src/theme.ts`, shadcn CSS vars, brand fonts, primitives in `src/components/brand/` + `src/components/ui/`, `/Preview` gallery route. Also made Firebase init resilient to a missing `.env` (no more white-screen).
 - **Phase 2 — Page redesigns** 🔶 in progress.
   - ✅ **Landing** (`HomePage`) — merged. Verified in-browser vs the mock.
-  - ⬜ Remaining pages, in order: **Simulator → Leaderboards → My Profile → Learn hub → Stock detail (new) → User Profile (new)**.
+  - ✅ **Simulator** (`SimulatorPortfolioPage`) — rebuilt on branch `redesign-phase-2-simulator`.
+    1213-line MUI page → 9 files (`index.tsx`, `useSimulatorPortfolio.ts`, `types.ts`, `format.ts`,
+    `PortfolioHero`, `StatRow`, `HoldingsTable`, `QuickTrade`, `StreakCard`, `Watchlist`).
+    Cleared its audit items: module-level `var`s, per-file base-URL ternary, duplicated buy/sell
+    handlers and TabPanels, `window.location.reload()`, duplicate DOM ids, enrollment-index bug,
+    divide-by-zero returns, swallowed trade errors. Legacy `Balance`/`Chart`/`Holdings`/`Orders`
+    deleted (orphaned). Decisions taken: enrollment auto-selected by `_id` (picker only when >1);
+    equity curve from `SimulatorEnrollment.pastCalculatedTotal` with a flat-line fallback when the
+    cron hasn't written any (it doesn't fire on Vercel); watchlist from `game/marketmovers`;
+    streak/challenge card is flagged placeholder; trade confirmation is inline (no modal designed).
+    **Deferred**: the mock's "Reset run" button — no endpoint exists and resetting balance without
+    clearing holdings would corrupt a portfolio, so it is intentionally not rendered.
+  - ⬜ Remaining pages, in order: **Leaderboards → My Profile → Learn hub → Stock detail (new) → User Profile (new)**.
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 
