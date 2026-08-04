@@ -9,9 +9,6 @@ import ProfilePage from './containers/ProfilePage';
 import SimulatorPortfolioPage from './containers/SimulatorPortfolioPage';
 import GamePortfolioPage from './containers/GamePortfolioPage';
 import LeaderboardsPage from './containers/LeaderboardsPage';
-import CoachPortalPage from './containers/CoachPortalPage';
-import CoachCataloguePage from './containers/CoachCataloguePage';
-import CoachRegistrationPage from './containers/CoachRegistrationPage';
 import FaqPage from './containers/FaqPage';
 import ContactPage from './containers/ContactPage';
 import AboutPage from './containers/AboutPage';
@@ -33,6 +30,8 @@ import Footer from './components/Footer';
 // chrome (brand TopNav/Footer). The legacy MUI Header/Footer are suppressed on
 // these so the two chrome systems don't stack. Add routes here as pages migrate.
 const REDESIGNED_ROUTES = ['/', '/Preview', '/SimulatorPortfolio', '/Leaderboards'];
+// Parameterised routes cannot be matched by the exact-match list above.
+const REDESIGNED_PREFIXES = ['/Profile/'];
 
 function Shell({ user }) {
   const location = useLocation();
@@ -40,7 +39,9 @@ function Shell({ user }) {
     document.documentElement.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const hideLegacyChrome = REDESIGNED_ROUTES.includes(location.pathname);
+  const hideLegacyChrome =
+    REDESIGNED_ROUTES.includes(location.pathname) ||
+    REDESIGNED_PREFIXES.some((p) => location.pathname.startsWith(p));
 
   return (
     <div>
@@ -82,23 +83,6 @@ function Shell({ user }) {
           element={
             <ProtectedRoute>
               <LeaderboardsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/CoachPortal/:email"
-          element={
-            <ProtectedRoute>
-              <CoachPortalPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/CoachCatalogue" element={<CoachCataloguePage />} />
-        <Route
-          path="/CoachRegistration"
-          element={
-            <ProtectedRoute>
-              <CoachRegistrationPage />
             </ProtectedRoute>
           }
         />

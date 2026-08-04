@@ -93,7 +93,6 @@ const TIERS = [
       'Exclusive games & badges',
       'Advanced analytics',
       'Ad-free experience',
-      '5% coaching discount',
     ],
     cta: 'Go Plus',
     to: '/BuyPremium',

@@ -16,7 +16,6 @@ import { useContext, useState } from 'react'
 import { signOut } from 'firebase/auth'
 import { Navigate, useNavigate } from 'react-router-dom'
 import Dropdown from '../Dropdown'
-import LinkDropdown from '../LinkDropdown'
 
 interface Props {
   isAuthenticated: boolean
@@ -35,20 +34,12 @@ const links2 = [
   { title: 'Articles', url: '/articles' },
 ]
 
-const links3 = (user: any) => [
-  { title: 'Coach Catalogue', url: '/CoachCatalogue' },
-  { title: 'Coach Portal', url: `/CoachPortal/${user.email}` },
-  { title: 'Coach Registration', url: '/CoachRegistration' },
-]
 
-const links4 = (user: any) => [
+const links4 = () => [
   { title: 'Profile', url: '/profile' },
   { title: 'Simulator', url: '/SimulatorPortfolio' },
   { title: 'Articles', url: '/articles' },
-  { title: 'Coach Portal', url: `/CoachPortal/${user.email}` },
   { title: 'Leaderboards', url: '/Leaderboards' },
-  { title: 'Coach Catalogue', url: '/CoachCatalogue' },
-  { title: 'Coach Registration', url: '/CoachRegistration' },
   { title: 'Logout', url: '/logout' },
 ]
 
@@ -108,7 +99,6 @@ const authLinks = (handleSubmit: any, error: any, user: any) => (
       >
         Leaderboards
       </Button>
-      <LinkDropdown links={links3(user)}></LinkDropdown>
       <Button
         size='small'
         sx={{
@@ -147,7 +137,7 @@ const authLinks = (handleSubmit: any, error: any, user: any) => (
         justifyContent: 'flex-end',
       }}
     >
-      <Dropdown links={links4(user)} />
+      <Dropdown links={links4()} />
     </Box>
   </>
 )
