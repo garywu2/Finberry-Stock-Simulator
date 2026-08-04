@@ -14,7 +14,8 @@ const   multer  =   require("multer"),
 const   User                =   mongoose.model("User"),
         PaymentHistory      =   mongoose.model("PaymentHistory"),
         Badge               =   mongoose.model("Badge"),
-        UserBadge           =   mongoose.model("UserBadge");
+        UserBadge           =   mongoose.model("UserBadge"),
+        WatchlistEntry      =   mongoose.model("WatchlistEntry");
 
 /* #region Helper Functions */
 
@@ -824,6 +825,83 @@ router.post("/achievement", async (req, res) => {
 
 /* #endregion */
 
+
+
+/* #region Watchlist */
+
+// Resolve a user by email or id — clients know the email, not the id.
+async function resolveWatchlistUser(source) {
+    if (source.user) {
+        return source.user;
+    }
+    if (source.email) {
+        const user = await User.findOne({ email: source.email }, { _id: 1 });
+        return user ? user._id : null;
+    }
+    return null;
+}
+
+// GET - a user's watched symbols
+router.get("/watchlist", async (req, res) => {
+    try {
+        const userId = await resolveWatchlistUser(req.query);
+        if (!userId) {
+            return res.status(400).json({ msg: "A user id or email is required." });
+        }
+
+        const entries = await WatchlistEntry.find({ user: userId }).sort({ addedAt: -1 });
+        return res.json(entries);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// POST - watch a symbol (idempotent)
+router.post("/watchlist", async (req, res) => {
+    try {
+        const userId = await resolveWatchlistUser(req.body);
+        if (!userId) {
+            return res.status(400).json({ msg: "A user id or email is required." });
+        }
+        if (!req.body.symbol) {
+            return res.status(400).json({ msg: "A symbol is required." });
+        }
+
+        const symbol = String(req.body.symbol).toUpperCase().trim();
+        const entry = await WatchlistEntry.findOneAndUpdate(
+            { user: userId, symbol: symbol },
+            { $setOnInsert: { user: userId, symbol: symbol, index: req.body.index || "N/A", addedAt: Date.now() } },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        return res.json(entry);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE - stop watching a symbol
+router.delete("/watchlist/:symbol", async (req, res) => {
+    try {
+        const userId = await resolveWatchlistUser(req.query);
+        if (!userId) {
+            return res.status(400).json({ msg: "A user id or email is required." });
+        }
+        if (!req.params.symbol) {
+            return res.status(400).json({ msg: "A symbol is required." });
+        }
+
+        const statusMessage = await WatchlistEntry.deleteOne({
+            user: userId,
+            symbol: String(req.params.symbol).toUpperCase().trim(),
+        });
+        return res.json(statusMessage);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+/* #endregion */
 
 
 /* #region Payment History - Also used for premium user purchases. */

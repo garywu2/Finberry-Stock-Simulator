@@ -61,7 +61,20 @@ _Last updated: 2026-08-02. Update this section as work lands._
     header links it) left the old MUI header stacked on a redesigned page — now case-insensitive,
     which affected every redesigned route. `Spinner`, `Title` and `constants/areas` removed as the
     last react-promise-tracker consumers.
-  - ⬜ Remaining pages, in order: **Stock detail (new) → User Profile (new)**.
+  - ✅ **Stock detail + Markets** (new) — branch `redesign-phase-2-stock`. Routes `/Markets` and
+    `/stock/:symbol`. Header, chart with a working 1D–ALL switcher, explainer, key statistics,
+    sticky order ticket (stepper + 25/50/Max), your-position card. **Server**: `GET /stock/quote`
+    (Twelve Data proxy, 5-min cache) for 52-week range / average volume / previous close, and a
+    `WatchlistEntry` model + `GET|POST|DELETE /account/watchlist`. Decisions: market cap / P/E /
+    dividend / beta are **omitted** (no fundamentals feed) and the candle-derived range is labelled
+    by the selected timeframe so it can't be mislabelled "52-week"; "The simple version" is
+    **authored copy for 12 tickers** and the card is hidden for any other symbol; the Market/Limit
+    toggle shows **Limit disabled** (no resting-order support). The Simulator's watchlist card now
+    reads the real watchlist and only falls back to market movers when empty.
+    **`/Markets` was never designed** — it is a simple search/movers/watchlist directory, flagged
+    for a design pass. **Needs a deploy** before `/stock/quote` and the watchlist work in prod.
+  - ⬜ Remaining page: **User Profile (new)** — needs a backend social layer (follow graph); its
+    "You vs …" compare view is **undesigned** and must not be built without a design.
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 
