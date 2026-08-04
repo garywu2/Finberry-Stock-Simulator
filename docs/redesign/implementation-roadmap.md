@@ -34,7 +34,21 @@ _Last updated: 2026-08-02. Update this section as work lands._
     both `learderboard` routes so the TREND sparkline has a real series — this needs a deploy
     before sparklines appear in production. **Deferred**: the podium's per-player streak line (no
     streak model).
-  - ⬜ Remaining pages, in order: **My Profile → Learn hub → Stock detail (new) → User Profile (new)**.
+  - ✅ **My Profile** (`ProfilePage`) — rebuilt on branch `redesign-phase-2-profile`. Hero, stat
+    strip, portfolio card, badges grid, activity timeline. Badges and activity are **real**
+    (`account/badge` + `account/userbadge`, timeline merges trades with badge awards). Decisions:
+    the XP/level bar shows **badge completion** instead (no XP model); win rate and best trade are
+    **reconstructed from trade history** with average-cost accounting in `tradeStats.ts` (sells with
+    no known cost basis are skipped, and the stats are labelled as reconstructed); badge tiles are
+    **rarity-tinted** because the artwork the DB references is absent from the client.
+    `REDESIGNED_PREFIXES` was added to `App.jsx` since `/Profile/:email` is parameterised and the
+    existing exact-match list cannot cover it.
+  - 🗑️ **Coaching removed entirely** (product decision). Client: CoachPortal/CoachCatalogue/
+    CoachRegistration pages + routes, the Coaching nav dropdown and `LinkDropdown`, coaching copy in
+    the pricing tiers and FAQ. Server: 6 models, 29 routes, the deep-delete cascades, three User
+    fields, and Admin's `/mock/coach` — `Account.js` 2128 → 942 lines. **The MongoDB collections
+    still exist and are now orphaned**; dropping them is a separate data decision.
+  - ⬜ Remaining pages, in order: **Learn hub → Stock detail (new) → User Profile (new)**.
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 

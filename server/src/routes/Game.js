@@ -137,7 +137,7 @@ async function deepDeleteHolding(toBeRemovedEntryID) {
     // Must remove the entry from simulatorEnrollment as well.
     const simulatorEnrollmentID = holdingRemoved.simulatorEnrollment;
 
-    try { // For CoachingClient
+    try { // For SimulatorEnrollment
         const entry = await SimulatorEnrollment.findById(simulatorEnrollmentID);
         if (!entry) {
             return;
@@ -159,7 +159,7 @@ async function deepDeleteTradeTransaction(toBeRemovedEntryID) {
     // Must remove the entry from simulatorEnrollment as well.
     const simulatorEnrollmentID = tradeTransactionRemoved.simulatorEnrollment;
 
-    try { // For CoachingClient
+    try { // For SimulatorEnrollment
         const entry = await SimulatorEnrollment.findById(simulatorEnrollmentID);
         if (!entry) {
             return;
