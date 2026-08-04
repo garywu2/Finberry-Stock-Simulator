@@ -6,6 +6,8 @@ require("./src/models/User");
 require("./src/models/Badge");
 require("./src/models/UserBadge");
 require("./src/models/Article");
+require("./src/models/Lesson");
+require("./src/models/LessonProgress");
 require("./src/models/Simulator");
 require("./src/models/SimulatorEnrollment");
 require("./src/models/Holding");

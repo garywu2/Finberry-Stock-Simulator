@@ -48,7 +48,20 @@ _Last updated: 2026-08-02. Update this section as work lands._
     the pricing tiers and FAQ. Server: 6 models, 29 routes, the deep-delete cascades, three User
     fields, and Admin's `/mock/coach` — `Account.js` 2128 → 942 lines. **The MongoDB collections
     still exist and are now orphaned**; dropping them is a separate data decision.
-  - ⬜ Remaining pages, in order: **Learn hub → Stock detail (new) → User Profile (new)**.
+  - ✅ **Learn hub** (`ArticlesPage`) — rebuilt on branch `redesign-phase-2-learn`, on a **new
+    `Lesson` model that replaces `Article`** (product decision). `Lesson` adds category (enum),
+    `pathKey`/`order`, `estimatedMinutes` (derived at write time) and `published`; `LessonProgress`
+    is per user per lesson and **unauthenticated/forgeable until Phase 3**. `/article` routes became
+    `/lesson` CRUD + `/lesson/categories` + `GET|PUT /lessonprogress`.
+    `server/scripts/migrateArticlesToLessons.js` converts existing articles (idempotent, dry-run by
+    default, never drops). `/Article/:id` now reads lessons and can mark one done — still
+    **undesigned**, so it is deliberately plain and needs a design pass.
+    **Not live until the server is deployed and the migration is run with `--apply`.**
+    Also fixed: `REDESIGNED_ROUTES` was matched case-sensitively, so `/articles` (how the legacy
+    header links it) left the old MUI header stacked on a redesigned page — now case-insensitive,
+    which affected every redesigned route. `Spinner`, `Title` and `constants/areas` removed as the
+    last react-promise-tracker consumers.
+  - ⬜ Remaining pages, in order: **Stock detail (new) → User Profile (new)**.
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 
