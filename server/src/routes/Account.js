@@ -15,7 +15,11 @@ const   User                =   mongoose.model("User"),
         PaymentHistory      =   mongoose.model("PaymentHistory"),
         Badge               =   mongoose.model("Badge"),
         UserBadge           =   mongoose.model("UserBadge"),
-        WatchlistEntry      =   mongoose.model("WatchlistEntry");
+        WatchlistEntry      =   mongoose.model("WatchlistEntry"),
+        Follow              =   mongoose.model("Follow"),
+        SimulatorEnrollment =   mongoose.model("SimulatorEnrollment"),
+        Holding             =   mongoose.model("Holding"),
+        TradeTransaction    =   mongoose.model("TradeTransaction");
 
 /* #region Helper Functions */
 
@@ -825,6 +829,246 @@ router.post("/achievement", async (req, res) => {
 
 /* #endregion */
 
+
+
+/* #region Public profile */
+
+// Realized win rate over a user's whole trade history, using average-cost
+// accounting. Computed here rather than in the client because the response
+// only exposes the most recent trades — a client-side figure would be based on
+// a truncated history and therefore wrong.
+function realizedWinRate(trades) {
+    const ordered = [...trades].sort(
+        (a, b) => new Date(a.transactionTime) - new Date(b.transactionTime)
+    );
+    const positions = new Map();
+    let wins = 0;
+    let closed = 0;
+
+    for (const t of ordered) {
+        const quantity = Number(t.quantity);
+        const price = Number(t.price);
+        if (!(quantity > 0) || !(price > 0)) continue;
+
+        const key = String(t.simulatorEnrollment) + "|" + t.symbol;
+        const held = positions.get(key) || { quantity: 0, averageCost: 0 };
+
+        if (Number(t.transactionType) === 1) {
+            const total = held.averageCost * held.quantity + price * quantity;
+            const newQuantity = held.quantity + quantity;
+            positions.set(key, {
+                quantity: newQuantity,
+                averageCost: newQuantity > 0 ? total / newQuantity : 0,
+            });
+            continue;
+        }
+
+        // A sell with no known cost basis is unknowable, not a win.
+        if (!(held.quantity > 0) || !(held.averageCost > 0)) continue;
+
+        const sold = Math.min(quantity, held.quantity);
+        closed += 1;
+        if (price > held.averageCost) wins += 1;
+
+        const left = held.quantity - sold;
+        positions.set(key, { quantity: left, averageCost: left > 0 ? held.averageCost : 0 });
+    }
+
+    return closed > 0 ? (wins / closed) * 100 : null;
+}
+
+// GET - another investor's profile, filtered by THEIR privacy settings.
+//
+// Filtering happens here rather than in the client: sending hidden fields and
+// asking the browser not to draw them is not privacy.
+router.get("/publicprofile", async (req, res) => {
+    try {
+        if (!req.query.email) {
+            return res.status(400).json({ msg: "An email is required." });
+        }
+
+        const user = await User.findOne({ email: req.query.email });
+        if (!user) {
+            return res.status(404).json({ msg: "User not found." });
+        }
+
+        const privacy = user.privacySettings || {};
+        const profile = {
+            email: user.email,
+            username: user.username,
+            createdAt: user.createdAt,
+            // Identity details are only shared when the personal profile is public.
+            firstName: privacy.personalProfile ? user.firstName : undefined,
+            lastName: privacy.personalProfile ? user.lastName : undefined,
+            preferredName: privacy.personalProfile ? user.preferredName : undefined,
+            location: privacy.personalProfile ? user.location : undefined,
+            bio: privacy.personalProfile ? user.bio : undefined,
+            privacy: {
+                personalProfile: !!privacy.personalProfile,
+                simulator: !!privacy.simulator,
+                leaderboard: !!privacy.leaderboard,
+                badges: !!privacy.badges,
+            },
+            winRate: null,
+            badges: [],
+            holdings: [],
+            trades: [],
+        };
+
+        if (privacy.badges) {
+            const earned = await UserBadge.find({ user: user._id, retracted: false })
+                .populate("badgeType")
+                .sort({ dateEarned: -1 });
+            profile.badges = earned.map((ub) => ({
+                _id: ub._id,
+                dateEarned: ub.dateEarned,
+                acquisition: ub.acquisition,
+                displayName: ub.badgeType ? ub.badgeType.displayName : null,
+                rarity: ub.badgeType ? ub.badgeType.rarity : 0,
+                description: ub.badgeType ? ub.badgeType.description : null,
+            }));
+        }
+
+        if (privacy.simulator) {
+            const enrollments = await SimulatorEnrollment.find({ user: user._id }, { _id: 1 });
+            const enrollmentIds = enrollments.map((e) => e._id);
+
+            const holdings = await Holding.find({
+                simulatorEnrollment: { $in: enrollmentIds },
+                quantity: { $gt: 0 },
+            });
+            profile.holdings = holdings.map((h) => ({
+                symbol: h.symbol,
+                index: h.index,
+                quantity: h.quantity,
+                averagePurchasePrice: h.averagePurchasePrice,
+            }));
+
+            // Win rate is computed over the FULL history...
+            const allTrades = await TradeTransaction.find({
+                simulatorEnrollment: { $in: enrollmentIds },
+            });
+            profile.winRate = realizedWinRate(allTrades);
+
+            // ...but only recent activity is exposed; a full trade log is more
+            // than "public".
+            const trades = await TradeTransaction.find({
+                simulatorEnrollment: { $in: enrollmentIds },
+            })
+                .sort({ transactionTime: -1 })
+                .limit(25);
+            profile.trades = trades.map((t) => ({
+                _id: t._id,
+                symbol: t.symbol,
+                transactionType: t.transactionType,
+                quantity: t.quantity,
+                price: t.price,
+                transactionTime: t.transactionTime,
+            }));
+        }
+
+        return res.json(profile);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+/* #endregion */
+
+
+/* #region Social - follow graph */
+
+async function userIdFor(source, key) {
+    if (source[key]) {
+        return source[key];
+    }
+    const emailKey = key + "Email";
+    if (source[emailKey]) {
+        const user = await User.findOne({ email: source[emailKey] }, { _id: 1 });
+        return user ? user._id : null;
+    }
+    return null;
+}
+
+// GET - follower/following counts for a user, and whether `viewerEmail` follows them
+router.get("/follow", async (req, res) => {
+    try {
+        const targetUser = await User.findOne(
+            req.query.email ? { email: req.query.email } : { _id: req.query.user },
+            { _id: 1 }
+        );
+        if (!targetUser) {
+            return res.status(404).json({ msg: "User not found." });
+        }
+
+        const [followers, following] = await Promise.all([
+            Follow.countDocuments({ following: targetUser._id }),
+            Follow.countDocuments({ follower: targetUser._id }),
+        ]);
+
+        let viewerFollows = false;
+        if (req.query.viewerEmail) {
+            const viewer = await User.findOne({ email: req.query.viewerEmail }, { _id: 1 });
+            if (viewer) {
+                viewerFollows = !!(await Follow.exists({
+                    follower: viewer._id,
+                    following: targetUser._id,
+                }));
+            }
+        }
+
+        return res.json({ followers, following, viewerFollows });
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// POST - follow a user (idempotent)
+router.post("/follow", async (req, res) => {
+    try {
+        const followerId = await userIdFor(req.body, "follower");
+        const followingId = await userIdFor(req.body, "following");
+
+        if (!followerId || !followingId) {
+            return res.status(400).json({ msg: "Both follower and following users are required." });
+        }
+        if (String(followerId) === String(followingId)) {
+            return res.status(400).json({ msg: "You cannot follow yourself." });
+        }
+
+        const edge = await Follow.findOneAndUpdate(
+            { follower: followerId, following: followingId },
+            { $setOnInsert: { follower: followerId, following: followingId, createdAt: Date.now() } },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        return res.json(edge);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+// DELETE - unfollow
+router.delete("/follow", async (req, res) => {
+    try {
+        const followerId = await userIdFor(req.query, "follower");
+        const followingId = await userIdFor(req.query, "following");
+
+        if (!followerId || !followingId) {
+            return res.status(400).json({ msg: "Both follower and following users are required." });
+        }
+
+        const statusMessage = await Follow.deleteOne({
+            follower: followerId,
+            following: followingId,
+        });
+        return res.json(statusMessage);
+    } catch (e) {
+        return res.status(400).json({ msg: e.message });
+    }
+});
+
+/* #endregion */
 
 
 /* #region Watchlist */
