@@ -8,7 +8,7 @@ _Last updated: 2026-08-02. Update this section as work lands._
 
 - **Phase 0 — Tooling** ✅ done (merged into `redesign`). CRA→Vite, Tailwind + shadcn scaffold, ESLint/Prettier, `.env.example`, junk deps removed, standardized on `package-lock.json`.
 - **Phase 1 — Foundations** ✅ done (merged). `src/api/client.ts`, `ProtectedRoute` (applied to Simulator/Profile/CoachPortal/CoachRegistration/GamePortfolio/**Leaderboards**), `src/theme.ts`, shadcn CSS vars, brand fonts, primitives in `src/components/brand/` + `src/components/ui/`, `/Preview` gallery route. Also made Firebase init resilient to a missing `.env` (no more white-screen).
-- **Phase 2 — Page redesigns** 🔶 in progress.
+- **Phase 2 — Page redesigns** ✅ done (Stock detail, Markets and User Profile pending merge).
   - ✅ **Landing** (`HomePage`) — merged. Verified in-browser vs the mock.
   - ✅ **Simulator** (`SimulatorPortfolioPage`) — rebuilt on branch `redesign-phase-2-simulator`.
     1213-line MUI page → 9 files (`index.tsx`, `useSimulatorPortfolio.ts`, `types.ts`, `format.ts`,
@@ -73,8 +73,18 @@ _Last updated: 2026-08-02. Update this section as work lands._
     reads the real watchlist and only falls back to market movers when empty.
     **`/Markets` was never designed** — it is a simple search/movers/watchlist directory, flagged
     for a design pass. **Needs a deploy** before `/stock/quote` and the watchlist work in prod.
-  - ⬜ Remaining page: **User Profile (new)** — needs a backend social layer (follow graph); its
-    "You vs …" compare view is **undesigned** and must not be built without a design.
+  - ✅ **User Profile** (new) — branch `redesign-phase-2-userprofile`. Route `/investor/:email`,
+    linked from every leaderboard row. **Server**: `Follow` model + `GET|POST|DELETE
+    /account/follow`, and `GET /account/publicprofile` which applies the subject's own
+    `privacySettings` **server-side** (hidden sections are omitted at the source, not merely
+    undrawn). Win rate is computed server-side over the full trade history because the endpoint
+    only exposes the 25 most recent trades. **The compare view was designed here** (the handoff had
+    only a CTA) — rationale is recorded in `CompareCard.tsx`.
+    **Needs a deploy** before the follow and public-profile routes work in prod.
+
+**Phase 2 is complete.** Every screen in the handoff is redesigned. Undesigned surfaces introduced
+along the way and worth a design pass: `/Markets`, the lesson-detail view (`/Article/:id`), and the
+compare view.
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 

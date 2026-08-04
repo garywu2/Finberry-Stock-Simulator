@@ -19,6 +19,7 @@ import BuyPremiumPage from './containers/BuyPremiumPage';
 import PreviewPage from './containers/PreviewPage';
 import MarketsPage from './containers/MarketsPage';
 import StockPage from './containers/StockPage';
+import UserProfilePage from './containers/UserProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserContext from './context/user';
 import { ThemeProvider } from '@mui/material/styles';
@@ -40,7 +41,7 @@ const REDESIGNED_ROUTES = [
   '/Markets',
 ];
 // Parameterised routes cannot be matched by the exact-match list above.
-const REDESIGNED_PREFIXES = ['/Profile/', '/Article/', '/stock/'];
+const REDESIGNED_PREFIXES = ['/Profile/', '/Article/', '/stock/', '/investor/'];
 
 function Shell({ user }) {
   const location = useLocation();
@@ -69,6 +70,7 @@ function Shell({ user }) {
         <Route path="/Preview" element={<PreviewPage />} />
         <Route path="/Markets" element={<MarketsPage />} />
         <Route path="/stock/:symbol" element={<StockPage />} />
+        <Route path="/investor/:email" element={<UserProfilePage />} />
         <Route
           path="/Profile/:email"
           element={

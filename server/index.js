@@ -9,6 +9,7 @@ require("./src/models/Article");
 require("./src/models/Lesson");
 require("./src/models/LessonProgress");
 require("./src/models/WatchlistEntry");
+require("./src/models/Follow");
 require("./src/models/Simulator");
 require("./src/models/SimulatorEnrollment");
 require("./src/models/Holding");

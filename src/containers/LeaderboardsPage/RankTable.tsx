@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Avatar, Pill, Sparkline } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -89,10 +90,13 @@ function Row({ r }: { r: LeaderRow }) {
       <div className="flex min-w-0 items-center gap-3">
         <Avatar name={r.name} size={40} ring={r.isMe ? '#7C3AED' : undefined} />
         <div className="min-w-0">
-          <div className="truncate text-[14.5px] font-semibold text-ink">
+          <Link
+            to={`/investor/${encodeURIComponent(r.email)}`}
+            className="block truncate text-[14.5px] font-semibold text-ink no-underline hover:text-violet"
+          >
             {r.name}
             {r.isMe && <span className="ml-1 text-[11px] font-bold text-violet">· YOU</span>}
-          </div>
+          </Link>
           <div className="truncate font-mono text-[12.5px] text-ink-3">{r.handle}</div>
         </div>
       </div>
