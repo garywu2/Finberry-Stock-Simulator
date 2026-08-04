@@ -29,9 +29,9 @@ import Footer from './components/Footer';
 // Routes that have been migrated to the Berry Bright design and render their own
 // chrome (brand TopNav/Footer). The legacy MUI Header/Footer are suppressed on
 // these so the two chrome systems don't stack. Add routes here as pages migrate.
-const REDESIGNED_ROUTES = ['/', '/Preview', '/SimulatorPortfolio', '/Leaderboards'];
+const REDESIGNED_ROUTES = ['/', '/Preview', '/SimulatorPortfolio', '/Leaderboards', '/Articles'];
 // Parameterised routes cannot be matched by the exact-match list above.
-const REDESIGNED_PREFIXES = ['/Profile/'];
+const REDESIGNED_PREFIXES = ['/Profile/', '/Article/'];
 
 function Shell({ user }) {
   const location = useLocation();
@@ -39,9 +39,13 @@ function Shell({ user }) {
     document.documentElement.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // Matched case-insensitively: react-router v6 is case-insensitive and the
+  // legacy chrome links to lowercase paths (/articles), so an exact match here
+  // would leave the old MUI header on top of a redesigned page.
+  const path = location.pathname.toLowerCase();
   const hideLegacyChrome =
-    REDESIGNED_ROUTES.includes(location.pathname) ||
-    REDESIGNED_PREFIXES.some((p) => location.pathname.startsWith(p));
+    REDESIGNED_ROUTES.some((r) => r.toLowerCase() === path) ||
+    REDESIGNED_PREFIXES.some((p) => path.startsWith(p.toLowerCase()));
 
   return (
     <div>

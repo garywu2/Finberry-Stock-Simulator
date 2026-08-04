@@ -20,6 +20,8 @@ router.delete("/schemas", async (req, res) => {
         try {
             const relevantCollections = [
             "articles",
+            "lessons",
+            "lessonprogresses",
             "badges",
             "holdings",
             "paymenthistories",
@@ -353,24 +355,24 @@ router.post("/mock/simulator", async (req, res) => {
     res.json(outputLog);
 });
 
-// Mock Articles.
-router.post("/mock/article", async (req, res) => {
+// Mock Lessons.
+router.post("/mock/lesson", async (req, res) => {
     let outputLog = [];
     for (const newEntry of req.body) {
         try {
-            let article = newEntry.article;
+            let lesson = newEntry.lesson || newEntry.article;
             await axios({
                 method: 'post',
                 url:
                 process.env.local_route +
-                    'educational/article',
+                    'educational/lesson',
                 headers: {},
-                data: article,
+                data: lesson,
             }).then(async (result) => {
-                let newArticle = result.data;
-                outputLog.push(newArticle);
+                let newLesson = result.data;
+                outputLog.push(newLesson);
             }).catch((error) => {
-                outputLog.push("Article Creation Failure: " + error.message);
+                outputLog.push("Lesson Creation Failure: " + error.message);
             });
         } catch (e) {
             outputLog.push("Invalid Input Style.");
