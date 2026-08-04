@@ -85,6 +85,7 @@ _Last updated: 2026-08-02. Update this section as work lands._
 **Phase 2 is complete.** Every screen in the handoff is redesigned. Undesigned surfaces introduced
 along the way and worth a design pass: `/Markets`, the lesson-detail view (`/Article/:id`), and the
 compare view.
+- **Phase 2.5 — Loading states** ⬜ not started. Skeletons everywhere a network call is in flight.
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 
@@ -161,6 +162,54 @@ Each page: rebuild UI in Tailwind/shadcn against its screenshot, wire real data 
 Undesigned states (modals, loading, empty, error) recur across every page — design them once as a set before Phase 2 gets deep, or stub with sensible defaults and flag for review.
 
 Verification per page: side-by-side against `screenshots/0X-*.png`; exercise the real data path (load, and for Simulator/Stock a full buy→refresh→sell flow); confirm no MUI regressions on not-yet-migrated pages.
+
+## Phase 2.5 — Loading states
+
+Goal: every region that waits on a network call shows a skeleton shaped like the content it is
+replacing, instead of a grey slab, a flash of zeros, or nothing at all.
+
+**Why now:** the redesigned pages fetch far more than the old ones (the Simulator alone makes five
+calls plus one per holding for sparklines), and Twelve Data is rate-limited and slow on a cold
+Vercel start — so these waits are long and visible in practice.
+
+### Current state (audited)
+
+- **One good pattern exists**: `SimulatorPortfolioPage/HoldingsTable.tsx` renders real per-row
+  skeletons matching the grid, and `StockPage` skeletons *just the chart* when the timeframe
+  changes. Both are the target quality — reuse them as the reference.
+- **Six pages use a single monolithic block** that looks nothing like the page it precedes and
+  causes a hard layout jump when data lands: `LeaderboardsPage` (`h-[420px]`), `ArticlePage`
+  (`h-[420px]`), `ArticlesPage` (`h-[320px]`), `UserProfilePage` (`h-[240px]`), `ProfilePage`
+  (`h-[220px]`), `StockPage` (`h-[200px]`).
+- **`MarketsPage` has no loading state at all** — movers and the watchlist pop in.
+- **Secondary fetches that backfill after first paint show nothing**, so a rendered page silently
+  changes under the user: holdings/watchlist sparklines and the watchlist itself
+  (`useSimulatorPortfolio`), badges and activity (`useProfile`), the position and watch state
+  (`useStock`), follower counts (`useUserProfile`).
+- `HomePage` is deliberately excluded: it seeds realistic placeholder movers and degrades silently,
+  which is the right call for a marketing page.
+
+### Work
+
+1. Add a `Skeleton` primitive to `src/components/brand/` (barrel-exported) wrapping the existing
+   `animate-pulse` + `bg-surface-3` treatment, with `role="presentation"` and a
+   `motion-reduce:animate-none` fallback. Everything below uses it.
+2. Replace each monolithic block with a **layout-matching** skeleton: same card structure, same
+   number of rows, same column widths, so nothing moves when real data arrives.
+3. Give `MarketsPage` skeletons for the movers list and watchlist.
+4. Skeleton the **backfilled** regions listed above rather than rendering an empty or zeroed state —
+   in particular the sparkline cells, which currently render blank.
+5. Do not skeleton a value that is already known. The Simulator's stat cards should not flash `$0.00`
+   before the real balance lands; hold the skeleton until the number is real.
+6. Accessibility: `aria-busy="true"` on the region while loading, and a visually-hidden
+   `role="status"` announcement when it resolves.
+
+Verification: throttle the network in devtools and load each redesigned route — no grey slabs, no
+layout jump when data arrives, no flash of `$0.00`/`—` on a value that is about to be known, and
+`prefers-reduced-motion` disables the pulse.
+
+**Convention for new pages:** a region that awaits a network call ships with a skeleton in the same
+commit. Record this in `CLAUDE.md` under the styling conventions when this phase lands.
 
 ## Phase 3 — Backend security (parallel to Phase 2)
 
