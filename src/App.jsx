@@ -17,6 +17,8 @@ import useAuthListener from './hooks/use-auth';
 import ArticlesPage from './containers/ArticlesPage';
 import BuyPremiumPage from './containers/BuyPremiumPage';
 import PreviewPage from './containers/PreviewPage';
+import MarketsPage from './containers/MarketsPage';
+import StockPage from './containers/StockPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserContext from './context/user';
 import { ThemeProvider } from '@mui/material/styles';
@@ -29,9 +31,16 @@ import Footer from './components/Footer';
 // Routes that have been migrated to the Berry Bright design and render their own
 // chrome (brand TopNav/Footer). The legacy MUI Header/Footer are suppressed on
 // these so the two chrome systems don't stack. Add routes here as pages migrate.
-const REDESIGNED_ROUTES = ['/', '/Preview', '/SimulatorPortfolio', '/Leaderboards', '/Articles'];
+const REDESIGNED_ROUTES = [
+  '/',
+  '/Preview',
+  '/SimulatorPortfolio',
+  '/Leaderboards',
+  '/Articles',
+  '/Markets',
+];
 // Parameterised routes cannot be matched by the exact-match list above.
-const REDESIGNED_PREFIXES = ['/Profile/', '/Article/'];
+const REDESIGNED_PREFIXES = ['/Profile/', '/Article/', '/stock/'];
 
 function Shell({ user }) {
   const location = useLocation();
@@ -58,6 +67,8 @@ function Shell({ user }) {
         <Route path="/Article/:id" element={<ArticlePage />} />
         <Route path="/Articles" element={<ArticlesPage />} />
         <Route path="/Preview" element={<PreviewPage />} />
+        <Route path="/Markets" element={<MarketsPage />} />
+        <Route path="/stock/:symbol" element={<StockPage />} />
         <Route
           path="/Profile/:email"
           element={

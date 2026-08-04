@@ -212,11 +212,43 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
   }, [loadEnrollmentData]);
 
   // --- 3. Watchlist ----------------------------------------------------------
+  // Shows the symbols the user actually watches (added from a stock page), and
+  // falls back to the market-movers feed when they haven't watched anything.
   useEffect(() => {
     let cancelled = false;
-    api
-      .get<MarketMover[]>('game/marketmovers')
-      .then(async (res) => {
+
+    const fromSeries = (symbol: string, name: string, series: number[]): WatchRow => {
+      const last = series[series.length - 1] ?? 0;
+      const prev = series[series.length - 2] ?? last;
+      const change = prev > 0 ? ((last - prev) / prev) * 100 : 0;
+      return { symbol, name, price: last, change, up: change >= 0, series };
+    };
+
+    (async () => {
+      // 1. The user's own watchlist.
+      if (email) {
+        try {
+          const res = await api.get<{ symbol: string; index?: string }[]>('account/watchlist', {
+            params: { email },
+          });
+          const entries = (Array.isArray(res.data) ? res.data : []).slice(0, 4);
+          if (entries.length) {
+            const series = await mapLimit(entries, 2, (w) => fetchSeries(w.symbol));
+            if (cancelled) return;
+            setWatchlist(
+              entries.map((w, i) => fromSeries(w.symbol, w.index || w.symbol, series[i] ?? []))
+            );
+            return;
+          }
+        } catch {
+          // Fall through to market movers.
+        }
+      }
+      if (cancelled) return;
+
+      // 2. Fallback: market movers.
+      try {
+        const res = await api.get<MarketMover[]>('game/marketmovers');
         const rows = Array.isArray(res.data) ? res.data.slice(0, 4) : [];
         if (!rows.length || cancelled) return;
         const base: WatchRow[] = rows.map((m) => {
@@ -234,14 +266,15 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
         const series = await mapLimit(base, 2, (w) => fetchSeries(w.symbol));
         if (cancelled) return;
         setWatchlist(base.map((w, i) => ({ ...w, series: series[i] ?? [] })));
-      })
-      .catch(() => {
+      } catch {
         // The watchlist is decorative; leave it empty if the feed is down.
-      });
+      }
+    })();
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [email]);
 
   // --- Derived values --------------------------------------------------------
   const cashBalance = balances?.cashBalance ?? enrollment?.balance ?? 0;

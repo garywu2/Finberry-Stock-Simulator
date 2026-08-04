@@ -87,6 +87,67 @@ router.get('/price', function(req, res) {
     }
 });
 
+// Cache for 5 minutes — quotes carry the fundamentals the stock page shows
+// (52-week range, average volume, day range) which price/time_series do not.
+const quoteCache = new NodeCache({
+    stdTTL: 300
+});
+// Get a full quote for a symbol
+router.get('/quote', function(req, res) {
+    let params = parseRequestParams(req.query, ['symbol', 'exchange', 'interval', 'timezone']);
+
+    if (!params.symbol) {
+        return res.status(400).json({ msg: "A symbol is required." });
+    }
+
+    let stringParams = JSON.stringify(params);
+    let cached = quoteCache.get(stringParams);
+    if (cached != undefined) {
+        return res.json(cached);
+    }
+
+    params.apikey = process.env.REACT_APP_FINBERRY_TWELVEDATA_API_KEY;
+
+    axios({
+        method: 'get',
+        url: 'https://api.twelvedata.com/quote',
+        params: params,
+    }).then((result) => {
+        let data = result.data;
+
+        // Twelve Data reports errors with HTTP 200 and a status field.
+        if (!data || data.status === "error" || !data.symbol) {
+            return res.status(404).json({ msg: "No quote available for that symbol." });
+        }
+
+        let payload = {
+            symbol: data.symbol,
+            name: data.name,
+            exchange: data.exchange,
+            currency: data.currency,
+            open: Number(data.open),
+            high: Number(data.high),
+            low: Number(data.low),
+            close: Number(data.close),
+            previousClose: Number(data.previous_close),
+            change: Number(data.change),
+            percentChange: Number(data.percent_change),
+            volume: Number(data.volume),
+            averageVolume: Number(data.average_volume),
+            fiftyTwoWeek: data.fifty_two_week ? {
+                low: Number(data.fifty_two_week.low),
+                high: Number(data.fifty_two_week.high),
+            } : null,
+            isMarketOpen: data.is_market_open,
+        };
+
+        quoteCache.set(stringParams, payload);
+        return res.json(payload);
+    }).catch((e) => {
+        return res.status(502).json({ msg: "Quote lookup failed." });
+    });
+});
+
 // Cache for 1 hour
 const timeSeriesCache = new NodeCache({
     stdTTL: 3600
