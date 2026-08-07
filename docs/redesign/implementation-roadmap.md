@@ -85,7 +85,12 @@ _Last updated: 2026-08-02. Update this section as work lands._
 **Phase 2 is complete.** Every screen in the handoff is redesigned. Undesigned surfaces introduced
 along the way and worth a design pass: `/Markets`, the lesson-detail view (`/Article/:id`), and the
 compare view.
-- **Phase 2.5 — Loading states** ⬜ not started. Skeletons everywhere a network call is in flight.
+- ✅ **Phase 2.5 — Loading states** — branch `redesign-phase-2-5-loading`. `Skeleton` /
+  `SkeletonText` / `LoadedAnnouncement` primitives in `src/components/brand`; every monolithic slab
+  replaced with a layout-matching skeleton; `MarketsPage` given loading state at all; and **ten
+  previously-unflagged secondary fetches** now carry their own flag, so no region renders a zero,
+  an em dash or a false empty state for a value that is about to be known. Verified by measuring
+  card heights loading-vs-loaded in-browser (see "Verifying loading states" below).
 - **Phase 3 — Backend security** ⬜ not started.
 - **Phase 4 — Backend refactor** ⬜ not started.
 
@@ -189,27 +194,59 @@ Vercel start — so these waits are long and visible in practice.
 - `HomePage` is deliberately excluded: it seeds realistic placeholder movers and degrades silently,
   which is the right call for a marketing page.
 
-### Work
+### What shipped
 
-1. Add a `Skeleton` primitive to `src/components/brand/` (barrel-exported) wrapping the existing
-   `animate-pulse` + `bg-surface-3` treatment, with `role="presentation"` and a
-   `motion-reduce:animate-none` fallback. Everything below uses it.
-2. Replace each monolithic block with a **layout-matching** skeleton: same card structure, same
-   number of rows, same column widths, so nothing moves when real data arrives.
-3. Give `MarketsPage` skeletons for the movers list and watchlist.
-4. Skeleton the **backfilled** regions listed above rather than rendering an empty or zeroed state —
-   in particular the sparkline cells, which currently render blank.
-5. Do not skeleton a value that is already known. The Simulator's stat cards should not flash `$0.00`
-   before the real balance lands; hold the skeleton until the number is real.
-6. Accessibility: `aria-busy="true"` on the region while loading, and a visually-hidden
-   `role="status"` announcement when it resolves.
+1. **Primitives** in `src/components/brand/Skeleton.tsx` (barrel-exported):
+   - `Skeleton` — `animate-pulse` + `bg-surface-3`, `role="presentation"`,
+     `motion-reduce:animate-none`. All ten hand-rolled `animate-pulse` divs now go through it.
+   - **`SkeletonText`** — the load-bearing one. A bare bar is only as tall as the bar, but the text
+     it replaces is as tall as its *line box* (~1.5× the font size). Rows built from bare bars came
+     out 7–8px short each, and an eight-row list visibly grew by ~56px when data landed. Passing the
+     same type scale (`text="text-[14.5px]"`) reproduces the line box exactly.
+   - `LoadedAnnouncement` — visually-hidden `role="status"` for the resolution.
+2. **Every monolithic block replaced** with a layout-matching skeleton that reuses the real
+   component's own constants — `RankTable`'s `COLS`, `Podium`'s `HEIGHT`, the fixed chart-well
+   heights, the natural row counts. Where a card has persistent chrome (a title, a column header, a
+   timeframe switcher) that chrome stays live and only the data region is skeletonised.
+3. **`MarketsPage`** gained `moversLoading` / `watchLoading`; its "aren't available right now" and
+   "nothing watched yet" copy now appears only for a genuinely empty result.
+4. **Ten unflagged secondary fetches now carry a flag**: sparkline backfill, watchlist and the stock
+   list (`useSimulatorPortfolio`); position/buying-power and watch state (`useStock`); follower
+   counts and the compare data (`useUserProfile`); lesson progress (`useLessons`, `ArticlePage`).
+   Several of these initialised to values indistinguishable from real answers — `watching: false`,
+   `followers: 0`, `percentComplete: 0`, `dayPct: null` rendering as `—`.
+5. **`useProfile` was split.** It gated first paint on all five requests including a *serial*
+   `account/userbadge`; now `account/user` + the leaderboard are primary, and badges/trades are
+   secondary with their own flags, so the hero paints without waiting on the slowest of five.
+6. **`TopNav.balance` is now `React.ReactNode` with no default.** It previously defaulted to
+   `'$0.00'`, which meant Markets and Learn showed a permanently wrong cash chip. Undefined now
+   hides the chip; loading pages pass a `<Skeleton>`; pages with no ranked entry pass `undefined`
+   rather than asserting zero.
+7. **`Sparkline` reserves its footprint** when given fewer than two points instead of returning
+   `null` and collapsing to 0×0.
+8. **`StockPage`'s explainer card renders for real while loading** — it is a local lookup keyed on
+   the URL, so it is known before any request finishes. Don't skeleton what you already have.
 
-Verification: throttle the network in devtools and load each redesigned route — no grey slabs, no
-layout jump when data arrives, no flash of `$0.00`/`—` on a value that is about to be known, and
-`prefers-reduced-motion` disables the pulse.
+`HomePage` was deliberately left alone: it seeds realistic placeholder movers and swaps numbers in
+place, which is the right call for a marketing page.
+
+### Verifying loading states
+
+Throttling devtools is fine for a smoke test, but the useful check is **measuring**. Stub
+`window.XMLHttpRequest` with fixtures on a deliberate delay (axios uses the XHR adapter — fire
+`onreadystatechange`/`onload`/`onloadend` and stub `getAllResponseHeaders`; **always stub the trade
+POST**), then snapshot every `.rounded-card` height while loading and again once resolved. Equal
+numbers mean zero layout shift. This caught mismatches invisible to the eye and is how the line-box
+problem above was found. Client-side route changes (`history.pushState` + a `popstate` event) remount
+a page without wiping the stub.
+
+Measured result: Simulator hero + stat row, Stock's whole left column, and Markets' rows are
+**pixel-identical** loading vs loaded; Leaderboards 2px, Learn hub ~16px, lesson detail 0px, Profile
+21px. What remains is genuinely unknowable before the response — how many rows a list has, whether
+the viewer holds this symbol, whether a section is private.
 
 **Convention for new pages:** a region that awaits a network call ships with a skeleton in the same
-commit. Record this in `CLAUDE.md` under the styling conventions when this phase lands.
+commit, and a value that is about to be known is never first rendered as `0`, `—` or an empty state.
 
 ## Phase 3 — Backend security (parallel to Phase 2)
 

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Skeleton } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -15,6 +16,7 @@ export function OrderTicket({
   heldQuantity,
   disabled,
   disabledReason,
+  loading = false,
   onTrade,
 }: {
   symbol: string;
@@ -24,6 +26,11 @@ export function OrderTicket({
   heldQuantity: number;
   disabled: boolean;
   disabledReason?: string;
+  /**
+   * The enrollment/holding lookup is still in flight, so `disabled` is not yet
+   * meaningful — don't assert "join a simulator" at someone who has one.
+   */
+  loading?: boolean;
   onTrade: (input: {
     transactionType: TransactionType;
     quantity: number;
@@ -46,7 +53,7 @@ export function OrderTicket({
 
   const estimated = price ? shares * price : 0;
   const affordable = shares > 0 && shares <= maxShares;
-  const canReview = !disabled && !!price && !!exchange && affordable;
+  const canReview = !disabled && !loading && !!price && !!exchange && affordable;
 
   const setFraction = (fraction: number) =>
     setShares(Math.max(1, Math.floor(maxShares * fraction)) || 1);
@@ -73,15 +80,17 @@ export function OrderTicket({
     }
   };
 
-  const hint = disabled
-    ? disabledReason
-    : !price
-      ? 'No live price available for this symbol.'
-      : shares > maxShares
-        ? side === 'buy'
-          ? `Not enough buying power — you can afford ${maxShares}.`
-          : `You only hold ${heldQuantity} share${heldQuantity === 1 ? '' : 's'}.`
-        : null;
+  const hint = loading
+    ? null
+    : disabled
+      ? disabledReason
+      : !price
+        ? 'No live price available for this symbol.'
+        : shares > maxShares
+          ? side === 'buy'
+            ? `Not enough buying power — you can afford ${maxShares}.`
+            : `You only hold ${heldQuantity} share${heldQuantity === 1 ? '' : 's'}.`
+          : null;
 
   return (
     <Card className="p-6 lg:sticky lg:top-6">
@@ -234,9 +243,14 @@ export function OrderTicket({
             Review {side} order
           </Button>
 
-          <div className="mt-3 text-center text-[12.5px] text-ink-3">
-            Buying power <span className="font-mono text-ink-2">{usd(buyingPower)}</span> · paper
-            money
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-ink-3">
+            Buying power{' '}
+            {loading ? (
+              <Skeleton className="inline-block h-3 w-16 align-middle" />
+            ) : (
+              <span className="font-mono text-ink-2">{usd(buyingPower)}</span>
+            )}{' '}
+            · paper money
           </div>
         </>
       )}

@@ -1,9 +1,10 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import api from '@/api/client';
 import UserContext from '@/context/user';
-import { BrandFooter, TopNav } from '@/components/brand';
+import { BrandFooter, LoadedAnnouncement, Skeleton, TopNav } from '@/components/brand';
 import { cn } from '@/lib/utils';
 import { usd } from '@/lib/format';
+import BoardSkeleton from './BoardSkeleton';
 import Podium from './Podium';
 import RankTable from './RankTable';
 import { toRows } from './league';
@@ -82,10 +83,12 @@ const LeaderboardsPage = () => {
 
   return (
     <div className="min-h-screen bg-bg font-sans text-ink">
+      {/* No entry on this board means no known total, so the cash chip is
+          hidden rather than asserting $0.00. */}
       <TopNav
         active="Leaderboards"
         user={me?.name ?? email ?? 'Guest'}
-        balance={usd(me?.total ?? 0)}
+        balance={loading ? <Skeleton className="h-3.5 w-16" /> : me ? usd(me.total) : undefined}
       />
 
       <main className="p-6 md:p-[30px]">
@@ -131,8 +134,16 @@ const LeaderboardsPage = () => {
           </div>
         </div>
 
-        {/* BOARD SWITCHER — the four real simulators */}
-        {boards.length > 1 && (
+        {/* BOARD SWITCHER — the four real simulators. Reserved while loading so
+            the board list doesn't shove the ranking down when it arrives. */}
+        {loading && (
+          <div className="mb-6 flex flex-wrap gap-0.5 self-start rounded-field border border-line bg-surface-2 p-[3px]">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[34px] w-28 rounded-[9px]" />
+            ))}
+          </div>
+        )}
+        {!loading && boards.length > 1 && (
           <div
             className="mb-6 flex flex-wrap gap-0.5 self-start rounded-field border border-line bg-surface-2 p-[3px]"
             role="group"
@@ -167,7 +178,7 @@ const LeaderboardsPage = () => {
         )}
 
         {loading ? (
-          <div className="h-[420px] animate-pulse rounded-card border border-line bg-surface-2" />
+          <BoardSkeleton rows={PAGE_SIZE} />
         ) : !rows.length ? (
           <p className="rounded-card border border-line bg-surface px-6 py-16 text-center text-[14px] text-ink-3">
             No rankings have been calculated yet.
@@ -176,6 +187,7 @@ const LeaderboardsPage = () => {
           <>
             <Podium rows={rows} />
             <RankTable rows={rows} visible={visible} onShowAll={() => setVisible(rows.length)} />
+            <LoadedAnnouncement message={`${rows.length} ranked investors loaded`} />
           </>
         )}
       </main>

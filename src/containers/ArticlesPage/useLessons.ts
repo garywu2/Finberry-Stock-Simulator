@@ -11,6 +11,9 @@ export function useLessons(email: string | null) {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState<LessonProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  // Progress arrives after the lesson list, and 0% is indistinguishable from
+  // "not started" — the bars would animate up from zero for everyone.
+  const [progressLoading, setProgressLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -35,8 +38,13 @@ export function useLessons(email: string | null) {
   }, []);
 
   useEffect(() => {
-    if (!email) return;
+    if (!email) {
+      // Logged out: nobody has progress, so nothing is pending.
+      setProgressLoading(false);
+      return;
+    }
     let cancelled = false;
+    setProgressLoading(true);
     api
       .get<LessonProgress[]>('educational/lessonprogress', { params: { email } })
       .then((res) => {
@@ -45,6 +53,9 @@ export function useLessons(email: string | null) {
       })
       .catch(() => {
         // Progress is additive; a failure just means nothing is marked done.
+      })
+      .finally(() => {
+        if (!cancelled) setProgressLoading(false);
       });
     return () => {
       cancelled = true;
@@ -109,6 +120,7 @@ export function useLessons(email: string | null) {
   return {
     cards,
     loading,
+    progressLoading,
     error,
     completedCount,
     upNext,

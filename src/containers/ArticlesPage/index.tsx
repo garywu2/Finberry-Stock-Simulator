@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import UserContext from '@/context/user';
-import { BrandFooter, Pill, TopNav } from '@/components/brand';
+import { BrandFooter, Pill, Skeleton, SkeletonText, TopNav } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,8 @@ const ArticlesPage = () => {
   const { user } = useContext(UserContext) ?? { user: null };
   const email: string | null = user?.email ?? null;
 
-  const { cards, loading, error, completedCount, upNext, setLessonProgress } = useLessons(email);
+  const { cards, loading, progressLoading, error, completedCount, upNext, setLessonProgress } =
+    useLessons(email);
   const [category, setCategory] = useState<LessonCategory | typeof ALL>(ALL);
 
   // Only offer chips for categories that actually have lessons.
@@ -64,7 +65,7 @@ const ArticlesPage = () => {
         )}
 
         {loading ? (
-          <div className="h-[320px] animate-pulse rounded-card border border-line bg-surface-2" />
+          <LearnSkeleton />
         ) : !cards.length ? (
           <p className="rounded-card border border-line bg-surface px-6 py-16 text-center text-[14px] text-ink-3">
             No lessons have been published yet.
@@ -110,11 +111,15 @@ const ArticlesPage = () => {
                   Continue learning
                 </h2>
                 <div className="mb-[18px] text-[13px] text-ink-3">
-                  {!email
-                    ? 'Log in to track your progress'
-                    : upNext
-                      ? `${completedCount} of ${cards.length} lessons complete`
-                      : 'You’ve completed every lesson 🎉'}
+                  {!email ? (
+                    'Log in to track your progress'
+                  ) : progressLoading ? (
+                    <Skeleton className="h-3.5 w-44" />
+                  ) : upNext ? (
+                    `${completedCount} of ${cards.length} lessons complete`
+                  ) : (
+                    'You’ve completed every lesson 🎉'
+                  )}
                 </div>
 
                 {cards.slice(0, 3).map((l, i) => (
@@ -123,6 +128,7 @@ const ArticlesPage = () => {
                     lesson={l}
                     first={i === 0}
                     canTrack={!!email}
+                    progressLoading={progressLoading}
                     onToggle={() => setLessonProgress(l._id, l.completed ? 0 : 100)}
                   />
                 ))}
@@ -176,7 +182,7 @@ const ArticlesPage = () => {
                           <span className="font-mono text-[12px] text-ink-3">
                             {l.estimatedMinutes} min read
                           </span>
-                          {l.completed && <Pill tone="up">Done</Pill>}
+                          {!progressLoading && l.completed && <Pill tone="up">Done</Pill>}
                         </div>
                         <h3 className="m-0 font-display text-[18px] font-bold leading-[1.25] text-ink">
                           {l.title}
@@ -201,33 +207,45 @@ function ProgressRow({
   lesson,
   first,
   canTrack,
+  progressLoading,
   onToggle,
 }: {
   lesson: LessonCard;
   first: boolean;
   canTrack: boolean;
+  /** Progress hasn't landed — 0% would be a wrong claim for a started lesson. */
+  progressLoading: boolean;
   onToggle: () => void;
 }) {
   return (
-    <div className={cn('flex items-center gap-3.5 py-3', !first && 'border-t border-line')}>
+    <div
+      className={cn('flex items-center gap-3.5 py-3', !first && 'border-t border-line')}
+      aria-busy={progressLoading}
+    >
       <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[11px] bg-surface-2 text-[19px]">
-        {lesson.completed ? '✅' : '📘'}
+        {progressLoading ? '📘' : lesson.completed ? '✅' : '📘'}
       </div>
       <div className="min-w-0 flex-1">
         <Link
           to={`/Article/${lesson._id}`}
           className={cn(
             'block truncate text-[14px] font-semibold no-underline',
-            lesson.percentComplete > 0 ? 'text-ink' : 'text-ink-2'
+            !progressLoading && lesson.percentComplete > 0 ? 'text-ink' : 'text-ink-2'
           )}
         >
           {lesson.title}
         </Link>
-        <div className="mt-[7px] h-[5px] overflow-hidden rounded bg-surface-3">
-          <div className="h-full rounded bg-up" style={{ width: `${lesson.percentComplete}%` }} />
-        </div>
+        {progressLoading ? (
+          <Skeleton className="mt-[7px] h-[5px] rounded" />
+        ) : (
+          <div className="mt-[7px] h-[5px] overflow-hidden rounded bg-surface-3">
+            <div className="h-full rounded bg-up" style={{ width: `${lesson.percentComplete}%` }} />
+          </div>
+        )}
       </div>
-      {canTrack ? (
+      {progressLoading ? (
+        <Skeleton className="h-[30px] w-[54px] rounded-btn" />
+      ) : canTrack ? (
         <Button
           variant="ghost"
           size="sm"
@@ -243,6 +261,79 @@ function ProgressRow({
           {lesson.percentComplete ? `${lesson.percentComplete}%` : '—'}
         </span>
       )}
+    </div>
+  );
+}
+
+/**
+ * Stand-in for the Learn hub: the featured/continue pair, the category chips
+ * and a first row of lesson tiles, on the same grids as the real thing.
+ */
+function LearnSkeleton() {
+  return (
+    <div aria-busy="true">
+      <div className="mb-7 grid items-stretch gap-6 lg:grid-cols-[1fr_380px]">
+        {/* FEATURED */}
+        <Card className="flex flex-col overflow-hidden p-0">
+          <Skeleton className="h-[260px] rounded-none" />
+          <div className="flex flex-1 flex-col p-[26px]">
+            <Skeleton className="mb-3 h-[22px] w-28 rounded-pill" />
+            <Skeleton className="mb-2.5 h-[26px] w-3/4 rounded-md" />
+            <Skeleton className="h-3.5 w-full" />
+            <Skeleton className="mb-[18px] mt-1.5 h-3.5 w-5/6" />
+            <div className="mt-auto flex flex-wrap items-center gap-3.5">
+              <Skeleton className="h-[42px] w-36 rounded-btn" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </div>
+        </Card>
+
+        {/* CONTINUE LEARNING — three rows */}
+        <Card className="p-6">
+          <Skeleton className="mb-1 h-[18px] w-40" />
+          <Skeleton className="mb-[18px] h-3 w-44" />
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={cn('flex items-center gap-3.5 py-3', i > 0 && 'border-t border-line')}
+            >
+              <Skeleton className="h-[42px] w-[42px] shrink-0 rounded-[11px]" />
+              <div className="min-w-0 flex-1">
+                <SkeletonText text="text-[14px]" bar="h-3.5 w-40 max-w-full" />
+                <Skeleton className="mt-[7px] h-[5px] rounded" />
+              </div>
+              <Skeleton className="h-[30px] w-[54px] rounded-btn" />
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      {/* CATEGORY CHIPS */}
+      <div className="mb-[22px] flex flex-wrap gap-2.5">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-[36px] w-24 rounded-pill" />
+        ))}
+      </div>
+
+      {/* GRID */}
+      <div className="grid gap-[22px] sm:grid-cols-2 lg:grid-cols-3">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <Card key={i} className="h-full overflow-hidden p-0">
+            <Skeleton className="h-[150px] rounded-none" />
+            <div className="p-5">
+              <div className="mb-2.5 flex flex-wrap items-center gap-2.5">
+                <Skeleton className="h-[22px] w-20 rounded-pill" />
+                <SkeletonText text="text-[12px]" bar="h-3 w-20" />
+              </div>
+              {/* One title line plus the two the description clamps to, using the
+                  tiles' own leading so each line box is the right height. */}
+              <SkeletonText text="text-[18px] leading-[1.25]" bar="h-[18px] w-4/5 rounded-md" />
+              <SkeletonText text="text-[13px]" bar="h-3 w-full" className="mt-2" />
+              <SkeletonText text="text-[13px]" bar="h-3 w-4/5" />
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

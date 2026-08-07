@@ -32,6 +32,11 @@ export function useStock(symbol: string, email: string | null) {
   const [watching, setWatching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chartLoading, setChartLoading] = useState(true);
+  // `watching: false` and a null holding are indistinguishable from real
+  // answers, so both backfills need a flag of their own — otherwise the star
+  // and the order ticket render one state and then flip to another.
+  const [positionLoading, setPositionLoading] = useState(true);
+  const [watchLoading, setWatchLoading] = useState(true);
   const [error, setError] = useState('');
 
   // --- Quote -----------------------------------------------------------------
@@ -104,8 +109,13 @@ export function useStock(symbol: string, email: string | null) {
 
   // --- Your position + buying power -----------------------------------------
   useEffect(() => {
-    if (!email || !symbol) return;
+    if (!email || !symbol) {
+      // Logged out: there is no position to wait for.
+      setPositionLoading(false);
+      return;
+    }
     let cancelled = false;
+    setPositionLoading(true);
     (async () => {
       try {
         const userRes = await api.get<{ simulatorEnrollments?: EnrollmentSummary[] }[]>(
@@ -132,6 +142,8 @@ export function useStock(symbol: string, email: string | null) {
         setHolding(rows.find((h) => h.symbol.toUpperCase() === symbol.toUpperCase()) ?? null);
       } catch {
         // The page is still useful without a position; leave it empty.
+      } finally {
+        if (!cancelled) setPositionLoading(false);
       }
     })();
     return () => {
@@ -141,8 +153,13 @@ export function useStock(symbol: string, email: string | null) {
 
   // --- Watchlist -------------------------------------------------------------
   useEffect(() => {
-    if (!email || !symbol) return;
+    if (!email || !symbol) {
+      // Logged out: the Watch button isn't rendered at all.
+      setWatchLoading(false);
+      return;
+    }
     let cancelled = false;
+    setWatchLoading(true);
     api
       .get<WatchlistEntry[]>('account/watchlist', { params: { email } })
       .then((res) => {
@@ -152,6 +169,9 @@ export function useStock(symbol: string, email: string | null) {
       })
       .catch(() => {
         /* Watch state is cosmetic if it fails to load. */
+      })
+      .finally(() => {
+        if (!cancelled) setWatchLoading(false);
       });
     return () => {
       cancelled = true;
@@ -222,6 +242,8 @@ export function useStock(symbol: string, email: string | null) {
     toggleWatch,
     loading,
     chartLoading,
+    positionLoading,
+    watchLoading,
     error,
     setError,
   };

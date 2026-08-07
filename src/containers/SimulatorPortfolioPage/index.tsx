@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import api from '@/api/client';
 import UserContext from '@/context/user';
-import { BrandFooter, TopNav } from '@/components/brand';
+import { BrandFooter, Skeleton, TopNav } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -45,12 +45,15 @@ const SimulatorPortfolioPage = () => {
     totalReturnPct,
     missingPriceSymbols,
     loading,
+    sparklinesLoading,
+    watchlistLoading,
     error,
     refresh,
     reloadUser,
   } = portfolio;
 
   const [stocks, setStocks] = useState<StockListItem[]>([]);
+  const [stocksLoading, setStocksLoading] = useState(true);
   const symbolInput = useRef<HTMLInputElement | null>(null);
 
   // The full listing is thousands of rows; fetched once and used both for
@@ -65,6 +68,9 @@ const SimulatorPortfolioPage = () => {
       })
       .catch(() => {
         // Search degrades to "type an exact ticker"; not worth blocking on.
+      })
+      .finally(() => {
+        if (!cancelled) setStocksLoading(false);
       });
     return () => {
       cancelled = true;
@@ -113,7 +119,11 @@ const SimulatorPortfolioPage = () => {
 
   return (
     <div className="min-h-screen bg-bg font-sans text-ink">
-      <TopNav active="Simulator" user={name} balance={usd(cashBalance)} />
+      <TopNav
+        active="Simulator"
+        user={name}
+        balance={loading ? <Skeleton className="h-3.5 w-16" /> : usd(cashBalance)}
+      />
 
       <main className="p-6 md:p-[30px]">
         {/* HEADER */}
@@ -173,6 +183,7 @@ const SimulatorPortfolioPage = () => {
                 delta={delta}
                 series={series}
                 hasSeries={hasSeries}
+                loading={loading}
                 timeframe={timeframe}
                 onTimeframeChange={setTimeframe}
               />
@@ -183,8 +194,15 @@ const SimulatorPortfolioPage = () => {
                 totalReturn={totalReturn}
                 totalReturnPct={totalReturnPct}
                 hasStartFund={(enrollment?.simulator?.userStartFund ?? 0) > 0}
+                loading={loading}
               />
-              <HoldingsTable rows={holdings} loading={loading} nameFor={nameFor} />
+              <HoldingsTable
+                rows={holdings}
+                loading={loading}
+                sparklinesLoading={sparklinesLoading}
+                namesLoading={stocksLoading}
+                nameFor={nameFor}
+              />
             </div>
 
             {/* SIDEBAR */}
@@ -194,10 +212,11 @@ const SimulatorPortfolioPage = () => {
                 holdings={holdings}
                 cashBalance={cashBalance}
                 disabled={!enrollment}
+                loading={loading}
                 onTrade={handleTrade}
               />
               <StreakCard />
-              <Watchlist rows={watchlist} />
+              <Watchlist rows={watchlist} loading={watchlistLoading} />
             </div>
           </div>
         )}

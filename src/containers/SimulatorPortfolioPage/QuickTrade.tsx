@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import api from '@/api/client';
+import { SkeletonText } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -13,12 +14,15 @@ export function QuickTrade({
   holdings,
   cashBalance,
   disabled,
+  loading = false,
   onTrade,
 }: {
   stocks: StockListItem[];
   holdings: HoldingRow[];
   cashBalance: number;
   disabled: boolean;
+  /** Balances haven't landed, so buying power isn't known yet. */
+  loading?: boolean;
   /** Resolves with the server response, or rejects with a message to display. */
   onTrade: (input: {
     symbol: string;
@@ -295,7 +299,7 @@ export function QuickTrade({
               k={side === 'buy' ? 'Estimated cost' : 'Estimated proceeds'}
               v={usd(estimatedCost)}
             />
-            <SummaryRow k="Buying power" v={usd(cashBalance)} />
+            <SummaryRow k="Buying power" v={usd(cashBalance)} loading={loading} />
           </dl>
 
           {validationHint && (
@@ -381,11 +385,13 @@ function ConfirmPanel({
   );
 }
 
-function SummaryRow({ k, v }: { k: string; v: string }) {
+function SummaryRow({ k, v, loading }: { k: string; v: string; loading?: boolean }) {
   return (
     <div className="flex justify-between py-[5px]">
       <dt className="text-[13.5px] text-ink-2">{k}</dt>
-      <dd className="m-0 font-mono text-[13.5px] font-semibold text-ink">{v}</dd>
+      <dd className="m-0 font-mono text-[13.5px] font-semibold text-ink">
+        {loading ? <SkeletonText text="text-[13.5px]" bar="h-3 w-16" /> : v}
+      </dd>
     </div>
   );
 }

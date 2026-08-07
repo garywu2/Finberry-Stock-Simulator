@@ -69,8 +69,9 @@ The codebase is inconsistent today; **new and modified code should follow these*
 **Styling / redesign:** (progress + full guidance in `docs/redesign/implementation-roadmap.md`)
 - The **Berry Bright** design tokens are the source of truth — documented in `docs/redesign/design-system.md`.
 - New UI is **Tailwind + shadcn/ui**. **Do not add new MUI usage** — MUI is removed page-by-page.
-- Reusable pieces exist: **brand primitives** in `src/components/brand/` (`Logo`, `Avatar`, `Pill`, `Caret`, `StatCard`, `TopNav`, `BrandFooter`, `Field`, `AreaChart`, `Sparkline`; barrel `index.ts`) and **shadcn UI** in `src/components/ui/` (`Button`, `Card`). Import via the `@/` alias. Add shadcn components with `npx shadcn@latest add <name>`.
+- Reusable pieces exist: **brand primitives** in `src/components/brand/` (`Logo`, `Avatar`, `Pill`, `Caret`, `StatCard`, `TopNav`, `BrandFooter`, `Field`, `AreaChart`, `Sparkline`, `Skeleton`/`SkeletonText`/`LoadedAnnouncement`; barrel `index.ts`) and **shadcn UI** in `src/components/ui/` (`Button`, `Card`). Import via the `@/` alias. Add shadcn components with `npx shadcn@latest add <name>`.
 - **Charts**: use the brand `AreaChart`/`Sparkline` (SVG, take a real `number[]` series). dither-kit is still blocked (CLI 404s on shadcn's registry) — same data interface when it's swapped in.
+- **Loading states**: a region that awaits a network call ships with a **layout-matching** skeleton in the same commit — reuse the real component's own grid/height constants so nothing moves when data lands. **Never render a value that is about to be known as `0`, `—` or an empty state**: give each secondary/backfill fetch its own loading flag rather than letting it silently populate (`watching: false` and `followers: 0` are not neutral defaults, they are wrong answers). Use `SkeletonText` — not a bare `Skeleton` — anywhere the bar stands in for a line of text; a bare bar is short by the difference between the bar height and the text's line box, which compounds down a list. Add `aria-busy` while loading and a `LoadedAnnouncement` on resolution. Don't skeleton data you already have locally.
 - Brand tokens are Tailwind utilities (`bg-violet`, `text-ink`, `shadow-card`, `font-display`, `rounded-card`); shadcn semantic colors are CSS-variable-driven (`src/index.css`). Tailwind **Preflight is off** while MUI coexists — don't rely on its global reset.
 - **When redesigning a page**: rebuild it with brand components, wire real data through `src/api/client.ts`, and add its route to `REDESIGNED_ROUTES` in `src/App.jsx` so the legacy MUI `Header`/`Footer` are suppressed (the page renders its own `TopNav`/`BrandFooter`). Verify in-browser vs `design_handoff_finberry_redesign/screenshots/` before committing.
 - Fonts: **Bricolage Grotesque** (display), **Hanken Grotesk** (body), **JetBrains Mono** (numbers). Not Fredoka.
@@ -94,6 +95,7 @@ The codebase is inconsistent today; **new and modified code should follow these*
 - Route paths are declared capitalized (`/Login`) but linked lowercase (`/login`) — works only because react-router v6 is case-insensitive.
 - No `.env` in the working tree → Firebase auth is **disabled** (handled gracefully, logs a warning) and `src/api/client.ts` falls back to the **production** API. To run against a local server, set `REACT_APP_FINBERRY_DEVELOPMENT=true` in `.env` (see `.env.example`).
 - The live `game/marketmovers` feed can repeat a symbol — key list rows by index, not by symbol.
+- `TopNav`'s `balance` prop has **no default** and hides the cash chip when omitted. Don't reintroduce a `'$0.00'` fallback — it made Markets and Learn show a permanently wrong balance.
 
 ## Where to look
 

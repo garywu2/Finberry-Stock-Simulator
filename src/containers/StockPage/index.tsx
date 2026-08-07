@@ -2,7 +2,15 @@ import { useCallback, useContext } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '@/api/client';
 import UserContext from '@/context/user';
-import { AreaChart, BrandFooter, Caret, Pill, TopNav } from '@/components/brand';
+import {
+  AreaChart,
+  BrandFooter,
+  Caret,
+  Pill,
+  Skeleton,
+  SkeletonText,
+  TopNav,
+} from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -66,7 +74,13 @@ const StockPage = () => {
         active="Markets"
         user={email ?? 'Guest'}
         guest={!email}
-        balance={usd(s.buyingPower)}
+        balance={
+          s.positionLoading ? (
+            <Skeleton className="h-3.5 w-16" />
+          ) : s.enrollment ? (
+            usd(s.buyingPower)
+          ) : undefined
+        }
       />
 
       <main className="p-6 md:p-[30px]">
@@ -85,7 +99,7 @@ const StockPage = () => {
         )}
 
         {s.loading ? (
-          <div className="h-[200px] animate-pulse rounded-card border border-line bg-surface-2" />
+          <StockSkeleton explainer={explainer} />
         ) : !q ? (
           <p className="rounded-card border border-line bg-surface px-6 py-16 text-center text-[14px] text-ink-3">
             We couldn’t find market data for “{symbol}”.{' '}
@@ -131,11 +145,16 @@ const StockPage = () => {
                 </div>
               </div>
 
-              {email && (
-                <Button variant="ghost" onClick={s.toggleWatch} aria-pressed={s.watching}>
-                  {s.watching ? '★ Watching' : '☆ Watch'}
-                </Button>
-              )}
+              {email &&
+                (s.watchLoading ? (
+                  // The star is a real assertion about the user's watchlist, so
+                  // hold a button-sized placeholder rather than guessing "☆".
+                  <Skeleton className="h-[42px] w-[116px] rounded-btn" />
+                ) : (
+                  <Button variant="ghost" onClick={s.toggleWatch} aria-pressed={s.watching}>
+                    {s.watching ? '★ Watching' : '☆ Watch'}
+                  </Button>
+                ))}
             </div>
 
             <div className="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
@@ -199,40 +218,7 @@ const StockPage = () => {
                   </div>
                 </Card>
 
-                {/* THE SIMPLE VERSION — only for symbols we have authored copy for */}
-                {explainer && (
-                  <Card className="p-6">
-                    <div className="mb-2.5 flex items-center gap-2">
-                      <span className="text-[18px]" aria-hidden="true">
-                        🍓
-                      </span>
-                      <h2 className="m-0 font-display text-[18px] font-bold text-ink">
-                        The simple version
-                      </h2>
-                    </div>
-                    <p className="m-0 mb-3.5 text-[15px] leading-[1.6] text-ink-2">
-                      {explainer.emphasis ? (
-                        <>
-                          {explainer.body.split(explainer.emphasis)[0]}
-                          <b className="text-ink">{explainer.emphasis}</b>
-                          {explainer.body.split(explainer.emphasis)[1]}
-                        </>
-                      ) : (
-                        explainer.body
-                      )}
-                    </p>
-                    <div className="flex flex-wrap gap-2.5">
-                      {explainer.tags.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-pill border border-line bg-surface-2 px-3 py-1.5 text-[13px] text-ink-2"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </Card>
-                )}
+                <ExplainerCard explainer={explainer} />
 
                 {/* KEY STATISTICS */}
                 <Card className="px-6 pb-2 pt-5">
@@ -280,10 +266,13 @@ const StockPage = () => {
                   disabledReason={
                     !email ? 'Log in to place a paper trade.' : 'Join a simulator to start trading.'
                   }
+                  loading={s.positionLoading}
                   onTrade={handleTrade}
                 />
 
-                {s.holding && (
+                {email && s.positionLoading && <PositionSkeleton />}
+
+                {!s.positionLoading && s.holding && (
                   <Card className="p-[22px]">
                     <h2 className="m-0 mb-3.5 font-display text-[17px] font-bold text-ink">
                       Your position
@@ -325,6 +314,150 @@ const StockPage = () => {
     </div>
   );
 };
+
+/**
+ * "The simple version" — hand-authored copy for a subset of symbols. It is a
+ * local lookup keyed on the URL, so it is known before any request finishes and
+ * renders for real during loading rather than as a placeholder.
+ */
+function ExplainerCard({ explainer }: { explainer: ReturnType<typeof explainerFor> }) {
+  if (!explainer) return null;
+  return (
+    <Card className="p-6">
+      <div className="mb-2.5 flex items-center gap-2">
+        <span className="text-[18px]" aria-hidden="true">
+          🍓
+        </span>
+        <h2 className="m-0 font-display text-[18px] font-bold text-ink">The simple version</h2>
+      </div>
+      <p className="m-0 mb-3.5 text-[15px] leading-[1.6] text-ink-2">
+        {explainer.emphasis ? (
+          <>
+            {explainer.body.split(explainer.emphasis)[0]}
+            <b className="text-ink">{explainer.emphasis}</b>
+            {explainer.body.split(explainer.emphasis)[1]}
+          </>
+        ) : (
+          explainer.body
+        )}
+      </p>
+      <div className="flex flex-wrap gap-2.5">
+        {explainer.tags.map((t) => (
+          <span
+            key={t}
+            className="rounded-pill border border-line bg-surface-2 px-3 py-1.5 text-[13px] text-ink-2"
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * Stand-in for the quote header and the cards below it, laid out on the same
+ * grid so the real page drops into the space this was holding.
+ */
+function StockSkeleton({ explainer }: { explainer: ReturnType<typeof explainerFor> }) {
+  return (
+    <div aria-busy="true">
+      {/* HEADER */}
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-[18px]">
+          <Skeleton className="h-[60px] w-[60px] shrink-0 rounded-2xl" />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <Skeleton className="h-[30px] w-56 max-w-full rounded-md" />
+              <Skeleton className="h-[26px] w-32 rounded-lg" />
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-3.5">
+              <Skeleton className="h-[34px] w-40 rounded-md" />
+              <Skeleton className="h-4 w-36" />
+            </div>
+          </div>
+        </div>
+        <Skeleton className="h-[42px] w-[116px] rounded-btn" />
+      </div>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
+        <div className="flex min-w-0 flex-col gap-6">
+          {/* CHART CARD — OHLCV strip, timeframe switcher, 300px well */}
+          <Card className="overflow-hidden p-6">
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex gap-[18px]">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i}>
+                    <SkeletonText text="text-[11.5px]" bar="h-3 w-9" />
+                    <SkeletonText text="text-[14px]" bar="h-3.5 w-14" className="mt-0.5" />
+                  </div>
+                ))}
+              </div>
+              <Skeleton className="h-[34px] w-[232px] shrink-0 rounded-field" />
+            </div>
+            <div className="-mx-1.5 mt-3 h-[300px]">
+              <Skeleton className="h-full rounded-field" />
+            </div>
+          </Card>
+
+          <ExplainerCard explainer={explainer} />
+
+          {/* KEY STATISTICS */}
+          <Card className="px-6 pb-2 pt-5">
+            <SkeletonText text="text-[18px]" bar="h-4 w-32" className="mb-2" />
+            <div className="grid gap-x-10 sm:grid-cols-2">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between border-b border-line py-3"
+                >
+                  <SkeletonText text="text-[13.5px]" bar="h-3.5 w-28" />
+                  <SkeletonText text="text-[14px]" bar="h-3.5 w-16" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* ORDER TICKET — same stack of controls, same margins. */}
+        <Card className="p-6">
+          <Skeleton className="mb-5 h-[44.5px] rounded-field" />
+          <SkeletonText text="text-[12.5px]" bar="h-3 w-20" />
+          <Skeleton className="mb-[18px] mt-2 h-[38px] rounded-[10px]" />
+          <SkeletonText text="text-[12.5px]" bar="h-3 w-14" />
+          <Skeleton className="mb-2 mt-2 h-[53px] rounded-field" />
+          <Skeleton className="mb-5 h-[26.5px] rounded-lg" />
+          <Skeleton className="mb-[18px] h-[141px] rounded-[14px]" />
+          <Skeleton className="h-12 rounded-btn" />
+          <SkeletonText text="text-[12.5px]" bar="h-3 w-40" className="mt-3" />
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+/** Sidebar "Your position" card, held while the holding lookup resolves. */
+function PositionSkeleton() {
+  return (
+    <Card className="p-[22px]" aria-busy="true">
+      <Skeleton className="mb-3.5 h-[17px] w-28" />
+      <div className="mb-3 flex justify-between">
+        <div>
+          <SkeletonText text="text-[12.5px]" bar="h-3 w-12" />
+          <SkeletonText text="text-[18px]" bar="h-[18px] w-10" className="mt-0.5" />
+        </div>
+        <div className="flex flex-col items-end">
+          <SkeletonText text="text-[12.5px]" bar="h-3 w-20" />
+          <SkeletonText text="text-[18px]" bar="h-[18px] w-20" className="mt-0.5" />
+        </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-line pt-3">
+        <SkeletonText text="text-[13.5px]" bar="h-3.5 w-20" />
+        <Skeleton className="h-[22px] w-32 rounded-pill" />
+      </div>
+    </Card>
+  );
+}
 
 function Stat({ k, v }: { k: string; v: string }) {
   return (

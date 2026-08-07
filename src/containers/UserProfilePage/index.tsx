@@ -1,7 +1,15 @@
 import { useContext, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import UserContext from '@/context/user';
-import { AreaChart, Avatar, BrandFooter, Pill, TopNav } from '@/components/brand';
+import {
+  AreaChart,
+  Avatar,
+  BrandFooter,
+  Pill,
+  Skeleton,
+  SkeletonText,
+  TopNav,
+} from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -53,7 +61,7 @@ const UserProfilePage = () => {
         )}
 
         {p.loading ? (
-          <div className="h-[240px] animate-pulse rounded-card border border-line bg-surface-2" />
+          <InvestorSkeleton />
         ) : !profile ? (
           <p className="rounded-card border border-line bg-surface px-6 py-16 text-center text-[14px] text-ink-3">
             We couldn’t find that investor.
@@ -101,30 +109,42 @@ const UserProfilePage = () => {
                   )}
                 </div>
 
-                <div className="flex flex-col items-end gap-3 pt-5">
+                <div className="flex flex-col items-end gap-3 pt-5" aria-busy={p.followLoading}>
                   <div className="flex gap-6">
                     {[
-                      [p.follow.followers, 'followers'],
-                      [p.follow.following, 'following'],
-                      [profile.badges.length, 'badges'],
-                    ].map(([n, label]) => (
+                      // Follower counts arrive separately; badges come with the
+                      // profile, so that one is already known.
+                      [p.follow.followers, 'followers', p.followLoading],
+                      [p.follow.following, 'following', p.followLoading],
+                      [profile.badges.length, 'badges', false],
+                    ].map(([n, label, pending]) => (
                       <div key={label as string} className="text-center">
-                        <div className="font-display font-mono text-[19px] font-extrabold text-ink">
-                          {Number(n).toLocaleString('en-US')}
-                        </div>
-                        <div className="text-[12px] text-ink-3">{label}</div>
+                        {pending ? (
+                          <Skeleton className="mx-auto h-[19px] w-10 rounded-md" />
+                        ) : (
+                          <div className="font-display font-mono text-[19px] font-extrabold text-ink">
+                            {Number(n).toLocaleString('en-US')}
+                          </div>
+                        )}
+                        <div className="text-[12px] text-ink-3">{label as string}</div>
                       </div>
                     ))}
                   </div>
-                  {viewerEmail && !isSelf && (
-                    <Button
-                      variant={p.follow.viewerFollows ? 'ghost' : 'primary'}
-                      onClick={p.toggleFollow}
-                      aria-pressed={p.follow.viewerFollows}
-                    >
-                      {p.follow.viewerFollows ? 'Following' : '+ Follow'}
-                    </Button>
-                  )}
+                  {viewerEmail &&
+                    !isSelf &&
+                    (p.followLoading ? (
+                      // "+ Follow" vs "Following" is a claim about the viewer's
+                      // own state — don't render either until it's known.
+                      <Skeleton className="h-[42px] w-[104px] rounded-btn" />
+                    ) : (
+                      <Button
+                        variant={p.follow.viewerFollows ? 'ghost' : 'primary'}
+                        onClick={p.toggleFollow}
+                        aria-pressed={p.follow.viewerFollows}
+                      >
+                        {p.follow.viewerFollows ? 'Following' : '+ Follow'}
+                      </Button>
+                    ))}
                   {isSelf && (
                     <Link
                       to={`/Profile/${encodeURIComponent(subjectEmail)}`}
@@ -329,8 +349,18 @@ const UserProfilePage = () => {
                   </Card>
                 )}
 
-                {/* COMPARE — designed here; see CompareCard for the rationale */}
-                {p.compare && !isSelf && (
+                {/* COMPARE — designed here; see CompareCard for the rationale.
+                    The viewer's own trades and holdings load separately, and a
+                    comparison drawn from an empty set would be plain wrong. */}
+                {viewerEmail && !isSelf && p.compareLoading && (
+                  <Card className="border-line-2 p-[22px]" aria-busy="true">
+                    <Skeleton className="mb-1 h-[15px] w-40" />
+                    <Skeleton className="mb-1.5 mt-2.5 h-3.5 w-full" />
+                    <Skeleton className="mb-3.5 h-3.5 w-2/3" />
+                    <Skeleton className="h-[42px] rounded-btn" />
+                  </Card>
+                )}
+                {!p.compareLoading && p.compare && !isSelf && (
                   <CompareCard you={p.compare.you} them={p.compare.them} themName={displayName} />
                 )}
               </div>
@@ -367,6 +397,143 @@ function Stat({
         )}
       >
         {value}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Held while the public profile and standings load. Mirrors the hero banner,
+ * the four-stat strip, the performance card's 200px well, the five-row top
+ * holdings table and the two sidebar cards.
+ */
+function InvestorSkeleton() {
+  return (
+    <div aria-busy="true">
+      {/* HERO */}
+      <Card className="mb-6 overflow-hidden p-0">
+        <div
+          className="h-[120px]"
+          style={{ background: 'linear-gradient(115deg,#7C3AED,#16C078 130%)' }}
+        />
+        <div className="relative flex flex-wrap items-end gap-6 px-6 pb-7 md:px-8">
+          <div className="-mt-[52px] rounded-full bg-surface p-[5px]">
+            <Skeleton className="h-[104px] w-[104px] rounded-full" />
+          </div>
+          <div className="min-w-0 flex-1 pt-5">
+            <SkeletonText text="text-[30px]" bar="h-[30px] w-56 max-w-full rounded-md" />
+            <SkeletonText text="text-[13.5px]" bar="h-3.5 w-72 max-w-full" className="mt-1.5" />
+            <SkeletonText text="text-[13.5px]" bar="h-3.5 w-[420px] max-w-full" className="mt-2" />
+          </div>
+          <div className="flex flex-col items-end gap-3 pt-5">
+            <div className="flex gap-6">
+              {['followers', 'following', 'badges'].map((label) => (
+                <div key={label} className="text-center">
+                  <SkeletonText
+                    text="text-[19px]"
+                    bar="h-[19px] w-10 rounded-md"
+                    className="mx-auto flex justify-center"
+                  />
+                  <div className="text-[12px] text-ink-3">{label}</div>
+                </div>
+              ))}
+            </div>
+            <Skeleton className="h-[42px] w-[104px] rounded-btn" />
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
+        <div className="flex min-w-0 flex-col gap-6">
+          {/* STATS */}
+          <Card className="flex divide-x divide-line p-6">
+            {['All-time return', 'Global rank', 'Win rate', 'Positions'].map((label) => (
+              <div key={label} className="min-w-0 flex-1 px-1">
+                <div className="text-[12px] font-semibold uppercase tracking-[.05em] text-ink-3">
+                  {label}
+                </div>
+                <SkeletonText
+                  text="text-[24px]"
+                  bar="h-[24px] w-20 rounded-md"
+                  className="mt-1.5"
+                />
+              </div>
+            ))}
+          </Card>
+
+          {/* PERFORMANCE */}
+          <Card className="overflow-hidden p-6">
+            <SkeletonText text="text-[13.5px]" bar="h-3.5 w-40" />
+            <SkeletonText text="text-[30px]" bar="h-[30px] w-44 rounded-md" className="mt-0.5" />
+            <div className="-mx-1.5 mt-3 h-[200px]">
+              <Skeleton className="h-full rounded-field" />
+            </div>
+            <SkeletonText text="text-[11.5px]" bar="h-2.5 w-56 max-w-full" className="mt-2" />
+          </Card>
+
+          {/* TOP HOLDINGS — capped at five */}
+          <Card className="overflow-hidden p-0">
+            <div className="flex items-center justify-between px-6 pb-3.5 pt-5">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+            {/* Three placeholder rows — the same reservation the holdings table
+                makes. The real list runs to five but is usually shorter. */}
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[1.7fr_1.3fr_1fr] items-center gap-3 border-t border-line px-6 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-[38px] w-[38px] rounded-[10px]" />
+                  <div className="min-w-0 flex-1">
+                    <SkeletonText text="text-[14.5px]" bar="h-3.5 w-14" />
+                    <SkeletonText text="text-[12.5px]" bar="h-3 w-20" />
+                  </div>
+                </div>
+                <div>
+                  <SkeletonText text="text-[12.5px]" bar="h-3 w-16" />
+                  <Skeleton className="mt-1.5 h-1.5 rounded" />
+                </div>
+                <SkeletonText text="text-[14px]" bar="h-3.5 w-16" className="text-right" />
+              </div>
+            ))}
+          </Card>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {/* ACHIEVEMENTS */}
+          <Card className="p-6">
+            <Skeleton className="mb-[18px] h-4 w-32" />
+            {/* One row of the six-column grid; the real grid caps at 18 but
+                most investors have far fewer, so reserving all 18 overshoots. */}
+            <div className="grid grid-cols-6 gap-2">
+              {Array.from({ length: 6 }, (_, i) => (
+                <Skeleton key={i} className="aspect-square rounded-xl" />
+              ))}
+            </div>
+          </Card>
+
+          {/* RECENT ACTIVITY */}
+          <Card className="p-6">
+            <Skeleton className="mb-[18px] h-4 w-32" />
+            {[0, 1, 2, 3].map((i) => {
+              const last = i === 3;
+              return (
+                <div key={i} className={cn('flex gap-3.5', !last && 'pb-5')}>
+                  <div className="flex flex-col items-center">
+                    <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+                    {!last && <div className="mt-1 w-px flex-1 bg-line-2" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <SkeletonText text="text-[14px]" bar="h-3.5 w-40 max-w-full" />
+                    <SkeletonText text="text-[12.5px]" bar="h-3 w-28" className="mt-0.5" />
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        </div>
       </div>
     </div>
   );

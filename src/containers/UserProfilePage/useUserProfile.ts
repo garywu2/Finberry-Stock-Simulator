@@ -53,6 +53,10 @@ export function useUserProfile(subjectEmail: string, viewerEmail: string | null)
   const [viewerTrades, setViewerTrades] = useState<TradeTransaction[]>([]);
   const [viewerHoldings, setViewerHoldings] = useState<{ symbol: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  // Both of these initialise to values that look like real answers — zero
+  // followers, an empty comparison — so they need flags of their own.
+  const [followLoading, setFollowLoading] = useState(true);
+  const [compareLoading, setCompareLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -91,6 +95,7 @@ export function useUserProfile(subjectEmail: string, viewerEmail: string | null)
   useEffect(() => {
     if (!subjectEmail) return;
     let cancelled = false;
+    setFollowLoading(true);
     api
       .get<FollowState>('account/follow', {
         params: { email: subjectEmail, viewerEmail: viewerEmail ?? undefined },
@@ -100,6 +105,9 @@ export function useUserProfile(subjectEmail: string, viewerEmail: string | null)
       })
       .catch(() => {
         /* Counts are cosmetic. */
+      })
+      .finally(() => {
+        if (!cancelled) setFollowLoading(false);
       });
     return () => {
       cancelled = true;
@@ -108,26 +116,31 @@ export function useUserProfile(subjectEmail: string, viewerEmail: string | null)
 
   // The viewer's own trades and holdings, for the comparison.
   useEffect(() => {
-    if (!viewerEmail) return;
+    if (!viewerEmail) {
+      // Logged out: there is no comparison to draw.
+      setCompareLoading(false);
+      return;
+    }
     let cancelled = false;
-    api
-      .get<TradeTransaction[]>('game/tradeTransaction', { params: { email: viewerEmail } })
-      .then((res) => {
-        if (!cancelled) setViewerTrades(Array.isArray(res.data) ? res.data : []);
-      })
-      .catch(() => {
-        /* Comparison degrades gracefully. */
-      });
-    api
-      .get<{ symbol: string }[]>('game/holding', {
-        params: { email: viewerEmail, greaterThanZero: true },
-      })
-      .then((res) => {
-        if (!cancelled) setViewerHoldings(Array.isArray(res.data) ? res.data : []);
-      })
-      .catch(() => {
-        /* Comparison degrades gracefully. */
-      });
+    setCompareLoading(true);
+    // The card shows both sides at once, so it waits on both requests.
+    void Promise.allSettled([
+      api
+        .get<TradeTransaction[]>('game/tradeTransaction', { params: { email: viewerEmail } })
+        .then((res) => {
+          if (!cancelled) setViewerTrades(Array.isArray(res.data) ? res.data : []);
+        }),
+      api
+        .get<{ symbol: string }[]>('game/holding', {
+          params: { email: viewerEmail, greaterThanZero: true },
+        })
+        .then((res) => {
+          if (!cancelled) setViewerHoldings(Array.isArray(res.data) ? res.data : []);
+        }),
+    ]).finally(() => {
+      // Comparison degrades gracefully; a rejection just leaves that side empty.
+      if (!cancelled) setCompareLoading(false);
+    });
     return () => {
       cancelled = true;
     };
@@ -208,6 +221,8 @@ export function useUserProfile(subjectEmail: string, viewerEmail: string | null)
   return {
     profile,
     loading,
+    followLoading,
+    compareLoading,
     error,
     follow,
     toggleFollow,

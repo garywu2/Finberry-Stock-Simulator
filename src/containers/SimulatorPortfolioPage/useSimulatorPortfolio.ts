@@ -101,6 +101,11 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
   const [watchlist, setWatchlist] = useState<WatchRow[]>([]);
   const [timeframe, setTimeframe] = useState<Timeframe>('3M');
   const [loading, setLoading] = useState(true);
+  // The table paints before its sparklines do, and the watchlist is fetched
+  // independently of everything else. Both need their own flag, or the regions
+  // they feed render as blank/empty rather than as pending.
+  const [sparklinesLoading, setSparklinesLoading] = useState(true);
+  const [watchlistLoading, setWatchlistLoading] = useState(true);
   const [error, setError] = useState('');
   // Bumped after enrolling so the user document is re-read in place — the old
   // page called window.location.reload() here.
@@ -149,12 +154,17 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
 
   // --- 2. Everything scoped to the selected enrollment -----------------------
   const loadEnrollmentData = useCallback(async () => {
-    if (!email || !enrollment) return;
+    if (!email || !enrollment) {
+      // Nothing to fetch, so nothing is pending — don't leave a skeleton up.
+      setSparklinesLoading(false);
+      return;
+    }
     const simulatorID = enrollment.simulator._id;
     const id = ++requestId.current;
     const stale = () => id !== requestId.current;
 
     setLoading(true);
+    setSparklinesLoading(true);
     setError('');
 
     const [detailRes, holdingRes, balanceRes] = await Promise.allSettled([
@@ -201,10 +211,12 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
     const baseRows: HoldingRow[] = rawHoldings.map((h) => toRow(h, []));
     setHoldings(baseRows);
     setLoading(false);
+    if (!rawHoldings.length) setSparklinesLoading(false);
 
     const series = await mapLimit(rawHoldings, 3, (h) => fetchSeries(h.symbol));
     if (stale()) return;
     setHoldings(rawHoldings.map((h, i) => toRow(h, series[i] ?? [])));
+    setSparklinesLoading(false);
   }, [email, enrollment]);
 
   useEffect(() => {
@@ -216,6 +228,7 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
   // falls back to the market-movers feed when they haven't watched anything.
   useEffect(() => {
     let cancelled = false;
+    setWatchlistLoading(true);
 
     const fromSeries = (symbol: string, name: string, series: number[]): WatchRow => {
       const last = series[series.length - 1] ?? 0;
@@ -224,7 +237,8 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
       return { symbol, name, price: last, change, up: change >= 0, series };
     };
 
-    (async () => {
+    /** Resolves once the card has everything it is going to get. */
+    const load = async () => {
       // 1. The user's own watchlist.
       if (email) {
         try {
@@ -269,7 +283,11 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
       } catch {
         // The watchlist is decorative; leave it empty if the feed is down.
       }
-    })();
+    };
+
+    void load().finally(() => {
+      if (!cancelled) setWatchlistLoading(false);
+    });
 
     return () => {
       cancelled = true;
@@ -351,6 +369,8 @@ export function useSimulatorPortfolio(email: string | null | undefined) {
     totalReturnPct,
     missingPriceSymbols,
     loading,
+    sparklinesLoading,
+    watchlistLoading,
     error,
     setError,
     refresh: loadEnrollmentData,

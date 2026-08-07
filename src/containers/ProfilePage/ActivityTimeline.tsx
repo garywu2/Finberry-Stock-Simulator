@@ -1,3 +1,4 @@
+import { Skeleton, SkeletonText } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -31,22 +32,44 @@ export function relativeTime(iso: string, now = Date.now()) {
 export function ActivityTimeline({
   items,
   visible,
+  loading,
   onShowMore,
 }: {
   items: ActivityItem[];
   visible: number;
+  /** The feed merges trades and badge awards; both are still in flight. */
+  loading: boolean;
   onShowMore: () => void;
 }) {
   const shown = items.slice(0, visible);
   const more = items.length - shown.length;
 
   return (
-    <Card className="p-6">
+    <Card className="p-6" aria-busy={loading}>
       <h2 className="mb-[18px] mt-0 font-display text-[18px] font-bold text-ink">
         Recent activity
       </h2>
 
-      {!shown.length ? (
+      {loading ? (
+        <div className="relative">
+          {Array.from({ length: visible }, (_, i) => {
+            const last = i === visible - 1;
+            return (
+              <div key={i} className={cn('relative flex gap-3.5', !last && 'pb-[22px]')}>
+                <div className="flex flex-col items-center">
+                  <Skeleton className="z-[1] h-9 w-9 shrink-0 rounded-full" />
+                  {!last && <div className="mt-1 w-px flex-1 bg-line-2" />}
+                </div>
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <SkeletonText text="text-[14px]" bar="h-3.5 w-40 max-w-full" />
+                  <SkeletonText text="text-[12.5px]" bar="h-3 w-28" className="mt-0.5" />
+                  <SkeletonText text="text-[11.5px]" bar="h-2.5 w-20" className="mt-1" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : !shown.length ? (
         <p className="py-6 text-center text-[13.5px] text-ink-3">
           Nothing here yet — your trades and badges will appear as you go.
         </p>
@@ -82,7 +105,7 @@ export function ActivityTimeline({
         </div>
       )}
 
-      {more > 0 && (
+      {!loading && more > 0 && (
         <Button
           variant="ghost"
           size="block"

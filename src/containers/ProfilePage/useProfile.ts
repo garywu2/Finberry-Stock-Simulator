@@ -36,22 +36,29 @@ export function useProfile(email: string | null) {
   const [earned, setEarned] = useState<UserBadge[]>([]);
   const [trades, setTrades] = useState<TradeTransaction[]>([]);
   const [boards, setBoards] = useState<Leaderboard[]>([]);
+  // The hero and the portfolio card need only the user doc and the boards.
+  // Badges and trades feed sections further down the page, and the earned-badge
+  // lookup is serial (it keys off the user's _id) — gating first paint on all
+  // of them made the wait as long as the slowest of five requests.
   const [loading, setLoading] = useState(true);
+  const [badgesLoading, setBadgesLoading] = useState(true);
+  const [tradesLoading, setTradesLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!email) return;
     let cancelled = false;
     setLoading(true);
+    setBadgesLoading(true);
+    setTradesLoading(true);
 
-    (async () => {
-      const [userRes, badgeRes, tradeRes, boardRes] = await Promise.allSettled([
+    // --- Primary: identity + standings ---------------------------------------
+    const primaryLoad = (async () => {
+      const [userRes, boardRes] = await Promise.allSettled([
         api.get<ProfileUser[]>('account/user', { params: { email, moreDetails: true } }),
-        api.get<Badge[]>('account/badge'),
-        api.get<TradeTransaction[]>('game/tradeTransaction', { params: { email } }),
         api.get<Leaderboard[]>('game/balancecalculation/balance/learderboard'),
       ]);
-      if (cancelled) return;
+      if (cancelled) return null;
 
       const doc =
         userRes.status === 'fulfilled' && Array.isArray(userRes.value.data)
@@ -61,38 +68,55 @@ export function useProfile(email: string | null) {
       if (userRes.status === 'rejected') {
         setError(serverMessage(userRes.reason, 'Could not load your profile.'));
       }
-
-      setBadges(
-        badgeRes.status === 'fulfilled' && Array.isArray(badgeRes.value.data)
-          ? badgeRes.value.data.filter((b) => b.enabled)
-          : []
-      );
-      setTrades(
-        tradeRes.status === 'fulfilled' && Array.isArray(tradeRes.value.data)
-          ? tradeRes.value.data
-          : []
-      );
       setBoards(
         boardRes.status === 'fulfilled' && Array.isArray(boardRes.value.data)
           ? boardRes.value.data
           : []
       );
+      setLoading(false);
+      return doc;
+    })();
 
-      // Earned badges key off the user's _id, so this waits on the user doc.
-      if (doc?._id) {
-        try {
+    // --- Secondary: trades, which drive the stats and the activity feed -------
+    void (async () => {
+      try {
+        const res = await api.get<TradeTransaction[]>('game/tradeTransaction', {
+          params: { email },
+        });
+        if (!cancelled) setTrades(Array.isArray(res.data) ? res.data : []);
+      } catch {
+        // Stats degrade to "no trades yet" rather than blanking the profile.
+      } finally {
+        if (!cancelled) setTradesLoading(false);
+      }
+    })();
+
+    // --- Secondary: the badge catalogue plus this user's earned badges --------
+    void (async () => {
+      try {
+        const [catalogue, doc] = await Promise.all([
+          api.get<Badge[]>('account/badge').catch(() => null),
+          primaryLoad,
+        ]);
+        if (cancelled) return;
+        setBadges(
+          catalogue && Array.isArray(catalogue.data) ? catalogue.data.filter((b) => b.enabled) : []
+        );
+
+        // Earned badges key off the user's _id, so this waits on the user doc.
+        if (doc?._id) {
           const res = await api.get<UserBadge[]>('account/userbadge', {
             params: { user: doc._id, moreDetails: true },
           });
           if (!cancelled) {
             setEarned(Array.isArray(res.data) ? res.data.filter((b) => !b.retracted) : []);
           }
-        } catch {
-          // A missing badge list should not blank the whole profile.
         }
+      } catch {
+        // A missing badge list should not blank the whole profile.
+      } finally {
+        if (!cancelled) setBadgesLoading(false);
       }
-
-      if (!cancelled) setLoading(false);
     })();
 
     return () => {
@@ -193,6 +217,11 @@ export function useProfile(email: string | null) {
   return {
     user,
     loading,
+    badgesLoading,
+    /** Stats read off the trade history. */
+    statsLoading: tradesLoading,
+    /** The feed merges trades and badge awards, so it waits on both. */
+    activityLoading: tradesLoading || badgesLoading,
     error,
     standings,
     primary,
