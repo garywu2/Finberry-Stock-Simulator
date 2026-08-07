@@ -9,3 +9,4 @@ export { BrandFooter } from './Footer';
 export { Field } from './Field';
 export { AreaChart } from './AreaChart';
 export { Sparkline } from './Sparkline';
+export { Skeleton, SkeletonText, LoadedAnnouncement } from './Skeleton';

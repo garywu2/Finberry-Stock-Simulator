@@ -6,7 +6,8 @@ import { signedPct, usd } from '@/lib/format';
 import { LEAGUE_TONE } from './league';
 import type { LeaderRow } from './types';
 
-const COLS = 'grid-cols-[60px_1.8fr_1fr_110px_1fr_1fr]';
+/** Shared with BoardSkeleton so the placeholder grid matches the real one exactly. */
+export const COLS = 'grid-cols-[60px_1.8fr_1fr_110px_1fr_1fr]';
 
 export function RankTable({
   rows,

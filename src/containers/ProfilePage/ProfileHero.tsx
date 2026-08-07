@@ -1,4 +1,4 @@
-import { Avatar, Pill } from '@/components/brand';
+import { Avatar, Pill, Skeleton } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import type { ProfileUser } from './types';
 
@@ -14,12 +14,15 @@ export function ProfileHero({
   league,
   earnedCount,
   totalBadges,
+  badgesLoading,
 }: {
   user: ProfileUser | null;
   displayName: string;
   league: string | null;
   earnedCount: number;
   totalBadges: number;
+  /** Badge counts arrive after the hero paints — 0 / 0 would be a wrong claim. */
+  badgesLoading: boolean;
 }) {
   const joined = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
@@ -60,33 +63,41 @@ export function ProfileHero({
             </p>
           )}
 
-          <div className="mt-[18px] max-w-[460px]">
+          <div className="mt-[18px] max-w-[460px]" aria-busy={badgesLoading}>
             <div className="mb-[7px] flex justify-between text-[12.5px]">
               <span className="font-bold text-violet">
-                {earnedCount === totalBadges && totalBadges > 0
-                  ? 'All badges earned'
-                  : 'Badge progress'}
+                {badgesLoading || !(earnedCount === totalBadges && totalBadges > 0)
+                  ? 'Badge progress'
+                  : 'All badges earned'}
               </span>
-              <span className="font-mono text-ink-3">
-                {earnedCount} / {totalBadges} badges
-              </span>
+              {badgesLoading ? (
+                <Skeleton className="h-3 w-24" />
+              ) : (
+                <span className="font-mono text-ink-3">
+                  {earnedCount} / {totalBadges} badges
+                </span>
+              )}
             </div>
-            <div
-              className="h-[9px] overflow-hidden rounded-md bg-surface-3"
-              role="progressbar"
-              aria-valuenow={Math.round(pct)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Badge progress"
-            >
+            {badgesLoading ? (
+              <Skeleton className="h-[9px] rounded-md" />
+            ) : (
               <div
-                className="h-full rounded-md"
-                style={{
-                  width: `${pct}%`,
-                  background: 'linear-gradient(90deg,#7C3AED,#0A9A52)',
-                }}
-              />
-            </div>
+                className="h-[9px] overflow-hidden rounded-md bg-surface-3"
+                role="progressbar"
+                aria-valuenow={Math.round(pct)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Badge progress"
+              >
+                <div
+                  className="h-full rounded-md"
+                  style={{
+                    width: `${pct}%`,
+                    background: 'linear-gradient(90deg,#7C3AED,#0A9A52)',
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

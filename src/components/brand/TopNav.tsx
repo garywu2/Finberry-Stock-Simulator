@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Logo } from './Logo';
@@ -17,13 +18,17 @@ const LINKS = [
 export function TopNav({
   active,
   user = 'Maya Chen',
-  balance = '$0.00',
+  balance,
   guest = false,
 }: {
   /** Label of the active nav item; defaults to matching the current path. */
   active?: string;
   user?: string;
-  balance?: string;
+  /**
+   * Cash on hand. Omit on pages that don't know it — the chip is hidden rather
+   * than defaulted to a wrong $0.00. Pass a <Skeleton> while it loads.
+   */
+  balance?: React.ReactNode;
   guest?: boolean;
 }) {
   const { pathname } = useLocation();
@@ -67,12 +72,14 @@ export function TopNav({
         </div>
       ) : (
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2.5 rounded-field border border-line bg-surface-2 py-[7px] pl-3 pr-[14px]">
-            <span className="text-[11px] font-bold uppercase tracking-[.06em] text-ink-3">
-              Cash
-            </span>
-            <span className="font-mono text-[14px] font-semibold text-ink">{balance}</span>
-          </div>
+          {balance != null && (
+            <div className="flex items-center gap-2.5 rounded-field border border-line bg-surface-2 py-[7px] pl-3 pr-[14px]">
+              <span className="text-[11px] font-bold uppercase tracking-[.06em] text-ink-3">
+                Cash
+              </span>
+              <span className="font-mono text-[14px] font-semibold text-ink">{balance}</span>
+            </div>
+          )}
           <button aria-label="Notifications" className="flex items-center">
             <svg
               width="20"

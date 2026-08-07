@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '@/api/client';
 import UserContext from '@/context/user';
-import { BrandFooter, Pill, TopNav } from '@/components/brand';
+import { BrandFooter, Pill, Skeleton, SkeletonText, TopNav } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import LessonThumb from '../ArticlesPage/LessonThumb';
@@ -20,6 +20,9 @@ const LessonPage = () => {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [percent, setPercent] = useState(0);
   const [loading, setLoading] = useState(true);
+  // Progress arrives after the lesson does, and 0 reads as "not started" — the
+  // Completed pill and the button label would both flip under the reader.
+  const [progressLoading, setProgressLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -46,8 +49,13 @@ const LessonPage = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!email || !id) return;
+    if (!email || !id) {
+      // Logged out: no progress is tracked, so nothing is pending.
+      setProgressLoading(false);
+      return;
+    }
     let cancelled = false;
+    setProgressLoading(true);
     api
       .get<LessonProgress[]>('educational/lessonprogress', { params: { email, lesson: id } })
       .then((res) => {
@@ -56,6 +64,9 @@ const LessonPage = () => {
       })
       .catch(() => {
         /* Progress is optional. */
+      })
+      .finally(() => {
+        if (!cancelled) setProgressLoading(false);
       });
     return () => {
       cancelled = true;
@@ -93,7 +104,7 @@ const LessonPage = () => {
         )}
 
         {loading ? (
-          <div className="mt-4 h-[420px] animate-pulse rounded-card border border-line bg-surface-2" />
+          <LessonSkeleton />
         ) : (
           lesson && (
             <Card className="mt-4 overflow-hidden p-0">
@@ -104,7 +115,11 @@ const LessonPage = () => {
                   <span className="font-mono text-[12.5px] text-ink-3">
                     {lesson.estimatedMinutes} min read
                   </span>
-                  {percent >= 100 && <Pill tone="up">Completed</Pill>}
+                  {progressLoading ? (
+                    <Skeleton className="h-[22px] w-24 rounded-pill" />
+                  ) : (
+                    percent >= 100 && <Pill tone="up">Completed</Pill>
+                  )}
                 </div>
 
                 <h1 className="m-0 font-display text-[30px] font-bold leading-[1.2] tracking-[-.025em] text-ink">
@@ -138,9 +153,14 @@ const LessonPage = () => {
 
                 {email && (
                   <div className="mt-7 border-t border-line pt-5">
-                    <Button variant={percent >= 100 ? 'ghost' : 'primary'} onClick={toggleDone}>
-                      {percent >= 100 ? 'Mark as unread' : 'Mark as done'}
-                    </Button>
+                    {progressLoading ? (
+                      // The label asserts whether you've read this — don't guess.
+                      <Skeleton className="h-[42px] w-[132px] rounded-btn" />
+                    ) : (
+                      <Button variant={percent >= 100 ? 'ghost' : 'primary'} onClick={toggleDone}>
+                        {percent >= 100 ? 'Mark as unread' : 'Mark as done'}
+                      </Button>
+                    )}
                   </div>
                 )}
               </article>
@@ -153,5 +173,28 @@ const LessonPage = () => {
     </div>
   );
 };
+
+/** The reading view's shape: banner, meta row, title, byline, body lines. */
+function LessonSkeleton() {
+  return (
+    <Card className="mt-4 overflow-hidden p-0" aria-busy="true">
+      <Skeleton className="h-[200px] rounded-none" />
+      <div className="p-6 md:p-8">
+        <div className="mb-3 flex flex-wrap items-center gap-2.5">
+          <Skeleton className="h-[22px] w-20 rounded-pill" />
+          <SkeletonText text="text-[12.5px]" bar="h-3 w-24" />
+        </div>
+        <SkeletonText text="text-[30px]" bar="h-[30px] w-4/5 rounded-md" />
+        <SkeletonText text="text-[13.5px]" bar="h-3.5 w-56" className="mt-1.5" />
+        <div className="mt-5">
+          {/* Ragged widths so it reads as prose rather than a block. */}
+          {['w-full', 'w-full', 'w-11/12', 'w-full', 'w-4/5', 'w-full', 'w-3/4'].map((w, i) => (
+            <SkeletonText key={i} text="text-[15.5px]" bar={`h-3.5 ${w}`} />
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default LessonPage;

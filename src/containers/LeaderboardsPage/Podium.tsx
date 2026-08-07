@@ -4,7 +4,8 @@ import { signedPct } from '@/lib/format';
 import { MEDAL } from './league';
 import type { LeaderRow } from './types';
 
-const HEIGHT: Record<number, string> = { 1: 'h-[188px]', 2: 'h-[152px]', 3: 'h-[132px]' };
+/** Shared with BoardSkeleton so the placeholder plinths are the same height. */
+export const HEIGHT: Record<number, string> = { 1: 'h-[188px]', 2: 'h-[152px]', 3: 'h-[132px]' };
 
 /** Compact $Xk form used on the plinth. */
 const compact = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`);

@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '@/api/client';
 import UserContext from '@/context/user';
-import { BrandFooter, Caret, Pill, TopNav } from '@/components/brand';
+import { BrandFooter, Caret, Pill, Skeleton, SkeletonText, TopNav } from '@/components/brand';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { signedPct, usd } from '@/lib/format';
@@ -21,6 +21,10 @@ const MarketsPage = () => {
   const [movers, setMovers] = useState<MarketMover[]>([]);
   const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
   const [query, setQuery] = useState('');
+  // Without these, both lists render their "nothing here" copy on every load,
+  // which reads as a real empty result rather than a pending one.
+  const [moversLoading, setMoversLoading] = useState(true);
+  const [watchLoading, setWatchLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +43,9 @@ const MarketsPage = () => {
       })
       .catch(() => {
         /* Movers are decorative here. */
+      })
+      .finally(() => {
+        if (!cancelled) setMoversLoading(false);
       });
     return () => {
       cancelled = true;
@@ -46,8 +53,13 @@ const MarketsPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!email) return;
+    if (!email) {
+      // Logged out: the card shows a prompt to log in, not a pending state.
+      setWatchLoading(false);
+      return;
+    }
     let cancelled = false;
+    setWatchLoading(true);
     api
       .get<WatchlistEntry[]>('account/watchlist', { params: { email } })
       .then((res) => {
@@ -55,6 +67,9 @@ const MarketsPage = () => {
       })
       .catch(() => {
         /* Watchlist is optional. */
+      })
+      .finally(() => {
+        if (!cancelled) setWatchLoading(false);
       });
     return () => {
       cancelled = true;
@@ -124,11 +139,13 @@ const MarketsPage = () => {
 
         <div className="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
           {/* MOVERS */}
-          <Card className="overflow-hidden p-0">
+          <Card className="overflow-hidden p-0" aria-busy={moversLoading}>
             <h2 className="m-0 px-6 pb-3 pt-5 font-display text-[18px] font-bold text-ink">
               Market movers
             </h2>
-            {!movers.length ? (
+            {moversLoading ? (
+              <MoverSkeletonRows />
+            ) : !movers.length ? (
               <p className="px-6 pb-6 text-[13.5px] text-ink-3">
                 Market movers aren’t available right now.
               </p>
@@ -164,12 +181,14 @@ const MarketsPage = () => {
           </Card>
 
           {/* WATCHLIST */}
-          <Card className="overflow-hidden p-0">
+          <Card className="overflow-hidden p-0" aria-busy={watchLoading}>
             <h2 className="m-0 px-6 pb-3 pt-5 font-display text-[18px] font-bold text-ink">
               Your watchlist
             </h2>
             {!email ? (
               <p className="px-6 pb-6 text-[13.5px] text-ink-3">Log in to build a watchlist.</p>
+            ) : watchLoading ? (
+              <WatchSkeletonRows />
             ) : !watchlist.length ? (
               <p className="px-6 pb-6 text-[13.5px] text-ink-3">
                 Nothing watched yet — open any stock and hit ☆ Watch.
@@ -196,5 +215,41 @@ const MarketsPage = () => {
     </div>
   );
 };
+
+/** Eight rows, matching the `slice(0, 8)` the movers feed is capped at. */
+function MoverSkeletonRows() {
+  return (
+    <>
+      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between gap-4 border-t border-line px-6 py-3"
+        >
+          <div className="min-w-0">
+            <SkeletonText text="text-[14.5px]" bar="h-3.5 w-14" />
+            <SkeletonText text="text-[12.5px]" bar="h-3 w-36" />
+          </div>
+          <div className="flex items-center gap-4">
+            <SkeletonText text="text-[14px]" bar="h-3.5 w-16" />
+            <Skeleton className="h-[22px] w-[72px] rounded-pill" />
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function WatchSkeletonRows() {
+  return (
+    <>
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center justify-between border-t border-line px-6 py-3">
+          <SkeletonText text="text-[14.5px]" bar="h-3.5 w-14" />
+          <SkeletonText text="text-[12.5px]" bar="h-3 w-20" />
+        </div>
+      ))}
+    </>
+  );
+}
 
 export default MarketsPage;
