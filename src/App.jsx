@@ -1,112 +1,127 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useLayoutEffect } from "react";
-import HomePage from "./containers/HomePage";
-import LoginPage from "./containers/LoginPage";
-import RegisterPage from "./containers/RegisterPage";
-import ArticlePage from "./containers/ArticlePage";
-import PasswordResetPage from "./containers/PasswordResetPage";
-import ProfilePage from "./containers/ProfilePage";
-import SimulatorPortfolioPage from "./containers/SimulatorPortfolioPage";
-import GamePortfolioPage from "./containers/GamePortfolioPage";
-import LeaderboardsPage from "./containers/LeaderboardsPage";
-import CoachPortalPage from "./containers/CoachPortalPage";
-import CoachCataloguePage from "./containers/CoachCataloguePage";
-import CoachRegistrationPage from "./containers/CoachRegistrationPage";
-import FaqPage from "./containers/FaqPage";
-import ContactPage from "./containers/ContactPage";
-import AboutPage from "./containers/AboutPage";
-import NotFoundPage from "./containers/NotFoundPage";
-import useAuthListener from "./hooks/use-auth";
-import ArticlesPage from "./containers/ArticlesPage";
-import BuyPremiumPage from "./containers/BuyPremiumPage";
-import UserContext from "./context/user";
-import {
-  createTheme,
-  ThemeProvider,
-  responsiveFontSizes,
-} from "@mui/material/styles";
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useLayoutEffect } from 'react';
+import HomePage from './containers/HomePage';
+import LoginPage from './containers/LoginPage';
+import RegisterPage from './containers/RegisterPage';
+import ArticlePage from './containers/ArticlePage';
+import PasswordResetPage from './containers/PasswordResetPage';
+import ProfilePage from './containers/ProfilePage';
+import SimulatorPortfolioPage from './containers/SimulatorPortfolioPage';
+import GamePortfolioPage from './containers/GamePortfolioPage';
+import LeaderboardsPage from './containers/LeaderboardsPage';
+import FaqPage from './containers/FaqPage';
+import ContactPage from './containers/ContactPage';
+import AboutPage from './containers/AboutPage';
+import NotFoundPage from './containers/NotFoundPage';
+import useAuthListener from './hooks/use-auth';
+import ArticlesPage from './containers/ArticlesPage';
+import BuyPremiumPage from './containers/BuyPremiumPage';
+import PreviewPage from './containers/PreviewPage';
+import MarketsPage from './containers/MarketsPage';
+import StockPage from './containers/StockPage';
+import UserProfilePage from './containers/UserProfilePage';
+import ProtectedRoute from './components/ProtectedRoute';
+import UserContext from './context/user';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
+import theme from './theme';
 
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import Header from './components/Header';
+import Footer from './components/Footer';
 
-const theme = responsiveFontSizes(
-  createTheme({
-    palette: {
-      mode: "light",
-      primary: {
-        main: "#6511F5",
-      },
-      secondary: {
-        main: "#12ce60",
-      },
-      info: {
-        main: "#F8F9FA",
-        contrastText: "#212529",
-      },
-    },
-    typography: {
-      fontFamily: "Fredoka, Varela Round, Ubuntu, sans-serif",
-    },
-    components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            color: "secondary",
-            textTransform: "none",
-            fontWeight: "bold",
-          },
-        },
-      },
-    },
-  })
-);
+// Routes that have been migrated to the Berry Bright design and render their own
+// chrome (brand TopNav/Footer). The legacy MUI Header/Footer are suppressed on
+// these so the two chrome systems don't stack. Add routes here as pages migrate.
+const REDESIGNED_ROUTES = [
+  '/',
+  '/Preview',
+  '/SimulatorPortfolio',
+  '/Leaderboards',
+  '/Articles',
+  '/Markets',
+];
+// Parameterised routes cannot be matched by the exact-match list above.
+const REDESIGNED_PREFIXES = ['/Profile/', '/Article/', '/stock/', '/investor/'];
 
-const ScrollToTop = ({ children }) => {
+function Shell({ user }) {
   const location = useLocation();
   useLayoutEffect(() => {
     document.documentElement.scrollTo(0, 0);
   }, [location.pathname]);
-  return children;
-};
+
+  // Matched case-insensitively: react-router v6 is case-insensitive and the
+  // legacy chrome links to lowercase paths (/articles), so an exact match here
+  // would leave the old MUI header on top of a redesigned page.
+  const path = location.pathname.toLowerCase();
+  const hideLegacyChrome =
+    REDESIGNED_ROUTES.some((r) => r.toLowerCase() === path) ||
+    REDESIGNED_PREFIXES.some((p) => path.startsWith(p.toLowerCase()));
+
+  return (
+    <div>
+      {!hideLegacyChrome && <Header isAuthenticated={user} />}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/Login" element={<LoginPage />} />
+        <Route path="/Register" element={<RegisterPage />} />
+        <Route path="/PasswordReset" element={<PasswordResetPage />} />
+        <Route path="/Article/:id" element={<ArticlePage />} />
+        <Route path="/Articles" element={<ArticlesPage />} />
+        <Route path="/Preview" element={<PreviewPage />} />
+        <Route path="/Markets" element={<MarketsPage />} />
+        <Route path="/stock/:symbol" element={<StockPage />} />
+        <Route path="/investor/:email" element={<UserProfilePage />} />
+        <Route
+          path="/Profile/:email"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/SimulatorPortfolio"
+          element={
+            <ProtectedRoute>
+              <SimulatorPortfolioPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/GamePortfolio"
+          element={
+            <ProtectedRoute>
+              <GamePortfolioPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Leaderboards"
+          element={
+            <ProtectedRoute>
+              <LeaderboardsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/BuyPremium" element={<BuyPremiumPage />} />
+        <Route path="/FAQ" element={<FaqPage />} />
+        <Route path="/Contact" element={<ContactPage />} />
+        <Route path="/About" element={<AboutPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+      {!hideLegacyChrome && <Footer isAuthenticated={user} />}
+    </div>
+  );
+}
 
 function App() {
   const { user } = useAuthListener();
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <UserContext.Provider value={{ user }}>
         <BrowserRouter>
-          <div>
-            <ScrollToTop>
-              <Header isAuthenticated={user} />
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/Login" element={<LoginPage />} />
-                <Route path="/Register" element={<RegisterPage />} />
-                <Route path="/PasswordReset" element={<PasswordResetPage />} />
-                <Route path="/Article/:id" element={<ArticlePage />} />
-                <Route path="/Articles" element={<ArticlesPage />} />
-                <Route path="/Profile/:email" element={<ProfilePage />} />
-                <Route
-                  path="/SimulatorPortfolio"
-                  element={<SimulatorPortfolioPage />}
-                />
-                <Route path="/GamePortfolio" element={<GamePortfolioPage />} />
-                <Route path="/Leaderboards" element={<LeaderboardsPage />} />
-                <Route path="/CoachPortal/:email" element={<CoachPortalPage />} />
-                <Route
-                  path="/CoachCatalogue"
-                  element={<CoachCataloguePage />}
-                />
-                <Route path="/CoachRegistration" element={<CoachRegistrationPage />} />
-                <Route path="/BuyPremium" element={<BuyPremiumPage />} />
-                <Route path="/FAQ" element={<FaqPage />} />
-                <Route path="/Contact" element={<ContactPage />} />
-                <Route path="/About" element={<AboutPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </ScrollToTop>
-            <Footer isAuthenticated={user} />
-          </div>
+          <Shell user={user} />
         </BrowserRouter>
       </UserContext.Provider>
     </ThemeProvider>

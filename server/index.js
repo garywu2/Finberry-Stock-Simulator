@@ -6,17 +6,15 @@ require("./src/models/User");
 require("./src/models/Badge");
 require("./src/models/UserBadge");
 require("./src/models/Article");
+require("./src/models/Lesson");
+require("./src/models/LessonProgress");
+require("./src/models/WatchlistEntry");
+require("./src/models/Follow");
 require("./src/models/Simulator");
 require("./src/models/SimulatorEnrollment");
 require("./src/models/Holding");
 require("./src/models/TradeTransaction");
-require("./src/models/Review");
-require("./src/models/CoachingSession");
 require("./src/models/PaymentHistory");
-require("./src/models/ChatMessage");
-require("./src/models/CoachingCoach");
-require("./src/models/CoachingClient");
-require("./src/models/CoachingProfile");
 require("./src/models/MarketMovers");
 
 // Setup environmental variable

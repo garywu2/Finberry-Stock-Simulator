@@ -76,11 +76,6 @@ const userSchema = new mongoose.Schema({
     required: false,
     default: null,
   },
-  permittedToCoach: {
-    // Indivate if the user may even be a coach or if it has been revoked. (To be implemented)
-    type: Boolean,
-    default: true,
-  },
   accountStatus: {
     // The status of an user account. (To be implemented)
     type: Number,
@@ -121,20 +116,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: [],
   },
-  coachingCoachs: {
-    type: [{ type: mongoose.SchemaTypes.ObjectID, ref: 'CoachingCoach' }],
-    required: true,
-    default: [],
-  },
   premiumPaymentHistory: {
     // Not implemented yet
     type: [{ type: mongoose.SchemaTypes.ObjectID, ref: 'PaymentHistory' }],
-    required: true,
-    default: [],
-  },
-  // A user may now have a list of coaching profiles.
-  coachingProfiles: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CoachingProfile' }],
     required: true,
     default: [],
   },

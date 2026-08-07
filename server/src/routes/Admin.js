@@ -20,15 +20,11 @@ router.delete("/schemas", async (req, res) => {
         try {
             const relevantCollections = [
             "articles",
+            "lessons",
+            "lessonprogresses",
             "badges",
-            "chatmessages",
-            "coachingclients",
-            "coachingcoaches",
-            "coachingprofiles",
-            "coachingsessions",
             "holdings",
             "paymenthistories",
-            "reviews",
             "simulators",
             "simulatorenrollments",
             "tradetransactions",
@@ -332,50 +328,6 @@ router.post("/leaderboard/:simulatorID", async (req, res) => {
 
 /* #region Create mock data */
 
-// Mock Coaches.
-router.post("/mock/coach", async (req, res) => {
-    let outputLog = [];
-    for (const newEntry of req.body) {
-        try {
-            let userProperty = newEntry.user;
-            let coachingProfileProperty = newEntry.coachingProfile;
-
-            await axios({
-                method: 'post',
-                url:
-                process.env.local_route +
-                    'account/user',
-                headers: {},
-                data: userProperty,
-            }).then(async (result) => {
-                let newUser = result.data;
-                coachingProfileProperty.email = newUser.email;
-
-                await axios({
-                    method: 'post',
-                    url:
-                    process.env.local_route +
-                        'account/coaching',
-                    headers: {},
-                    data: coachingProfileProperty,
-                }).then(async (result) => {
-                    let newCoachingProfile = result.data;
-                    newCoachingProfile.user = newUser;
-                    outputLog.push(newCoachingProfile);
-                }).catch((error) => {
-                    outputLog.push("Coaching Profile Creation Failure: " + error.message);
-                });
-            }).catch((error) => {
-                outputLog.push("User Creation Failure: " + error.message);
-            });
-        } catch (e) {
-            outputLog.push("Invalid Input Style");
-        }
-    }
-    
-    res.json(outputLog);
-});
-
 // Mock Simulators.
 router.post("/mock/simulator", async (req, res) => {
     let outputLog = [];
@@ -403,24 +355,24 @@ router.post("/mock/simulator", async (req, res) => {
     res.json(outputLog);
 });
 
-// Mock Articles.
-router.post("/mock/article", async (req, res) => {
+// Mock Lessons.
+router.post("/mock/lesson", async (req, res) => {
     let outputLog = [];
     for (const newEntry of req.body) {
         try {
-            let article = newEntry.article;
+            let lesson = newEntry.lesson || newEntry.article;
             await axios({
                 method: 'post',
                 url:
                 process.env.local_route +
-                    'educational/article',
+                    'educational/lesson',
                 headers: {},
-                data: article,
+                data: lesson,
             }).then(async (result) => {
-                let newArticle = result.data;
-                outputLog.push(newArticle);
+                let newLesson = result.data;
+                outputLog.push(newLesson);
             }).catch((error) => {
-                outputLog.push("Article Creation Failure: " + error.message);
+                outputLog.push("Lesson Creation Failure: " + error.message);
             });
         } catch (e) {
             outputLog.push("Invalid Input Style.");

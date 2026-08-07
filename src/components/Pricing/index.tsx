@@ -29,7 +29,6 @@ const tiers = [
       'Exclusive Games',
       'Exclusive Badges',
       'Ad-free',
-      '5% Coaching Discount',
     ],
     buttonText: 'Get started',
     buttonVariant: 'contained',
