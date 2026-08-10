@@ -1,6 +1,13 @@
 # Finberry-Stock-Simulator
 Finberry Stock Simulator - UCALGARY CAPSTONE 2022-2023
 
+## Website Previews
+Landing Page
+![www finberry ca_](https://user-images.githubusercontent.com/30279572/236721164-31127b5b-8730-4ba3-a3bf-ae3453a39295.png)
+
+Simulator Page
+![image](https://user-images.githubusercontent.com/30279572/236721428-295c19fd-f1df-4e30-bcce-39d769201a9a.png)
+
 ## Quickstart
 
 ### Development
